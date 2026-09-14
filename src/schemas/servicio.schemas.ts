@@ -6,7 +6,6 @@ const objectIdString = z
   .regex(/^[0-9a-fA-F]{24}$/, "Debe ser un ObjectId válido");
 
 export const createServicioSchema = z.object({
-  usuario_id: objectIdString,
   categoria_id: objectIdString,
   municipio_id: objectIdString,
 

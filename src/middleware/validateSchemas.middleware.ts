@@ -1,7 +1,7 @@
 import type { Request, Response, NextFunction } from "express";
 import type { ZodObject, ZodRawShape } from "zod";
 import { ZodError } from "zod";
-import { HttpStatusCode } from "axios"; 
+import { HttpStatusCode } from "../utils/httpStatus.js";
 
 export const validateSchema =
   (schema: ZodObject<ZodRawShape>) =>

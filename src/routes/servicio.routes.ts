@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { validateSchema } from "../middleware/validateSchemas.middleware.js";
+import { requireAuth } from "../middleware/auth.middleware.js";
 import { createServicioSchema, updateServicioSchema } from "../schemas/servicio.schemas.js";
 import {
   getServicios,
@@ -11,10 +12,13 @@ import {
 
 const router = Router();
 
+// Lectura: pública
 router.get("/getServicios", getServicios);
 router.get("/findServicioById/:id", getServicioById);
-router.post("/createServicio", validateSchema(createServicioSchema), createServicio);
-router.put("/updateServicio/:id", validateSchema(updateServicioSchema), updateServicio);
-router.delete("/delete/:id", deleteServicio);
+
+// Escritura: requiere estar autenticado
+router.post("/createServicio", requireAuth, validateSchema(createServicioSchema), createServicio);
+router.put("/updateServicio/:id", requireAuth, validateSchema(updateServicioSchema), updateServicio);
+router.delete("/delete/:id", requireAuth, deleteServicio);
 
 export default router;

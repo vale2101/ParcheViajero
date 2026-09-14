@@ -1,5 +1,10 @@
 import { ObjectId } from "mongodb";
 
+export interface IUbicacionGeoJSON {
+  type: "Point";
+  coordinates: [number, number]; 
+}
+
 export interface IServicio {
   _id?: ObjectId;
   usuario_id: ObjectId;
@@ -10,6 +15,7 @@ export interface IServicio {
   direccion?: string;
   latitud: number;
   longitud: number;
+  ubicacion: IUbicacionGeoJSON;
   telefono?: string;
   horario_atencion?: string;
   precio?: number;

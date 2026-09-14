@@ -42,10 +42,15 @@ export async function getServicioById(req: Request, res: Response): Promise<Resp
 }
 
 // 🔹 POST create
+// Nota: el dueño del servicio SIEMPRE es el usuario autenticado (req.userId),
+// no lo que venga en el body, para evitar que alguien cree servicios a nombre de otro negocio.
 export async function createServicio(req: Request, res: Response): Promise<Response> {
   try {
+    if (!req.userId) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: "No autenticado" });
+    }
+
     const {
-      usuario_id,
       categoria_id,
       municipio_id,
       nombre,
@@ -59,7 +64,7 @@ export async function createServicio(req: Request, res: Response): Promise<Respo
     } = req.body;
 
     const success = await createServicio_post({
-      usuario_id,
+      usuario_id: req.userId,
       categoria_id,
       municipio_id,
       nombre,
@@ -92,16 +97,25 @@ export async function updateServicio(req: Request, res: Response): Promise<Respo
       return res.status(HttpStatusCode.BadRequest).json({ message: "Falta el parámetro id" });
     }
 
-    const success = await updateServicio_put(id, req.body);
+    if (!req.userId) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: "No autenticado" });
+    }
+
+    const success = await updateServicio_put(id, req.body, req.userId);
 
     if (!success) {
       return res.status(HttpStatusCode.NotFound).json({ message: "Servicio no encontrado" });
     }
 
     return res.status(HttpStatusCode.Ok).json({ message: "Servicio actualizado correctamente" });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
-    return res.status(HttpStatusCode.InternalServerError).json({ message: "Error en el servidor" });
+
+    if (error.message?.includes("permiso")) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: error.message });
+    }
+
+    return res.status(HttpStatusCode.BadRequest).json({ message: error.message || "Error en el servidor" });
   }
 }
 
@@ -114,15 +128,24 @@ export async function deleteServicio(req: Request, res: Response): Promise<Respo
       return res.status(HttpStatusCode.BadRequest).json({ message: "Falta el parámetro id" });
     }
 
-    const success = await deleteServicio_delete(id);
+    if (!req.userId) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: "No autenticado" });
+    }
+
+    const success = await deleteServicio_delete(id, req.userId);
 
     if (!success) {
       return res.status(HttpStatusCode.NotFound).json({ message: "Servicio no encontrado" });
     }
 
     return res.status(HttpStatusCode.Ok).json({ message: "Servicio eliminado correctamente" });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
+
+    if (error.message?.includes("permiso")) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: error.message });
+    }
+
     return res.status(HttpStatusCode.InternalServerError).json({ message: "Error en el servidor" });
   }
 }

@@ -3,8 +3,10 @@ import type { Application } from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import usuarioRoutes from "./routes/usuario.routes.js";
-import servicioRoutes from "./routes/servicio.schemas.js";
+import servicioRoutes from "./routes/servicio.routes.js";
 import ResenaRoutes from "./routes/resena.routes.js";
+import categoriaRoutes from "./routes/categoria.routes.js";
+import municipioRoutes from "./routes/municipio.routes.js";
 
 class Server {
   private app: Application;
@@ -37,6 +39,8 @@ class Server {
     this.app.use("/api/usuarios", usuarioRoutes);
     this.app.use("/api/servicios", servicioRoutes);
     this.app.use("/api/resenas", ResenaRoutes);
+    this.app.use("/api/categorias", categoriaRoutes);
+    this.app.use("/api/municipios", municipioRoutes);
   }
 }
 

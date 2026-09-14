@@ -18,11 +18,11 @@ function Navigator() {
       <Stack.Screen name="index" />
 
       <Stack.Protected guard={!!user && !esNegocio}>
-        <Stack.Screen name="(usuario)" />
+        <Stack.Screen name="usuario" />
       </Stack.Protected>
 
       <Stack.Protected guard={!!user && esNegocio}>
-        <Stack.Screen name="(negocio)" />
+        <Stack.Screen name="negocio" />
       </Stack.Protected>
 
       <Stack.Protected guard={!user}>

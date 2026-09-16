@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import Button from '../../src/components/Button';
 import FavoritosSection from '../../src/components/FavoritosSection';
-import MisResenasSection from '../../src/components/misResenasSection';
+import MisResenasSection from '../../src/components/MisResenasSection';
 import ResenasSection from '../../src/components/ResenasSection';
 import ScreenHeader from '../../src/components/ScreenHeader';
 import { useAuth } from '../../src/context/AuthContext';

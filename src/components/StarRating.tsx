@@ -36,6 +36,6 @@ export default function StarRating({ value, onChange, readonly, size = 22 }: Pro
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: 4 },
-  star: { color: '#e5e5e5' },
-  starFilled: { color: '#F5B700' },
+  star: { color: '#E8D9B8' },
+  starFilled: { color: '#FEBA03' },
 });

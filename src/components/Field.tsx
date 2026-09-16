@@ -71,21 +71,21 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1E3A8A', 
+    color: '#0147B9', 
   },
   input: {
     borderRadius: 12,
     borderWidth: 2,
-    backgroundColor: '#FDFBF6', 
+    backgroundColor: '#FAF4E4', 
     padding: 14,
     fontSize: 16,
     color: '#171717',
   },
   inputIdle: {
-    borderColor: '#e5e5e5',
+    borderColor: '#E8D9B8',
   },
   inputFocused: {
-    borderColor: '#F5B700', 
+    borderColor: '#FEBA03', 
   },
   inputError: {
     borderColor: '#ef4444',

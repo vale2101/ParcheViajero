@@ -11,7 +11,7 @@ export default function ScreenHeader() {
 const styles = StyleSheet.create({
   header: {
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: '#E8D9B8',
     paddingVertical: 16,
     alignItems: 'center',
   },
@@ -19,6 +19,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '700',
     fontStyle: 'italic',
-    color: '#1E3A8A',
+    color: '#0147B9',
   },
 });

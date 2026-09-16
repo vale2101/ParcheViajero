@@ -34,7 +34,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   primary: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: '#0147B9',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
@@ -42,9 +42,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   secondary: {
-    backgroundColor: '#FDFBF6', 
+    backgroundColor: '#FAF4E4', 
     borderWidth: 2,
-    borderColor: '#F5B700', 
+    borderColor: '#FEBA03', 
   },
   disabled: {
     opacity: 0.5,
@@ -57,9 +57,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   textPrimary: {
-    color: '#F5B700', // texto dorado sobre azul, como el logo
+    color: '#FEBA03', 
   },
   textSecondary: {
-    color: '#1E3A8A', // texto azul sobre crema/dorado
+    color: '#0147B9', 
   },
 });

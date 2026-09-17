@@ -59,12 +59,12 @@ export default function ResenasSection() {
 
 const styles = StyleSheet.create({
   container: { gap: 10 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1E3A8A' },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0147B9' },
   input: {
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e5e5e5',
-    backgroundColor: '#FDFBF6',
+    borderColor: '#E8D9B8',
+    backgroundColor: '#FAF4E4',
     padding: 14,
     fontSize: 15,
     color: '#171717',
@@ -74,11 +74,11 @@ const styles = StyleSheet.create({
   resultCard: {
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e5e5e5',
-    backgroundColor: '#FDFBF6',
+    borderColor: '#E8D9B8',
+    backgroundColor: '#FAF4E4',
     padding: 12,
     marginBottom: 8,
   },
-  resultName: { fontSize: 15, fontWeight: '600', color: '#1E3A8A' },
+  resultName: { fontSize: 15, fontWeight: '600', color: '#0147B9' },
   resultSubtitle: { fontSize: 12, color: '#a3a3a3', marginTop: 2 },
 });

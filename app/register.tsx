@@ -1,7 +1,7 @@
 import { Link } from 'expo-router';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import Button from '../src/components/Button';
 import Field from '../src/components/Field';
 import { useAuth } from '../src/context/AuthContext';
@@ -37,6 +37,12 @@ export default function Register() {
     <ScrollView style={styles.screen} keyboardShouldPersistTaps="handled">
       <View style={styles.center}>
         <View style={styles.card}>
+          <Image
+            source={require('../assets/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+            accessibilityLabel="Parche Viajero"
+          />
           <Text style={styles.title}>
             Crear cuenta de {esNegocio ? 'negocio' : 'viajero'}
           </Text>
@@ -161,6 +167,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 3,
+  },
+  logo: {
+    width: '100%',
+    height: 120,
   },
   title: {
     fontSize: 24,

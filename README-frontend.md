@@ -70,7 +70,7 @@ src/
 │   ├── ServicioReviewModal.tsx  # Modal de detalle + reseñas de un servicio (viajero)
 │   ├── ResenasSection.tsx       # Buscador de lugares para reseñar
 │   ├── MisResenasSection.tsx    # Reseñas propias del usuario
-│   ├── FavoritosSection.tsx     # ⚠️ Placeholder estático, sin lógica real aún
+│   ├── FavoritosSection.tsx     # Placeholder estático, sin lógica real aún
 │   └── MapPicker.native.tsx / MapPicker.web.tsx   # Selector de ubicación multiplataforma
 ├── types.ts                   # (vacío por ahora)
 └── global.css                 # Directivas Tailwind
@@ -118,9 +118,9 @@ EXPO_PUBLIC_API_URL=http://localhost:3000/api
 EXPO_PUBLIC_GOOGLE_MAPS_API_KEY=tu-api-key-aqui
 ```
 
-> ⚠️ Si vas a probar en un dispositivo físico o emulador, `localhost` no apunta a tu máquina de desarrollo. Usa la IP de tu red local (ej. `http://192.168.1.10:3000/api`) o un túnel (ngrok, etc.).
+> Si vas a probar en un dispositivo físico o emulador, `localhost` no apunta a tu máquina de desarrollo. Usa la IP de tu red local (ej. `http://192.168.1.10:3000/api`) o un túnel (ngrok, etc.).
 
-> ⚠️ Estas variables son `EXPO_PUBLIC_`, es decir, **se incluyen en el bundle del cliente y son visibles públicamente**. No pongas ahí secretos sensibles — solo la API key de Maps (restringida por dominio/paquete en Google Cloud Console) y la URL pública de la API.
+> Estas variables son `EXPO_PUBLIC_`, es decir, **se incluyen en el bundle del cliente y son visibles públicamente**. No pongas ahí secretos sensibles — solo la API key de Maps (restringida por dominio/paquete en Google Cloud Console) y la URL pública de la API.
 
 ---
 
@@ -156,7 +156,7 @@ El `RootLayout` (`app/_layout.tsx`) envuelve todo en `AuthProvider` y decide qu�
 - `logout()` — invalida la sesión en el backend y limpia el estado local.
 - `refreshUser()` — vuelve a pedir `/usuarios/me`.
 
-> ⚠️ **El token se guarda solo en memoria** (`src/api/client.ts`, variable `token` en el módulo). Esto significa que **la sesión se pierde al cerrar la app**. Para persistencia entre aperturas, hay que integrar `expo-secure-store` o `AsyncStorage` y restaurar el token al iniciar la app.
+> **El token se guarda solo en memoria** (`src/api/client.ts`, variable `token` en el módulo). Esto significa que **la sesión se pierde al cerrar la app**. Para persistencia entre aperturas, hay que integrar `expo-secure-store` o `AsyncStorage` y restaurar el token al iniciar la app.
 
 ---
 

@@ -184,13 +184,6 @@ export default function ServicioFormModal({ visible, onClose, onCreated }: Props
               placeholder="Lun a dom, 8am - 8pm"
             />
 
-            <Field
-              control={control}
-              name="precio"
-              label="Precio (opcional)"
-              placeholder="0"
-              keyboardType="numeric"
-            />
 
             <MapPicker
               latitud={coords.lat}

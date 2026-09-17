@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import ServicioReviewModal from './ServicioReviewModal';
 import { getServicios, type Servicio } from '../api/servicio';
 
@@ -17,7 +17,9 @@ export default function ResenasSection() {
   const resultados =
     query.trim().length === 0
       ? []
-      : servicios.filter((s) => s.nombre.toLowerCase().includes(query.trim().toLowerCase()));
+      : servicios.filter((s) =>
+          s.nombre.toLowerCase().includes(query.trim().toLowerCase())
+        );
 
   return (
     <View style={styles.container}>
@@ -32,20 +34,29 @@ export default function ResenasSection() {
       />
 
       {query.trim().length > 0 && (
-        <FlatList
-          data={resultados}
-          keyExtractor={(item) => item._id}
-          style={styles.resultsList}
-          ListEmptyComponent={
-            <Text style={styles.placeholder}>No se encontraron lugares con ese nombre</Text>
-          }
-          renderItem={({ item }) => (
-            <Pressable style={styles.resultCard} onPress={() => setSeleccionado(item)}>
-              <Text style={styles.resultName}>{item.nombre}</Text>
-              {!!item.direccion && <Text style={styles.resultSubtitle}>{item.direccion}</Text>}
-            </Pressable>
+        <View style={styles.resultsList}>
+          {resultados.length === 0 ? (
+            <Text style={styles.placeholder}>
+              No se encontraron lugares con ese nombre
+            </Text>
+          ) : (
+            resultados.map((item) => (
+              <Pressable
+                key={item._id}
+                style={styles.resultCard}
+                onPress={() => setSeleccionado(item)}
+              >
+                <Text style={styles.resultName}>{item.nombre}</Text>
+
+                {!!item.direccion && (
+                  <Text style={styles.resultSubtitle}>
+                    {item.direccion}
+                  </Text>
+                )}
+              </Pressable>
+            ))
           )}
-        />
+        </View>
       )}
 
       <ServicioReviewModal
@@ -58,8 +69,16 @@ export default function ResenasSection() {
 }
 
 const styles = StyleSheet.create({
-  container: { gap: 10 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0147B9' },
+  container: {
+    gap: 10,
+  },
+
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#0147B9',
+  },
+
   input: {
     borderRadius: 12,
     borderWidth: 2,
@@ -69,8 +88,18 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#171717',
   },
-  resultsList: { maxHeight: 240 },
-  placeholder: { color: '#a3a3a3', fontSize: 13, textAlign: 'center', marginVertical: 12 },
+
+  resultsList: {
+    maxHeight: 240,
+  },
+
+  placeholder: {
+    color: '#a3a3a3',
+    fontSize: 13,
+    textAlign: 'center',
+    marginVertical: 12,
+  },
+
   resultCard: {
     borderRadius: 12,
     borderWidth: 2,
@@ -79,6 +108,16 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 8,
   },
-  resultName: { fontSize: 15, fontWeight: '600', color: '#0147B9' },
-  resultSubtitle: { fontSize: 12, color: '#a3a3a3', marginTop: 2 },
+
+  resultName: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#0147B9',
+  },
+
+  resultSubtitle: {
+    fontSize: 12,
+    color: '#a3a3a3',
+    marginTop: 2,
+  },
 });

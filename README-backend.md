@@ -36,9 +36,9 @@ El modelo sigue un cambio de diseño clave respecto a versiones anteriores: **ya
 | `municipios` | Manizales, Villamaría, Neira, Chinchiná | — |
 | `categorias` | Restaurante, Hotel, Atractivo turístico, Cafetería, Bar | — |
 | `servicios` | Cada lugar/establecimiento publicado por un usuario tipo negocio | `usuario_id` → `usuarios`, `categoria_id` → `categorias`, `municipio_id` → `municipios` |
-| `imagenes_servicio` | Fotos de cada lugar (⚠️ definida en el esquema, sin endpoints implementados aún) | `servicio_id` → `servicios` |
+| `imagenes_servicio` | Fotos de cada lugar ( definida en el esquema, sin endpoints implementados aún) | `servicio_id` → `servicios` |
 | `resenas` | Calificación (1-5) + comentario de un usuario sobre un servicio | `usuario_id` → `usuarios`, `servicio_id` → `servicios` |
-| `favoritos` | Lugares guardados por un usuario (⚠️ definida en el esquema, sin endpoints implementados aún) | `usuario_id` → `usuarios`, `servicio_id` → `servicios` |
+| `favoritos` | Lugares guardados por un usuario (definida en el esquema, sin endpoints implementados aún) | `usuario_id` → `usuarios`, `servicio_id` → `servicios` |
 
 ### Índices relevantes
 
@@ -139,7 +139,7 @@ JWT_SECRET=cambia-esto-por-un-secreto-fuerte
 NODE_ENV=development
 ```
 
-> ⚠️ **Importante:** si `JWT_SECRET` no está definido, el código cae a un valor por defecto (`"clave-secreta"`) hardcodeado en `auth.middleware.ts` y `usuario.controller.ts`. **Nunca despliegues a producción sin definir esta variable explícitamente.**
+> **Importante:** si `JWT_SECRET` no está definido, el código cae a un valor por defecto (`"clave-secreta"`) hardcodeado en `auth.middleware.ts` y `usuario.controller.ts`. **Nunca despliegues a producción sin definir esta variable explícitamente.**
 
 ---
 

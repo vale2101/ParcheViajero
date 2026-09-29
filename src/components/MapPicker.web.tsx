@@ -90,8 +90,7 @@ export default function MapPicker({ latitud, longitud, onChange }: Props) {
     return () => {
       cancelled = true;
     };
-    // Solo se inicializa una vez
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, []);
 
   function applyManualCoords() {

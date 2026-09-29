@@ -87,7 +87,6 @@ export default function MapPicker({ latitud, longitud, onChange }: Props) {
       setLngText(String(lng));
       onChange(lat, lng);
     } catch {
-      // ignorar mensajes inválidos
     }
   }
 

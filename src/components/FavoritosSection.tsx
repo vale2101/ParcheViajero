@@ -13,12 +13,12 @@ export default function FavoritosSection() {
 
 const styles = StyleSheet.create({
   container: { gap: 10 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1E3A8A' },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0147B9' },
   emptyBox: {
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e5e5e5',
-    backgroundColor: '#FDFBF6',
+    borderColor: '#E8D9B8',
+    backgroundColor: '#FAF4E4',
     padding: 20,
     alignItems: 'center',
   },

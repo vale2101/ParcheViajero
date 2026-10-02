@@ -34,24 +34,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e5e5e5',
+    borderColor: '#E8D9B8',
     overflow: 'hidden',
   },
   option: {
     flex: 1,
     alignItems: 'center',
     paddingVertical: 12,
-    backgroundColor: '#FDFBF6',
+    backgroundColor: '#FAF4E4',
   },
   optionActive: {
-    backgroundColor: '#1E3A8A',
+    backgroundColor: '#0147B9',
   },
   text: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#1E3A8A',
+    color: '#0147B9',
   },
   textActive: {
-    color: '#F5B700',
+    color: '#FEBA03',
   },
 });

@@ -1,8 +1,9 @@
 import { Link } from 'expo-router';
 import { useForm } from 'react-hook-form';
-import { StyleSheet, Text, View } from 'react-native';
+import { Image, StyleSheet, Text, View } from 'react-native';
 import Button from '../src/components/Button';
 import Field from '../src/components/Field';
+import KeyboardAwareScreen from '../src/components/KeyboardAwareScreen';
 import { useAuth } from '../src/context/AuthContext';
 
 type LoginForm = { email: string; contrasena: string };
@@ -23,10 +24,15 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAwareScreen style={styles.screen} contentContainerStyle={styles.center}>
       <View style={styles.card}>
         <View style={styles.header}>
-          <Text style={styles.title}>Parche Viajero</Text>
+          <Image
+            source={require('../assets/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+            accessibilityLabel="Parche Viajero"
+          />
           <Text style={styles.subtitle}>Entra con tu cuenta</Text>
         </View>
 
@@ -64,16 +70,18 @@ export default function Login() {
           ¿No tienes cuenta? Regístrate
         </Link>
       </View>
-    </View>
+    </KeyboardAwareScreen>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
-    flex: 1,
+    backgroundColor: '#e5e5e5',
+  },
+  center: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#e5e5e5',
     padding: 24,
   },
   card: {
@@ -90,12 +98,12 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   header: {
-    gap: 4,
+    alignItems: 'center',
+    gap: 8,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: '#1E3A8A',
+  logo: {
+    width: '100%',
+    height: 120,
   },
   subtitle: {
     color: '#a3a3a3',

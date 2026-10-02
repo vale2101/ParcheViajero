@@ -11,7 +11,7 @@ import {
 import Button from './Button';
 import StarRating from './StarRating';
 import { useAuth } from '../context/AuthContext';
-import { createResena, getResenasByServicio, type Resena } from '../api/resena';
+import { createResena, updateResena, getResenasByServicio, type Resena } from '../api/resena';
 import type { Servicio } from '../api/servicio';
 
 interface Props {
@@ -28,6 +28,7 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
   const [comentario, setComentario] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [miResena, setMiResena] = useState<Resena | null>(null);
 
   const cargarResenas = useCallback(async () => {
     if (!servicio) return;
@@ -35,19 +36,23 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
     try {
       const { data } = await getResenasByServicio(servicio._id);
       setResenas(data);
+
+      // Si el usuario ya reseñó este servicio, precargamos su reseña para editarla
+      const propia = data.find((r) => r.usuario_id === user?._id) ?? null;
+      setMiResena(propia);
+      setCalificacion(propia?.calificacion ?? 0);
+      setComentario(propia?.comentario ?? '');
     } catch {
       setResenas([]);
     } finally {
       setLoading(false);
     }
-  }, [servicio]);
+  }, [servicio, user?._id]);
 
   useEffect(() => {
     if (visible) {
-      cargarResenas();
-      setCalificacion(0);
-      setComentario('');
       setError(null);
+      cargarResenas();
     }
   }, [visible, cargarResenas]);
 
@@ -63,15 +68,22 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
     setSubmitting(true);
 
     try {
-      await createResena({
-        usuario_id: user._id,
-        servicio_id: servicio._id,
-        calificacion,
-        comentario: comentario.trim() || undefined,
-      });
+      if (miResena) {
+        // Editar reseña existente
+        await updateResena(miResena._id, {
+          calificacion,
+          comentario: comentario.trim() || undefined,
+        });
+      } else {
+        // Crear reseña nueva
+        await createResena({
+          usuario_id: user._id,
+          servicio_id: servicio._id,
+          calificacion,
+          comentario: comentario.trim() || undefined,
+        });
+      }
 
-      setCalificacion(0);
-      setComentario('');
       await cargarResenas();
     } catch (err) {
       setError((err as Error).message);
@@ -121,11 +133,16 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
                     {new Date(item.fecha).toLocaleDateString()}
                   </Text>
                 )}
+                {item.usuario_id === user?._id && (
+                  <Text style={styles.miEtiqueta}>Tu reseña</Text>
+                )}
               </View>
             )}
             ListFooterComponent={
               <View style={styles.formBox}>
-                <Text style={styles.formTitle}>Escribe tu reseña</Text>
+                <Text style={styles.formTitle}>
+                  {miResena ? 'Edita tu reseña' : 'Escribe tu reseña'}
+                </Text>
                 <StarRating value={calificacion} onChange={setCalificacion} />
 
                 <TextInput
@@ -141,7 +158,13 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
                 {!!error && <Text style={styles.errorText}>{error}</Text>}
 
                 <Button
-                  text={submitting ? 'Enviando…' : 'Publicar reseña'}
+                  text={
+                    submitting
+                      ? 'Guardando…'
+                      : miResena
+                      ? 'Actualizar reseña'
+                      : 'Publicar reseña'
+                  }
                   onPress={handleSubmit}
                   disabled={submitting}
                 />
@@ -155,13 +178,9 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
 }
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
+  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   sheet: {
-    backgroundColor: '#FDFBF6',
+    backgroundColor: '#FAF4E4',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '92%',
@@ -174,13 +193,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 12,
   },
-  title: { fontSize: 18, fontWeight: '700', color: '#1E3A8A', flexShrink: 1 },
+  title: { fontSize: 18, fontWeight: '700', color: '#0147B9', flexShrink: 1 },
   closeText: { fontSize: 18, color: '#a3a3a3' },
   infoBox: {
     paddingHorizontal: 24,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: '#E8D9B8',
     gap: 4,
   },
   infoText: { fontSize: 13, color: '#a3a3a3' },
@@ -190,25 +209,26 @@ const styles = StyleSheet.create({
   reviewCard: {
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e5e5e5',
+    borderColor: '#E8D9B8',
     padding: 12,
     gap: 6,
   },
   reviewText: { fontSize: 14, color: '#171717' },
   reviewDate: { fontSize: 11, color: '#a3a3a3' },
+  miEtiqueta: { fontSize: 11, fontWeight: '700', color: '#0147B9' },
   formBox: {
     marginTop: 8,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#e5e5e5',
+    borderTopColor: '#E8D9B8',
     gap: 12,
   },
-  formTitle: { fontSize: 15, fontWeight: '700', color: '#1E3A8A' },
+  formTitle: { fontSize: 15, fontWeight: '700', color: '#0147B9' },
   textarea: {
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: '#e5e5e5',
-    backgroundColor: '#FDFBF6',
+    borderColor: '#E8D9B8',
+    backgroundColor: '#FAF4E4',
     padding: 12,
     fontSize: 14,
     color: '#171717',

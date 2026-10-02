@@ -184,13 +184,6 @@ export default function ServicioFormModal({ visible, onClose, onCreated }: Props
               placeholder="Lun a dom, 8am - 8pm"
             />
 
-            <Field
-              control={control}
-              name="precio"
-              label="Precio (opcional)"
-              placeholder="0"
-              keyboardType="numeric"
-            />
 
             <MapPicker
               latitud={coords.lat}
@@ -222,7 +215,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#FDFBF6',
+    backgroundColor: '#FAF4E4',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     maxHeight: '92%',
@@ -235,15 +228,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: '#E8D9B8',
   },
-  title: { fontSize: 18, fontWeight: '700', color: '#1E3A8A' },
+  title: { fontSize: 18, fontWeight: '700', color: '#0147B9' },
   closeText: { fontSize: 18, color: '#a3a3a3' },
   form: { padding: 24, gap: 16 },
   errorText: { fontSize: 12, fontWeight: '500', color: '#dc2626' },
   errorBox: {
     borderRadius: 12,
-    backgroundColor: '#FDFBF6',
+    backgroundColor: '#FAF4E4',
     borderWidth: 2,
     borderColor: '#ef4444',
     padding: 12,

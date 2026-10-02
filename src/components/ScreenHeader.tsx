@@ -1,8 +1,11 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function ScreenHeader() {
+  const insets = useSafeAreaInsets();
+
   return (
-    <View style={styles.header}>
+    <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
       <Text style={styles.title}>Parche Viajero</Text>
     </View>
   );
@@ -11,14 +14,13 @@ export default function ScreenHeader() {
 const styles = StyleSheet.create({
   header: {
     borderBottomWidth: 1,
-    borderBottomColor: '#e5e5e5',
+    borderBottomColor: '#E8D9B8',
     paddingVertical: 16,
     alignItems: 'center',
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
-    fontStyle: 'italic',
-    color: '#1E3A8A',
+    color: '#0147B9',
+    fontFamily: 'Fredoka_700Bold',
   },
 });

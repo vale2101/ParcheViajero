@@ -1,11 +1,25 @@
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { useAppFonts } from '../src/hooks/useAppFonts';
 import "../src/global.css";
+
 export default function RootLayout() {
+  const fontsReady = useAppFonts();
+
+
+  if (!fontsReady) {
+    return null;
+  }
+
   return (
-    <AuthProvider>
-      <Navigator />
-    </AuthProvider>
+    <SafeAreaProvider>
+      <StatusBar style="dark" />
+      <AuthProvider>
+        <Navigator />
+      </AuthProvider>
+    </SafeAreaProvider>
   );
 }
 

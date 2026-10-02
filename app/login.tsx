@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import Button from '../src/components/Button';
 import Field from '../src/components/Field';
+import KeyboardAwareScreen from '../src/components/KeyboardAwareScreen';
 import { useAuth } from '../src/context/AuthContext';
 
 type LoginForm = { email: string; contrasena: string };
@@ -23,7 +24,7 @@ export default function Login() {
   };
 
   return (
-    <View style={styles.screen}>
+    <KeyboardAwareScreen style={styles.screen} contentContainerStyle={styles.center}>
       <View style={styles.card}>
         <View style={styles.header}>
           <Image
@@ -69,16 +70,18 @@ export default function Login() {
           ¿No tienes cuenta? Regístrate
         </Link>
       </View>
-    </View>
+    </KeyboardAwareScreen>
   );
 }
 
 const styles = StyleSheet.create({
   screen: {
-    flex: 1,
+    backgroundColor: '#e5e5e5',
+  },
+  center: {
+    flexGrow: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#e5e5e5',
     padding: 24,
   },
   card: {

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, type StyleProp, type ViewStyle } from 'react-native';
 
 interface Props {
@@ -9,11 +10,15 @@ interface Props {
 }
 
 export default function Button({ text, onPress, disabled, secondary, style }: Props) {
+  const [pressed, setPressed] = useState(false);
+
   return (
     <Pressable
       onPress={onPress}
+      onPressIn={() => setPressed(true)}
+      onPressOut={() => setPressed(false)}
       disabled={disabled}
-      style={({ pressed }) => [
+      style={[
         styles.base,
         secondary ? styles.secondary : styles.primary,
         disabled && styles.disabled,
@@ -42,9 +47,9 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   secondary: {
-    backgroundColor: '#FAF4E4', 
+    backgroundColor: '#FAF4E4',
     borderWidth: 2,
-    borderColor: '#FEBA03', 
+    borderColor: '#FEBA03',
   },
   disabled: {
     opacity: 0.5,
@@ -57,9 +62,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   textPrimary: {
-    color: '#FEBA03', 
+    color: '#FEBA03',
   },
   textSecondary: {
-    color: '#0147B9', 
+    color: '#0147B9',
   },
 });

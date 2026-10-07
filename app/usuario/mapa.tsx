@@ -5,13 +5,16 @@ import ServiciosMap, { type ServiciosMapHandle } from '../../src/components/Serv
 import MapFilters, { type MapFiltersValue } from '../../src/components/MapFilters';
 import ServicioReviewModal from '../../src/components/ServicioReviewModal';
 import LocateButton from '../../src/components/LocateButton';
-import { useUserLocation } from '../../src/hooks/useUserLocation';
+import { useUserLocation, type UserLocation } from '../../src/hooks/useUserLocation';
 import { getServicios, type Servicio } from '../../src/api/servicio';
 import { getCategorias, type Categoria } from '../../src/api/categoria';
 import { getMunicipios, type Municipio } from '../../src/api/municipio';
 import { getResenas, type Resena } from '../../src/api/resena';
+import { getMunicipioCoords } from '../../src/utils/municipioCoords';
 
 const MINIMO_RESENAS_PARA_DESTACAR = 3;
+const ZOOM_MUNICIPIO = 13;
+const ZOOM_UBICACION = 15;
 
 export default function Mapa() {
   const [servicios, setServicios] = useState<Servicio[]>([]);
@@ -19,6 +22,7 @@ export default function Mapa() {
   const [municipios, setMunicipios] = useState<Municipio[]>([]);
   const [resenas, setResenas] = useState<Resena[]>([]);
   const [seleccionado, setSeleccionado] = useState<Servicio | null>(null);
+  const [ubicacionUsuario, setUbicacionUsuario] = useState<UserLocation | null>(null);
   const [filtros, setFiltros] = useState<MapFiltersValue>({
     categoriaId: null,
     municipioId: null,
@@ -87,10 +91,24 @@ export default function Mapa() {
     return mejorId;
   }, [resenas]);
 
+  // Al elegir un municipio en los filtros, el mapa se recentra automáticamente
+  // en ese municipio (Manizales -> Manizales, Neira -> Neira, etc.)
+  useEffect(() => {
+    if (!filtros.municipioId) return;
+
+    const municipio = municipios.find((m) => m._id === filtros.municipioId);
+    const coords = getMunicipioCoords(municipio?.nombre);
+
+    if (coords) {
+      mapRef.current?.centerOn(coords.lat, coords.lng, ZOOM_MUNICIPIO);
+    }
+  }, [filtros.municipioId, municipios]);
+
   async function handleLocate() {
     const ubicacion = await obtenerUbicacion();
     if (ubicacion) {
-      mapRef.current?.centerOn(ubicacion.lat, ubicacion.lng);
+      setUbicacionUsuario(ubicacion);
+      mapRef.current?.centerOn(ubicacion.lat, ubicacion.lng, ZOOM_UBICACION);
     }
   }
 
@@ -104,6 +122,7 @@ export default function Mapa() {
           servicios={serviciosFiltrados}
           categorias={categorias}
           destacadoId={destacadoId}
+          ubicacionUsuario={ubicacionUsuario}
           onSelectServicio={setSeleccionado}
         />
 

@@ -6,10 +6,11 @@ import type { Servicio } from '../api/servicio';
 import type { Categoria } from '../api/categoria';
 import { getCategoriaVisual, DESTACADO_VISUAL } from '../utils/categoriaVisual';
 import { buildPinIcon } from '../utils/mapMarkerIcon';
+import { PERSONA_PIN_ICON, PERSONA_PIN_SIZE } from '../utils/personaPinIcon';
 import { MAP_STYLE } from '../utils/mapStyle';
 
 export interface ServiciosMapHandle {
-  centerOn: (lat: number, lng: number) => void;
+  centerOn: (lat: number, lng: number, zoom?: number) => void;
 }
 
 interface Props {
@@ -17,6 +18,8 @@ interface Props {
   categorias: Categoria[];
   destacadoId?: string | null;
   onSelectServicio: (servicio: Servicio) => void;
+  /** Ubicación actual del usuario (si se obtuvo), para pintar el pin especial */
+  ubicacionUsuario?: { lat: number; lng: number } | null;
   centerLat?: number;
   centerLng?: number;
 }
@@ -32,9 +35,16 @@ interface MarkerData {
   lng: number;
   nombre: string;
   icon: string;
+  iconWidth: number;
+  iconHeight: number;
 }
 
-function buildHtml(markers: MarkerData[], centerLat: number, centerLng: number) {
+function buildHtml(
+  markers: MarkerData[],
+  userMarker: MarkerData | null,
+  centerLat: number,
+  centerLng: number,
+) {
   return `
 <!DOCTYPE html>
 <html>
@@ -48,8 +58,22 @@ function buildHtml(markers: MarkerData[], centerLat: number, centerLng: number) 
     <div id="map"></div>
     <script>
       const markersData = ${JSON.stringify(markers)};
+      const userMarkerData = ${JSON.stringify(userMarker)};
       const mapStyle = ${JSON.stringify(MAP_STYLE)};
       let map;
+
+      function addMarker(m) {
+        return new google.maps.Marker({
+          position: { lat: m.lat, lng: m.lng },
+          map: map,
+          title: m.nombre,
+          icon: {
+            url: m.icon,
+            scaledSize: new google.maps.Size(m.iconWidth, m.iconHeight),
+            anchor: new google.maps.Point(m.iconWidth / 2, m.iconHeight),
+          },
+        });
+      }
 
       function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
@@ -61,27 +85,22 @@ function buildHtml(markers: MarkerData[], centerLat: number, centerLng: number) 
         });
 
         markersData.forEach(function (m) {
-          const marker = new google.maps.Marker({
-            position: { lat: m.lat, lng: m.lng },
-            map: map,
-            title: m.nombre,
-            icon: {
-              url: m.icon,
-              scaledSize: new google.maps.Size(36, 46),
-              anchor: new google.maps.Point(18, 46),
-            },
-          });
-
+          const marker = addMarker(m);
           marker.addListener('click', function () {
             window.ReactNativeWebView.postMessage(JSON.stringify({ id: m.id }));
           });
         });
 
+        // El pin de "mi ubicación" no es seleccionable, solo informativo
+        if (userMarkerData) {
+          addMarker(userMarkerData);
+        }
+
         // Expuesto para que RN pueda recentrar el mapa vía injectJavaScript
-        // (por ejemplo, desde el botón de "mi ubicación")
-        window.centerMap = function (lat, lng) {
+        // (desde el botón de "mi ubicación" o al elegir un municipio)
+        window.centerMap = function (lat, lng, zoom) {
           map.panTo({ lat: lat, lng: lng });
-          map.setZoom(15);
+          map.setZoom(zoom || 15);
         };
       }
     </script>
@@ -91,7 +110,15 @@ function buildHtml(markers: MarkerData[], centerLat: number, centerLng: number) 
 }
 
 function ServiciosMap(
-  { servicios, categorias, destacadoId, onSelectServicio, centerLat, centerLng }: Props,
+  {
+    servicios,
+    categorias,
+    destacadoId,
+    onSelectServicio,
+    ubicacionUsuario,
+    centerLat,
+    centerLng,
+  }: Props,
   ref: Ref<ServiciosMapHandle>,
 ) {
   const webviewRef = useRef<WebView>(null);
@@ -115,23 +142,38 @@ function ServiciosMap(
           lng: s.longitud,
           nombre: s.nombre,
           icon: buildPinIcon(visual.emoji, visual.color),
+          iconWidth: 36,
+          iconHeight: 46,
         };
       }),
     [servicios, categoriaPorId, destacadoId],
   );
 
+  const userMarker: MarkerData | null = useMemo(() => {
+    if (!ubicacionUsuario) return null;
+    return {
+      id: '__usuario__',
+      lat: ubicacionUsuario.lat,
+      lng: ubicacionUsuario.lng,
+      nombre: 'Tu ubicación',
+      icon: PERSONA_PIN_ICON,
+      iconWidth: PERSONA_PIN_SIZE.width,
+      iconHeight: PERSONA_PIN_SIZE.height,
+    };
+  }, [ubicacionUsuario]);
+
   // El HTML solo se reconstruye si cambian los marcadores o el centro inicial,
   // para no reiniciar el mapa (y perder el zoom/posición) en cada render.
   const html = useMemo(
-    () => buildHtml(markers, centerLat ?? DEFAULT_LAT, centerLng ?? DEFAULT_LNG),
+    () => buildHtml(markers, userMarker, centerLat ?? DEFAULT_LAT, centerLng ?? DEFAULT_LNG),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(markers), centerLat, centerLng],
+    [JSON.stringify(markers), JSON.stringify(userMarker), centerLat, centerLng],
   );
 
   useImperativeHandle(ref, () => ({
-    centerOn: (lat, lng) => {
+    centerOn: (lat, lng, zoom) => {
       webviewRef.current?.injectJavaScript(
-        `if (window.centerMap) { window.centerMap(${lat}, ${lng}); } true;`,
+        `if (window.centerMap) { window.centerMap(${lat}, ${lng}, ${zoom ?? 15}); } true;`,
       );
     },
   }));

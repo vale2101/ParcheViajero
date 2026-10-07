@@ -5,10 +5,11 @@ import type { Servicio } from '../api/servicio';
 import type { Categoria } from '../api/categoria';
 import { getCategoriaVisual, DESTACADO_VISUAL } from '../utils/categoriaVisual';
 import { buildPinIcon } from '../utils/mapMarkerIcon';
+import { PERSONA_PIN_ICON, PERSONA_PIN_SIZE } from '../utils/personaPinIcon';
 import { MAP_STYLE } from '../utils/mapStyle';
 
 export interface ServiciosMapHandle {
-  centerOn: (lat: number, lng: number) => void;
+  centerOn: (lat: number, lng: number, zoom?: number) => void;
 }
 
 interface Props {
@@ -16,6 +17,8 @@ interface Props {
   categorias: Categoria[];
   destacadoId?: string | null;
   onSelectServicio: (servicio: Servicio) => void;
+  /** Ubicación actual del usuario (si se obtuvo), para pintar el pin especial */
+  ubicacionUsuario?: { lat: number; lng: number } | null;
   centerLat?: number;
   centerLng?: number;
 }
@@ -44,12 +47,21 @@ function loadGoogleMapsScript(): Promise<void> {
 }
 
 function ServiciosMap(
-  { servicios, categorias, destacadoId, onSelectServicio, centerLat, centerLng }: Props,
+  {
+    servicios,
+    categorias,
+    destacadoId,
+    onSelectServicio,
+    ubicacionUsuario,
+    centerLat,
+    centerLng,
+  }: Props,
   ref: Ref<ServiciosMapHandle>,
 ) {
   const mapDivRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
+  const userMarkerRef = useRef<any>(null);
   const onSelectRef = useRef(onSelectServicio);
   onSelectRef.current = onSelectServicio;
 
@@ -120,11 +132,36 @@ function ServiciosMap(
     });
   }, [ready, servicios, categoriaPorId, destacadoId]);
 
+  // Pin especial de "mi ubicación" (no seleccionable, solo informativo)
+  useEffect(() => {
+    if (!ready || !mapRef.current) return;
+
+    const google = (window as any).google;
+
+    if (userMarkerRef.current) {
+      userMarkerRef.current.setMap(null);
+      userMarkerRef.current = null;
+    }
+
+    if (ubicacionUsuario) {
+      userMarkerRef.current = new google.maps.Marker({
+        position: { lat: ubicacionUsuario.lat, lng: ubicacionUsuario.lng },
+        map: mapRef.current,
+        title: 'Tu ubicación',
+        icon: {
+          url: PERSONA_PIN_ICON,
+          scaledSize: new google.maps.Size(PERSONA_PIN_SIZE.width, PERSONA_PIN_SIZE.height),
+          anchor: new google.maps.Point(PERSONA_PIN_SIZE.width / 2, PERSONA_PIN_SIZE.height),
+        },
+      });
+    }
+  }, [ready, ubicacionUsuario]);
+
   useImperativeHandle(ref, () => ({
-    centerOn: (lat, lng) => {
+    centerOn: (lat, lng, zoom) => {
       if (!mapRef.current) return;
       mapRef.current.panTo({ lat, lng });
-      mapRef.current.setZoom(15);
+      mapRef.current.setZoom(zoom ?? 15);
     },
   }));
 

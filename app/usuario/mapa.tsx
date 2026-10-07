@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import ScreenHeader from '../../src/components/ScreenHeader';
 import ServiciosMap, { type ServiciosMapHandle } from '../../src/components/ServiciosMap';
 import MapFilters, { type MapFiltersValue } from '../../src/components/MapFilters';
@@ -11,6 +11,7 @@ import { getCategorias, type Categoria } from '../../src/api/categoria';
 import { getMunicipios, type Municipio } from '../../src/api/municipio';
 import { getResenas, type Resena } from '../../src/api/resena';
 import { getMunicipioCoords } from '../../src/utils/municipioCoords';
+import { styles } from '../../src/styles/UsuarioMapa.styles';
 
 const MINIMO_RESENAS_PARA_DESTACAR = 3;
 const ZOOM_MUNICIPIO = 13;
@@ -144,8 +145,3 @@ export default function Mapa() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#FDFBF6' },
-  mapWrapper: { flex: 1, position: 'relative' },
-});

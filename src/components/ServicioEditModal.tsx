@@ -4,7 +4,6 @@ import {
   Modal,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from 'react-native';
@@ -15,6 +14,7 @@ import PickerField, { type PickerOption } from './PickerField';
 import { getCategorias } from '../api/categoria';
 import { getMunicipios } from '../api/municipio';
 import { deleteServicio, updateServicio, type Servicio } from '../api/servicio';
+import { styles } from '../styles/ServicioEditModal.styles';
 
 interface Props {
   visible: boolean;
@@ -273,51 +273,3 @@ export default function ServicioEditModal({
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'flex-end',
-  },
-  sheet: {
-    backgroundColor: '#FAF4E4',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    maxHeight: '92%',
-    paddingTop: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 24,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E8D9B8',
-  },
-  title: { fontSize: 18, fontWeight: '700', color: '#0147B9' },
-  closeText: { fontSize: 18, color: '#a3a3a3' },
-  form: { padding: 24, gap: 16 },
-  errorText: { fontSize: 12, fontWeight: '500', color: '#dc2626' },
-  errorBox: {
-    borderRadius: 12,
-    backgroundColor: '#FAF4E4',
-    borderWidth: 2,
-    borderColor: '#ef4444',
-    padding: 12,
-    textAlign: 'center',
-    fontSize: 14,
-    color: '#dc2626',
-  },
-  confirmBox: {
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#ef4444',
-    padding: 16,
-    gap: 12,
-  },
-  confirmText: { fontSize: 13, color: '#171717' },
-  confirmRow: { flexDirection: 'row', gap: 10 },
-  confirmButton: { flex: 1 },
-});

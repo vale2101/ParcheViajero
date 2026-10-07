@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 import StarRating from './StarRating';
 import { useAuth } from '../context/AuthContext';
 import { deleteResena, getResenas, updateResena, type Resena } from '../api/resena';
 import { getServicios, type Servicio } from '../api/servicio';
+import { styles } from '../styles/MisResenasSection.styles';
 
 export default function MisResenasSection() {
   const { user } = useAuth();
@@ -186,53 +187,3 @@ export default function MisResenasSection() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { gap: 10 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0147B9' },
-  placeholder: { color: '#a3a3a3', fontSize: 14 },
-  emptyBox: {
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#E8D9B8',
-    backgroundColor: '#FAF4E4',
-    padding: 20,
-    alignItems: 'center',
-  },
-  list: { gap: 12 },
-  card: {
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#E8D9B8',
-    backgroundColor: '#FAF4E4',
-    padding: 14,
-    gap: 6,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  servicioNombre: { fontSize: 15, fontWeight: '600', color: '#0147B9', flexShrink: 1 },
-  actionsRow: { flexDirection: 'row', gap: 14 },
-  editText: { fontSize: 12, fontWeight: '600', color: '#0147B9' },
-  deleteText: { fontSize: 12, fontWeight: '600', color: '#dc2626' },
-  comentario: { fontSize: 14, color: '#171717' },
-  fecha: { fontSize: 11, color: '#a3a3a3' },
-  editBox: { gap: 10 },
-  textarea: {
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#E8D9B8',
-    backgroundColor: '#FAF4E4',
-    padding: 10,
-    fontSize: 14,
-    color: '#171717',
-    textAlignVertical: 'top',
-    minHeight: 70,
-  },
-  errorTextInline: { fontSize: 12, fontWeight: '500', color: '#dc2626' },
-  editActionsRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 16 },
-  cancelText: { fontSize: 13, fontWeight: '600', color: '#a3a3a3' },
-  saveText: { fontSize: 13, fontWeight: '700', color: '#0147B9' },
-});

@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { styles } from '../styles/StarRating.styles';
 
 interface Props {
   value: number;
@@ -33,9 +34,3 @@ export default function StarRating({ value, onChange, readonly, size = 22 }: Pro
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: { flexDirection: 'row', gap: 4 },
-  star: { color: '#E8D9B8' },
-  starFilled: { color: '#FEBA03' },
-});

@@ -1,5 +1,6 @@
-import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
+import { ActivityIndicator, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { styles } from '../styles/LocateButton.styles';
 
 interface Props {
   onPress: () => void;
@@ -17,22 +18,3 @@ export default function LocateButton({ onPress, loading }: Props) {
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  button: {
-    position: 'absolute',
-    bottom: 24,
-    right: 20,
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#FDFBF6',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-});

@@ -1,10 +1,11 @@
 import { Link } from 'expo-router';
 import { useForm } from 'react-hook-form';
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { Image, Text, View } from 'react-native';
 import Button from '../src/components/Button';
 import Field from '../src/components/Field';
 import KeyboardAwareScreen from '../src/components/KeyboardAwareScreen';
 import { useAuth } from '../src/context/AuthContext';
+import { styles } from '../src/styles/Login.styles';
 
 type LoginForm = { email: string; contrasena: string };
 
@@ -73,54 +74,3 @@ export default function Login() {
     </KeyboardAwareScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: '#e5e5e5',
-  },
-  center: {
-    flexGrow: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
-  },
-  card: {
-    width: '100%',
-    maxWidth: 384,
-    gap: 20,
-    borderRadius: 24,
-    backgroundColor: '#FDFBF6',
-    padding: 32,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
-  },
-  header: {
-    alignItems: 'center',
-    gap: 8,
-  },
-  logo: {
-    width: '100%',
-    height: 120,
-  },
-  subtitle: {
-    color: '#a3a3a3',
-  },
-  errorBox: {
-    borderRadius: 12,
-    backgroundColor: '#FDFBF6',
-    borderWidth: 2,
-    borderColor: '#ef4444',
-    padding: 12,
-    textAlign: 'center',
-    fontSize: 14,
-    color: '#dc2626',
-  },
-  link: {
-    textAlign: 'center',
-    fontWeight: '500',
-    color: '#1E3A8A',
-  },
-});

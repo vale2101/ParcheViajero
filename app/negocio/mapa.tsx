@@ -1,5 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import ScreenHeader from '../../src/components/ScreenHeader';
+import { styles } from '../../src/styles/NegocioMapa.styles';
 
 export default function Mapa() {
   return (
@@ -11,9 +12,3 @@ export default function Mapa() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#FDFBF6' },
-  content: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  placeholder: { color: '#a3a3a3', fontSize: 15 },
-});

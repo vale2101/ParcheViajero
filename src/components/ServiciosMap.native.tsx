@@ -1,6 +1,6 @@
 import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import type { Ref } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { View } from 'react-native';
 import WebView from 'react-native-webview';
 import type { Servicio } from '../api/servicio';
 import type { Categoria } from '../api/categoria';
@@ -8,6 +8,7 @@ import { getCategoriaVisual, DESTACADO_VISUAL } from '../utils/categoriaVisual';
 import { buildPinIcon } from '../utils/mapMarkerIcon';
 import { PERSONA_PIN_ICON, PERSONA_PIN_SIZE } from '../utils/personaPinIcon';
 import { MAP_STYLE } from '../utils/mapStyle';
+import { styles } from '../styles/ServiciosMapNative.styles';
 
 export interface ServiciosMapHandle {
   centerOn: (lat: number, lng: number, zoom?: number) => void;
@@ -203,8 +204,3 @@ function ServiciosMap(
 }
 
 export default forwardRef(ServiciosMap);
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-  map: { flex: 1 },
-});

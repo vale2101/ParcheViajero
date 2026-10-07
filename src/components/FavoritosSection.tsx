@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import { styles } from '../styles/FavoritosSection.styles';
 
 export default function FavoritosSection() {
   return (
@@ -10,17 +11,3 @@ export default function FavoritosSection() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { gap: 10 },
-  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0147B9' },
-  emptyBox: {
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#E8D9B8',
-    backgroundColor: '#FAF4E4',
-    padding: 20,
-    alignItems: 'center',
-  },
-  placeholder: { color: '#a3a3a3', fontSize: 14 },
-});

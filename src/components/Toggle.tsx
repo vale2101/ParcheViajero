@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import { styles } from '../styles/Toggle.styles';
 
 interface ToggleOption<T extends string> {
   value: T;
@@ -28,30 +29,3 @@ export default function Toggle<T extends string>({ value, onChange, options }: P
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#E8D9B8',
-    overflow: 'hidden',
-  },
-  option: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 12,
-    backgroundColor: '#FAF4E4',
-  },
-  optionActive: {
-    backgroundColor: '#0147B9',
-  },
-  text: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#0147B9',
-  },
-  textActive: {
-    color: '#FEBA03',
-  },
-});

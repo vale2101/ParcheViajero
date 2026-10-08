@@ -1,5 +1,5 @@
-import PerfilNegocioScreen from '../../src/screens/Negocio/PerfilNegocioScreen';
+import PerfilNegocioScreen from '../../src/screens/PerfilNegocioScreen';
 
-export default function Perfil() {
+export default function Route() {
   return <PerfilNegocioScreen />;
 }

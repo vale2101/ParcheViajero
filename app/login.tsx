@@ -1,5 +1,5 @@
-import LoginScreen from '../src/screens/Auth/LoginScreen';
+import LoginScreen from '../src/screens/LoginScreen';
 
-export default function Login() {
+export default function Route() {
   return <LoginScreen />;
 }

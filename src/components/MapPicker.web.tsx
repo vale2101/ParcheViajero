@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
-import { styles } from '../styles/MapPickerWeb.styles';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { useCoordenadas } from '../hooks/useCoordenadas';
 
 interface Props {
   latitud: number | null;
@@ -40,8 +40,11 @@ export default function MapPicker({ latitud, longitud, onChange }: Props) {
   const initialLat = latitud ?? DEFAULT_LAT;
   const initialLng = longitud ?? DEFAULT_LNG;
 
-  const [latText, setLatText] = useState(latitud ? String(latitud) : '');
-  const [lngText, setLngText] = useState(longitud ? String(longitud) : '');
+  const { latText, lngText, setLatText, setLngText, setDesdeMapa, leerManual } = useCoordenadas(
+    latitud,
+    longitud,
+    onChange,
+  );
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -66,21 +69,14 @@ export default function MapPicker({ latitud, longitud, onChange }: Props) {
         draggable: true,
       });
 
-      function updatePosition(pos: any) {
-        const lat = pos.lat();
-        const lng = pos.lng();
-        setLatText(String(lat));
-        setLngText(String(lng));
-        onChange(lat, lng);
-      }
-
       map.addListener('click', (e: any) => {
         marker.setPosition(e.latLng);
-        updatePosition(e.latLng);
+        setDesdeMapa(e.latLng.lat(), e.latLng.lng());
       });
 
       marker.addListener('dragend', () => {
-        updatePosition(marker.getPosition());
+        const pos = marker.getPosition();
+        setDesdeMapa(pos.lat(), pos.lng());
       });
 
       mapRef.current = map;
@@ -91,21 +87,17 @@ export default function MapPicker({ latitud, longitud, onChange }: Props) {
     return () => {
       cancelled = true;
     };
-    
+    // Solo se inicializa una vez
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function applyManualCoords() {
-    const lat = parseFloat(latText.replace(',', '.'));
-    const lng = parseFloat(lngText.replace(',', '.'));
-
-    if (Number.isNaN(lat) || Number.isNaN(lng)) return;
-
-    onChange(lat, lng);
+    const coords = leerManual();
+    if (!coords) return;
 
     if (mapRef.current && markerRef.current) {
-      const pos = { lat, lng };
-      markerRef.current.setPosition(pos);
-      mapRef.current.panTo(pos);
+      markerRef.current.setPosition(coords);
+      mapRef.current.panTo(coords);
     }
   }
 
@@ -144,3 +136,31 @@ export default function MapPicker({ latitud, longitud, onChange }: Props) {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { gap: 6 },
+  label: { fontSize: 14, fontWeight: '600', color: '#1E3A8A' },
+  mapWrapper: {
+    height: 220,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e5e5e5',
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  map: { width: '100%', height: '100%' },
+  loadingText: { position: 'absolute', color: '#a3a3a3', fontSize: 13 },
+  hint: { fontSize: 12, color: '#a3a3a3' },
+  row: { flexDirection: 'row', gap: 8 },
+  input: {
+    flex: 1,
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e5e5e5',
+    backgroundColor: '#FDFBF6',
+    padding: 12,
+    fontSize: 14,
+    color: '#171717',
+  },
+});

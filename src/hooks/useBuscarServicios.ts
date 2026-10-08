@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { getServicios, type Servicio } from '../api/servicio';
 
+// Busca servicios por nombre (para poder dejarles una reseña)
 export function useBuscarServicios() {
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [query, setQuery] = useState('');
@@ -11,11 +12,11 @@ export function useBuscarServicios() {
       .catch(() => setServicios([]));
   }, []);
 
-  const busquedaActiva = query.trim().length > 0;
-
-  const resultados = busquedaActiva
-    ? servicios.filter((s) => s.nombre.toLowerCase().includes(query.trim().toLowerCase()))
+  const texto = query.trim().toLowerCase();
+  const hayBusqueda = texto.length > 0;
+  const resultados = hayBusqueda
+    ? servicios.filter((s) => s.nombre.toLowerCase().includes(texto))
     : [];
 
-  return { query, setQuery, busquedaActiva, resultados };
+  return { query, setQuery, hayBusqueda, resultados };
 }

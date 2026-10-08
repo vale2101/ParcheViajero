@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { getServicios, type Servicio } from '../api/servicio';
 
+// Trae solo los servicios que publicó el negocio que inició sesión
 export function useServiciosNegocio() {
   const { user } = useAuth();
   const [servicios, setServicios] = useState<Servicio[]>([]);
@@ -11,6 +12,7 @@ export function useServiciosNegocio() {
       const { data } = await getServicios();
       setServicios(data.filter((s) => s.usuario_id === user?._id));
     } catch {
+      setServicios([]);
     }
   }, [user?._id]);
 

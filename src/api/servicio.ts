@@ -13,6 +13,7 @@ export interface Servicio {
   telefono?: string;
   horario_atencion?: string;
   precio?: number;
+  servicios?: string[];
   fecha_creacion?: string;
 }
 

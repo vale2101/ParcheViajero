@@ -1,5 +1,5 @@
-import PerfilScreen from '../../src/screens/Usuario/PerfilScreen';
+import PerfilUsuarioScreen from '../../src/screens/PerfilUsuarioScreen';
 
-export default function Perfil() {
-  return <PerfilScreen />;
+export default function Route() {
+  return <PerfilUsuarioScreen />;
 }

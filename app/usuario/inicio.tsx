@@ -1,5 +1,5 @@
-import InicioScreen from '../../src/screens/Usuario/InicioScreen';
+import InicioScreen from '../../src/screens/InicioScreen';
 
-export default function Inicio() {
+export default function Route() {
   return <InicioScreen />;
 }

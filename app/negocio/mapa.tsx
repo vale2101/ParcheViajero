@@ -1,5 +1,5 @@
-import MapaNegocioScreen from '../../src/screens/Negocio/MapaNegocioScreen';
+import MapaNegocioScreen from '../../src/screens/MapaNegocioScreen';
 
-export default function Mapa() {
+export default function Route() {
   return <MapaNegocioScreen />;
 }

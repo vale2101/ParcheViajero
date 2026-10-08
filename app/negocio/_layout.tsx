@@ -1,7 +1,5 @@
-
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-
 
 export default function NegocioTabsLayout() {
   return (
@@ -28,6 +26,15 @@ export default function NegocioTabsLayout() {
           title: 'Servicios',
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="storefront-outline" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="resenas"
+        options={{
+          title: 'Reseñas',
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="star-outline" size={size} color={color} />
           ),
         }}
       />

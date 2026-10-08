@@ -1,14 +1,5 @@
-import { Text, View } from 'react-native';
-import ScreenHeader from '../../src/components/ScreenHeader';
-import { styles } from '../../src/styles/UsuarioInicio.styles';
+import InicioScreen from '../../src/screens/Usuario/InicioScreen';
 
 export default function Inicio() {
-  return (
-    <View style={styles.screen}>
-      <ScreenHeader />
-      <View style={styles.content}>
-        <Text style={styles.placeholder}>Feed / mapa / perfil</Text>
-      </View>
-    </View>
-  );
+  return <InicioScreen />;
 }

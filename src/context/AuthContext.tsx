@@ -56,7 +56,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     telefono?: string,
   ): Promise<void> {
     await registerRequest(nombre, email, contrasena, tipo_usuario, telefono);
-    // El backend no devuelve token al registrar, así que encadenamos el login
     await login(email, contrasena);
   }
 

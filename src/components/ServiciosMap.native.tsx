@@ -19,7 +19,6 @@ interface Props {
   categorias: Categoria[];
   destacadoId?: string | null;
   onSelectServicio: (servicio: Servicio) => void;
-  /** Ubicación actual del usuario (si se obtuvo), para pintar el pin especial */
   ubicacionUsuario?: { lat: number; lng: number } | null;
   centerLat?: number;
   centerLng?: number;

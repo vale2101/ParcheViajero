@@ -18,7 +18,6 @@ interface Props {
   categorias: Categoria[];
   destacadoId?: string | null;
   onSelectServicio: (servicio: Servicio) => void;
-  /** Ubicación actual del usuario (si se obtuvo), para pintar el pin especial */
   ubicacionUsuario?: { lat: number; lng: number } | null;
   centerLat?: number;
   centerLng?: number;
@@ -73,7 +72,7 @@ function ServiciosMap(
     [categorias],
   );
 
-  // Inicializa el mapa (con el estilo de marca) una sola vez
+
   useEffect(() => {
     let cancelled = false;
 
@@ -97,12 +96,10 @@ function ServiciosMap(
     return () => {
       cancelled = true;
     };
-    // Solo se inicializa una vez
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
-  // Sincroniza los marcadores (con su ícono por categoría) cada vez que
-  // cambian los servicios visibles, la categoría destacada, etc.
+
   useEffect(() => {
     if (!ready || !mapRef.current) return;
 
@@ -132,8 +129,6 @@ function ServiciosMap(
       markersRef.current.push(marker);
     });
   }, [ready, servicios, categoriaPorId, destacadoId]);
-
-  // Pin especial de "mi ubicación" (no seleccionable, solo informativo)
   useEffect(() => {
     if (!ready || !mapRef.current) return;
 

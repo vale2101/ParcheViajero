@@ -31,7 +31,6 @@ export const reglaConfirmacion = (obtenerContrasena: () => string) => ({
 
 export const MENSAJE_CALIFICACION_REQUERIDA = 'Selecciona una calificación de 1 a 5 estrellas';
 
-/** Devuelve el mensaje de error si no hay calificación seleccionada, o null si es válida. */
 export function validarCalificacion(calificacion: number): string | null {
   return calificacion < 1 ? MENSAJE_CALIFICACION_REQUERIDA : null;
 }
@@ -49,7 +48,6 @@ interface Selecciones {
   lng: number | null;
 }
 
-/** Valida categoría, municipio y ubicación del formulario de servicio. Objeto vacío = todo válido. */
 export function validarSelecciones({
   categoriaId,
   municipioId,

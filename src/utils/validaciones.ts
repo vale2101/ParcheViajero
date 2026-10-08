@@ -31,6 +31,34 @@ export const reglaConfirmacion = (obtenerContrasena: () => string) => ({
 
 export const MENSAJE_CALIFICACION_REQUERIDA = 'Selecciona una calificación de 1 a 5 estrellas';
 
+/** Devuelve el mensaje de error si no hay calificación seleccionada, o null si es válida. */
 export function validarCalificacion(calificacion: number): string | null {
   return calificacion < 1 ? MENSAJE_CALIFICACION_REQUERIDA : null;
+}
+
+export interface ErroresSelecciones {
+  categoria?: string;
+  municipio?: string;
+  ubicacion?: string;
+}
+
+interface Selecciones {
+  categoriaId: string | null;
+  municipioId: string | null;
+  lat: number | null;
+  lng: number | null;
+}
+
+/** Valida categoría, municipio y ubicación del formulario de servicio. Objeto vacío = todo válido. */
+export function validarSelecciones({
+  categoriaId,
+  municipioId,
+  lat,
+  lng,
+}: Selecciones): ErroresSelecciones {
+  const errores: ErroresSelecciones = {};
+  if (!categoriaId) errores.categoria = 'Selecciona una categoría';
+  if (!municipioId) errores.municipio = 'Selecciona un municipio';
+  if (lat === null || lng === null) errores.ubicacion = 'Selecciona la ubicación en el mapa';
+  return errores;
 }

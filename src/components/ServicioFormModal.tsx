@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-import { Controller, useForm } from 'react-hook-form';
 import {
   Modal,
   Pressable,
@@ -10,10 +8,11 @@ import {
 import Button from './Button';
 import Field from './Field';
 import MapPicker from './MapPicker';
-import PickerField, { type PickerOption } from './PickerField';
-import { getCategorias } from '../api/categoria';
-import { getMunicipios } from '../api/municipio';
-import { createServicio } from '../api/servicio';
+import PickerField from './PickerField';
+import { useCatalogos } from '../hooks/useCatalogos';
+import { useServicioCreateForm } from '../hooks/useServicioCreateForm';
+import { reglaNombre, validarSelecciones } from '../utils/validaciones';
+import type { ServicioForm } from '../types';
 import { styles } from '../styles/ServicioFormModal.styles';
 
 interface Props {
@@ -22,103 +21,47 @@ interface Props {
   onCreated: () => void;
 }
 
-type ServicioForm = {
-  nombre: string;
-  descripcion: string;
-  direccion: string;
-  telefono: string;
-  horario_atencion: string;
-  precio: string;
-};
-
 export default function ServicioFormModal({ visible, onClose, onCreated }: Props) {
-  const [categorias, setCategorias] = useState<PickerOption[]>([]);
-  const [municipios, setMunicipios] = useState<PickerOption[]>([]);
-  const [categoriaId, setCategoriaId] = useState<string | null>(null);
-  const [municipioId, setMunicipioId] = useState<string | null>(null);
-  const [coords, setCoords] = useState<{ lat: number | null; lng: number | null }>({
-    lat: null,
-    lng: null,
-  });
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [pickerErrors, setPickerErrors] = useState<{ categoria?: string; municipio?: string; ubicacion?: string }>({});
+  const { categorias, municipios } = useCatalogos(visible);
 
-  const { control, handleSubmit, reset, formState } = useForm<ServicioForm>({
-    defaultValues: {
-      nombre: '',
-      descripcion: '',
-      direccion: '',
-      telefono: '',
-      horario_atencion: '',
-      precio: '',
-    },
-  });
-
-  useEffect(() => {
-    if (!visible) return;
-
-    getCategorias().then(({ data }) =>
-      setCategorias(data.map((c) => ({ id: c._id, nombre: c.nombre }))),
-    );
-    getMunicipios().then(({ data }) =>
-      setMunicipios(data.map((m) => ({ id: m._id, nombre: m.nombre }))),
-    );
-  }, [visible]);
-
-  function resetAll() {
-    reset();
-    setCategoriaId(null);
-    setMunicipioId(null);
-    setCoords({ lat: null, lng: null });
-    setSubmitError(null);
-    setPickerErrors({});
-  }
-
-  function handleClose() {
-    resetAll();
-    onClose();
-  }
+  const {
+    control,
+    handleSubmit,
+    isSubmitting,
+    categoriaId,
+    setCategoriaId,
+    municipioId,
+    setMunicipioId,
+    coords,
+    setCoords,
+    submitError,
+    pickerErrors,
+    setPickerErrors,
+    crear,
+    cerrar,
+  } = useServicioCreateForm({ onCreated, onClose });
 
   const submit = async (values: ServicioForm) => {
-    const errors: typeof pickerErrors = {};
-    if (!categoriaId) errors.categoria = 'Selecciona una categoría';
-    if (!municipioId) errors.municipio = 'Selecciona un municipio';
-    if (coords.lat === null || coords.lng === null) errors.ubicacion = 'Selecciona la ubicación en el mapa';
+    const errores = validarSelecciones({
+      categoriaId,
+      municipioId,
+      lat: coords.lat,
+      lng: coords.lng,
+    });
 
-    setPickerErrors(errors);
-    if (Object.keys(errors).length > 0) return;
+    setPickerErrors(errores);
+    if (Object.keys(errores).length > 0) return;
 
-    setSubmitError(null);
-
-    try {
-      await createServicio({
-        categoria_id: categoriaId!,
-        municipio_id: municipioId!,
-        nombre: values.nombre,
-        descripcion: values.descripcion || undefined,
-        direccion: values.direccion || undefined,
-        latitud: coords.lat!,
-        longitud: coords.lng!,
-        telefono: values.telefono || undefined,
-        horario_atencion: values.horario_atencion || undefined,
-        precio: values.precio ? Number(values.precio) : undefined,
-      });
-
-      resetAll();
-      onCreated();
-      onClose();
-    } catch (error) {
-      setSubmitError((error as Error).message);
-    }
+    await crear(values);
   };
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={handleClose}>
+    <Modal visible={visible} animationType="slide" transparent onRequestClose={cerrar}>
       <View style={styles.backdrop}>
         <View style={styles.sheet}>
           <View style={styles.header}>
             <Text style={styles.title}>Añadir servicio</Text>
-            <Pressable onPress={handleClose} hitSlop={8}>
+            <Pressable onPress={cerrar} hitSlop={8}>
               <Text style={styles.closeText}>✕</Text>
             </Pressable>
           </View>
@@ -129,10 +72,7 @@ export default function ServicioFormModal({ visible, onClose, onCreated }: Props
               name="nombre"
               label="Nombre"
               placeholder="Ej. Café La Cima"
-              rules={{
-                required: 'El nombre es obligatorio',
-                minLength: { value: 3, message: 'Mínimo 3 caracteres' },
-              }}
+              rules={reglaNombre}
             />
 
             <PickerField
@@ -197,9 +137,9 @@ export default function ServicioFormModal({ visible, onClose, onCreated }: Props
             {!!submitError && <Text style={styles.errorBox}>{submitError}</Text>}
 
             <Button
-              text={formState.isSubmitting ? 'Guardando…' : 'Guardar servicio'}
+              text={isSubmitting ? 'Guardando…' : 'Guardar servicio'}
               onPress={handleSubmit(submit)}
-              disabled={formState.isSubmitting}
+              disabled={isSubmitting}
             />
           </ScrollView>
         </View>

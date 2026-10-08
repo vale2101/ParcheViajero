@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 import WebView from 'react-native-webview';
-import { useCoordenadas } from '../hooks/useCoordenadas';
+import { styles } from '../styles/MapPickerNative.styles';
 
 interface Props {
   latitud: number | null;
@@ -78,26 +78,27 @@ export default function MapPicker({ latitud, longitud, onChange }: Props) {
   const initialLng = longitud ?? DEFAULT_LNG;
 
   const [html] = useState(() => buildHtml(initialLat, initialLng));
-  const { latText, lngText, setLatText, setLngText, setDesdeMapa, leerManual } = useCoordenadas(
-    latitud,
-    longitud,
-    onChange,
-  );
+  const [latText, setLatText] = useState(latitud ? String(latitud) : '');
+  const [lngText, setLngText] = useState(longitud ? String(longitud) : '');
 
   function handleMessage(event: { nativeEvent: { data: string } }) {
     try {
       const { lat, lng } = JSON.parse(event.nativeEvent.data);
-      setDesdeMapa(lat, lng);
+      setLatText(String(lat));
+      setLngText(String(lng));
+      onChange(lat, lng);
     } catch {
-      // ignorar mensajes inválidos
     }
   }
 
   function applyManualCoords() {
-    const coords = leerManual();
-    if (!coords) return;
+    const lat = parseFloat(latText.replace(',', '.'));
+    const lng = parseFloat(lngText.replace(',', '.'));
 
-    webviewRef.current?.injectJavaScript(`moveMarker(${coords.lat}, ${coords.lng}); true;`);
+    if (Number.isNaN(lat) || Number.isNaN(lng)) return;
+
+    onChange(lat, lng);
+    webviewRef.current?.injectJavaScript(`moveMarker(${lat}, ${lng}); true;`);
   }
 
   return (
@@ -142,28 +143,3 @@ export default function MapPicker({ latitud, longitud, onChange }: Props) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { gap: 6 },
-  label: { fontSize: 14, fontWeight: '600', color: '#1E3A8A' },
-  mapWrapper: {
-    height: 220,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    overflow: 'hidden',
-  },
-  map: { flex: 1 },
-  hint: { fontSize: 12, color: '#a3a3a3' },
-  row: { flexDirection: 'row', gap: 8 },
-  input: {
-    flex: 1,
-    borderRadius: 12,
-    borderWidth: 2,
-    borderColor: '#e5e5e5',
-    backgroundColor: '#FDFBF6',
-    padding: 12,
-    fontSize: 14,
-    color: '#171717',
-  },
-});

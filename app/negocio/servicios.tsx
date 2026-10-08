@@ -1,5 +1,5 @@
-import ServiciosScreen from '../../src/screens/ServiciosScreen';
+import ServiciosScreen from '../../src/screens/Negocio/ServiciosScreen';
 
-export default function Route() {
+export default function Servicios() {
   return <ServiciosScreen />;
 }

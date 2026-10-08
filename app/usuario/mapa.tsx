@@ -1,5 +1,5 @@
-import MapaUsuarioScreen from '../../src/screens/MapaUsuarioScreen';
+import MapaScreen from '../../src/screens/Usuario/MapaScreen';
 
-export default function Route() {
-  return <MapaUsuarioScreen />;
+export default function Mapa() {
+  return <MapaScreen />;
 }

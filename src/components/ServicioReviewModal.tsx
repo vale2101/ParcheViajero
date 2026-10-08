@@ -1,4 +1,3 @@
-import { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
   Modal,
@@ -9,8 +8,8 @@ import {
 } from 'react-native';
 import Button from './Button';
 import StarRating from './StarRating';
-import { useAuth } from '../context/AuthContext';
-import { createResena, updateResena, getResenasByServicio, type Resena } from '../api/resena';
+import { useServicioResenas } from '../hooks/useServicioResenas';
+import { validarCalificacion } from '../utils/validaciones';
 import type { Servicio } from '../api/servicio';
 import { styles } from '../styles/ServicioReviewModal.styles';
 
@@ -21,75 +20,28 @@ interface Props {
 }
 
 export default function ServicioReviewModal({ visible, servicio, onClose }: Props) {
-  const { user } = useAuth();
-  const [resenas, setResenas] = useState<Resena[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [calificacion, setCalificacion] = useState(0);
-  const [comentario, setComentario] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [miResena, setMiResena] = useState<Resena | null>(null);
-
-  const cargarResenas = useCallback(async () => {
-    if (!servicio) return;
-    setLoading(true);
-    try {
-      const { data } = await getResenasByServicio(servicio._id);
-      setResenas(data);
-
-      // Si el usuario ya reseñó este servicio, precargamos su reseña para editarla
-      const propia = data.find((r) => r.usuario_id === user?._id) ?? null;
-      setMiResena(propia);
-      setCalificacion(propia?.calificacion ?? 0);
-      setComentario(propia?.comentario ?? '');
-    } catch {
-      setResenas([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [servicio, user?._id]);
-
-  useEffect(() => {
-    if (visible) {
-      setError(null);
-      cargarResenas();
-    }
-  }, [visible, cargarResenas]);
+  const {
+    usuarioId,
+    resenas,
+    loading,
+    calificacion,
+    setCalificacion,
+    comentario,
+    setComentario,
+    error,
+    setError,
+    submitting,
+    miResena,
+    enviar,
+  } = useServicioResenas(servicio, visible);
 
   async function handleSubmit() {
-    if (!servicio || !user) return;
-
-    if (calificacion < 1) {
-      setError('Selecciona una calificación de 1 a 5 estrellas');
+    const mensaje = validarCalificacion(calificacion);
+    if (mensaje) {
+      setError(mensaje);
       return;
     }
-
-    setError(null);
-    setSubmitting(true);
-
-    try {
-      if (miResena) {
-        // Editar reseña existente
-        await updateResena(miResena._id, {
-          calificacion,
-          comentario: comentario.trim() || undefined,
-        });
-      } else {
-        // Crear reseña nueva
-        await createResena({
-          usuario_id: user._id,
-          servicio_id: servicio._id,
-          calificacion,
-          comentario: comentario.trim() || undefined,
-        });
-      }
-
-      await cargarResenas();
-    } catch (err) {
-      setError((err as Error).message);
-    } finally {
-      setSubmitting(false);
-    }
+    await enviar();
   }
 
   if (!servicio) return null;
@@ -133,7 +85,7 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
                     {new Date(item.fecha).toLocaleDateString()}
                   </Text>
                 )}
-                {item.usuario_id === user?._id && (
+                {item.usuario_id === usuarioId && (
                   <Text style={styles.miEtiqueta}>Tu reseña</Text>
                 )}
               </View>

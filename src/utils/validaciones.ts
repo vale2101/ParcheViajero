@@ -28,3 +28,9 @@ export const reglaConfirmacion = (obtenerContrasena: () => string) => ({
   validate: (value: string) =>
     value === obtenerContrasena() || 'Las contraseñas no coinciden',
 });
+
+export const MENSAJE_CALIFICACION_REQUERIDA = 'Selecciona una calificación de 1 a 5 estrellas';
+
+export function validarCalificacion(calificacion: number): string | null {
+  return calificacion < 1 ? MENSAJE_CALIFICACION_REQUERIDA : null;
+}

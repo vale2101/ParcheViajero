@@ -1,99 +1,36 @@
-import { useCallback, useEffect, useState } from 'react';
 import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 import StarRating from './StarRating';
-import { useAuth } from '../context/AuthContext';
-import { deleteResena, getResenas, updateResena, type Resena } from '../api/resena';
-import { getServicios, type Servicio } from '../api/servicio';
+import { useMisResenas } from '../hooks/useMisResenas';
+import { validarCalificacion } from '../utils/validaciones';
 import { styles } from '../styles/MisResenasSection.styles';
 
 export default function MisResenasSection() {
-  const { user } = useAuth();
-  const [resenas, setResenas] = useState<Resena[]>([]);
-  const [servicios, setServicios] = useState<Record<string, Servicio>>({});
-  const [loading, setLoading] = useState(true);
-  const [borrandoId, setBorrandoId] = useState<string | null>(null);
+  const {
+    resenas,
+    servicios,
+    loading,
+    borrandoId,
+    editandoId,
+    calificacionEdit,
+    setCalificacionEdit,
+    comentarioEdit,
+    setComentarioEdit,
+    guardando,
+    errorEdit,
+    setErrorEdit,
+    iniciarEdicion,
+    cancelarEdicion,
+    guardarEdicion,
+    eliminarResena,
+  } = useMisResenas();
 
-  const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [calificacionEdit, setCalificacionEdit] = useState(0);
-  const [comentarioEdit, setComentarioEdit] = useState('');
-  const [guardando, setGuardando] = useState(false);
-  const [errorEdit, setErrorEdit] = useState<string | null>(null);
-
-  const cargar = useCallback(async () => {
-    if (!user) return;
-    setLoading(true);
-    try {
-      const [{ data: todasResenas }, { data: todosServicios }] = await Promise.all([
-        getResenas(),
-        getServicios(),
-      ]);
-
-      const mias = todasResenas.filter((r) => r.usuario_id === user._id);
-      const mapaServicios = Object.fromEntries(todosServicios.map((s) => [s._id, s]));
-
-      setResenas(mias);
-      setServicios(mapaServicios);
-    } catch {
-      setResenas([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [user]);
-
-  useEffect(() => {
-    cargar();
-  }, [cargar]);
-
-  function iniciarEdicion(resena: Resena) {
-    setEditandoId(resena._id);
-    setCalificacionEdit(resena.calificacion);
-    setComentarioEdit(resena.comentario ?? '');
-    setErrorEdit(null);
-  }
-
-  function cancelarEdicion() {
-    setEditandoId(null);
-    setErrorEdit(null);
-  }
-
-  async function guardarEdicion(id: string) {
-    if (calificacionEdit < 1) {
-      setErrorEdit('Selecciona una calificación de 1 a 5 estrellas');
+  function handleGuardar(id: string) {
+    const mensaje = validarCalificacion(calificacionEdit);
+    if (mensaje) {
+      setErrorEdit(mensaje);
       return;
     }
-
-    setGuardando(true);
-    setErrorEdit(null);
-    try {
-      await updateResena(id, {
-        calificacion: calificacionEdit,
-        comentario: comentarioEdit.trim() || undefined,
-      });
-      setResenas((prev) =>
-        prev.map((r) =>
-          r._id === id
-            ? { ...r, calificacion: calificacionEdit, comentario: comentarioEdit.trim() || undefined }
-            : r,
-        ),
-      );
-      setEditandoId(null);
-    } catch (err) {
-      setErrorEdit((err as Error).message);
-    } finally {
-      setGuardando(false);
-    }
-  }
-
-  async function handleDelete(id: string) {
-    setBorrandoId(id);
-    try {
-      await deleteResena(id);
-      setResenas((prev) => prev.filter((r) => r._id !== id));
-    } catch {
-      // se puede mostrar un error si se desea
-    } finally {
-      setBorrandoId(null);
-    }
+    guardarEdicion(id);
   }
 
   return (
@@ -128,7 +65,7 @@ export default function MisResenasSection() {
                         <Text style={styles.editText}>Editar</Text>
                       </Pressable>
                       <Pressable
-                        onPress={() => handleDelete(item._id)}
+                        onPress={() => eliminarResena(item._id)}
                         disabled={borrandoId === item._id}
                         hitSlop={8}>
                         <Text style={styles.deleteText}>
@@ -160,7 +97,7 @@ export default function MisResenasSection() {
                         <Text style={styles.cancelText}>Cancelar</Text>
                       </Pressable>
                       <Pressable
-                        onPress={() => guardarEdicion(item._id)}
+                        onPress={() => handleGuardar(item._id)}
                         hitSlop={8}
                         disabled={guardando}>
                         <Text style={styles.saveText}>

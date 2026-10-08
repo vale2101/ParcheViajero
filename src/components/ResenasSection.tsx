@@ -1,26 +1,13 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import ServicioReviewModal from './ServicioReviewModal';
-import { getServicios, type Servicio } from '../api/servicio';
+import { useBuscarServicios } from '../hooks/useBuscarServicios';
+import type { Servicio } from '../api/servicio';
 import { styles } from '../styles/ResenasSection.styles';
 
 export default function ResenasSection() {
-  const [servicios, setServicios] = useState<Servicio[]>([]);
-  const [query, setQuery] = useState('');
+  const { query, setQuery, busquedaActiva, resultados } = useBuscarServicios();
   const [seleccionado, setSeleccionado] = useState<Servicio | null>(null);
-
-  useEffect(() => {
-    getServicios()
-      .then(({ data }) => setServicios(data))
-      .catch(() => setServicios([]));
-  }, []);
-
-  const resultados =
-    query.trim().length === 0
-      ? []
-      : servicios.filter((s) =>
-          s.nombre.toLowerCase().includes(query.trim().toLowerCase())
-        );
 
   return (
     <View style={styles.container}>
@@ -34,7 +21,7 @@ export default function ResenasSection() {
         placeholderTextColor="#a3a3a3"
       />
 
-      {query.trim().length > 0 && (
+      {busquedaActiva && (
         <View style={styles.resultsList}>
           {resultados.length === 0 ? (
             <Text style={styles.placeholder}>

@@ -1,28 +1,14 @@
 import { Link } from 'expo-router';
-import { useForm } from 'react-hook-form';
 import { Image, Text, View } from 'react-native';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
 import KeyboardAwareScreen from '../../components/KeyboardAwareScreen';
-import { useAuth } from '../../context/AuthContext';
+import { useLoginForm } from '../../hooks/useLoginForm';
+import { reglaContrasenaLogin, reglaEmail } from '../../utils/validaciones';
 import { styles } from '../../styles/Login.styles';
 
-type LoginForm = { email: string; contrasena: string };
-
 export default function LoginScreen() {
-  const { login } = useAuth();
-
-  const { control, handleSubmit, setError, formState } = useForm<LoginForm>({
-    defaultValues: { email: '', contrasena: '' },
-  });
-
-  const submit = async ({ email, contrasena }: LoginForm) => {
-    try {
-      await login(email, contrasena);
-    } catch (error) {
-      setError('root', { message: (error as Error).message });
-    }
-  };
+  const { control, onSubmit, isSubmitting, errorGeneral } = useLoginForm();
 
   return (
     <KeyboardAwareScreen style={styles.screen} contentContainerStyle={styles.center}>
@@ -43,10 +29,7 @@ export default function LoginScreen() {
           label="Correo"
           keyboardType="email-address"
           placeholder="nombre@correo.com"
-          rules={{
-            required: 'El correo es obligatorio',
-            pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' },
-          }}
+          rules={reglaEmail}
         />
         <Field
           control={control}
@@ -54,17 +37,15 @@ export default function LoginScreen() {
           label="Contraseña"
           secureTextEntry
           placeholder="••••••••"
-          rules={{ required: 'La contraseña es obligatoria' }}
+          rules={reglaContrasenaLogin}
         />
 
-        {!!formState.errors.root && (
-          <Text style={styles.errorBox}>{formState.errors.root.message}</Text>
-        )}
+        {!!errorGeneral && <Text style={styles.errorBox}>{errorGeneral}</Text>}
 
         <Button
-          text={formState.isSubmitting ? 'Entrando…' : 'Entrar'}
-          onPress={handleSubmit(submit)}
-          disabled={formState.isSubmitting}
+          text={isSubmitting ? 'Entrando…' : 'Entrar'}
+          onPress={onSubmit}
+          disabled={isSubmitting}
         />
 
         <Link href="/register" style={styles.link}>

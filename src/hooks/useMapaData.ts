@@ -24,7 +24,6 @@ export function useMapaData() {
         setMunicipios(municipiosRes.data);
         setResenas(resenasRes.data);
       } catch {
-        // se puede mostrar un toast/error aquí si se quiere
       }
     }
 

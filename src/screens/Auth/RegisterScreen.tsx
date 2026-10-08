@@ -1,39 +1,21 @@
 import { Link } from 'expo-router';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { Image, Pressable, Text, View } from 'react-native';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
 import KeyboardAwareScreen from '../../components/KeyboardAwareScreen';
-import { useAuth } from '../../context/AuthContext';
-import type { TipoUsuario } from '../../api/usuario';
+import { useRegisterForm } from '../../hooks/useRegisterForm';
+import {
+  reglaConfirmacion,
+  reglaContrasenaNueva,
+  reglaEmail,
+  reglaNombre,
+  reglaTelefonoOpcional,
+} from '../../utils/validaciones';
 import { styles } from '../../styles/Register.styles';
 
-type RegisterForm = {
-  nombre: string;
-  email: string;
-  contrasena: string;
-  confirmacion: string;
-  telefono: string;
-};
-
 export default function RegisterScreen() {
-  const { register } = useAuth();
-  const [tipoUsuario, setTipoUsuario] = useState<TipoUsuario>('registrado');
-
-  const { control, handleSubmit, setError, getValues, formState } = useForm<RegisterForm>({
-    defaultValues: { nombre: '', email: '', contrasena: '', confirmacion: '', telefono: '' },
-  });
-
-  const submit = async ({ nombre, email, contrasena, telefono }: RegisterForm) => {
-    try {
-      await register(nombre, email, contrasena, tipoUsuario, telefono || undefined);
-    } catch (error) {
-      setError('root', { message: (error as Error).message });
-    }
-  };
-
-  const esNegocio = tipoUsuario === 'negocio';
+  const { control, getValues, onSubmit, isSubmitting, errorGeneral, setTipoUsuario, esNegocio } =
+    useRegisterForm();
 
   return (
     <KeyboardAwareScreen style={styles.screen} contentContainerStyle={styles.center}>
@@ -77,10 +59,7 @@ export default function RegisterScreen() {
           label="Nombre completo"
           autoCapitalize="words"
           placeholder="Juan Pérez"
-          rules={{
-            required: 'El nombre es obligatorio',
-            minLength: { value: 3, message: 'Mínimo 3 caracteres' },
-          }}
+          rules={reglaNombre}
         />
         <Field
           control={control}
@@ -88,10 +67,7 @@ export default function RegisterScreen() {
           label="Correo"
           keyboardType="email-address"
           placeholder="nombre@correo.com"
-          rules={{
-            required: 'El correo es obligatorio',
-            pattern: { value: /^\S+@\S+\.\S+$/, message: 'Correo inválido' },
-          }}
+          rules={reglaEmail}
         />
         <Field
           control={control}
@@ -99,9 +75,7 @@ export default function RegisterScreen() {
           label="Teléfono"
           keyboardType="phone-pad"
           placeholder="3001234567"
-          rules={{
-            minLength: { value: 7, message: 'Mínimo 7 caracteres' },
-          }}
+          rules={reglaTelefonoOpcional}
         />
         <Field
           control={control}
@@ -109,10 +83,7 @@ export default function RegisterScreen() {
           label="Contraseña"
           secureTextEntry
           placeholder="••••••••"
-          rules={{
-            required: 'La contraseña es obligatoria',
-            minLength: { value: 6, message: 'Mínimo 6 caracteres' },
-          }}
+          rules={reglaContrasenaNueva}
         />
         <Field
           control={control}
@@ -120,20 +91,15 @@ export default function RegisterScreen() {
           label="Confirmar contraseña"
           secureTextEntry
           placeholder="••••••••"
-          rules={{
-            required: 'Confirma la contraseña',
-            validate: (value) => value === getValues('contrasena') || 'Las contraseñas no coinciden',
-          }}
+          rules={reglaConfirmacion(() => getValues('contrasena'))}
         />
 
-        {!!formState.errors.root && (
-          <Text style={styles.errorBox}>{formState.errors.root.message}</Text>
-        )}
+        {!!errorGeneral && <Text style={styles.errorBox}>{errorGeneral}</Text>}
 
         <Button
-          text={formState.isSubmitting ? 'Creando…' : 'Crear cuenta'}
-          onPress={handleSubmit(submit)}
-          disabled={formState.isSubmitting}
+          text={isSubmitting ? 'Creando…' : 'Crear cuenta'}
+          onPress={onSubmit}
+          disabled={isSubmitting}
         />
 
         <Link href="/login" style={styles.link}>

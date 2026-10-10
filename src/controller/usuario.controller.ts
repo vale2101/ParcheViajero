@@ -73,27 +73,61 @@ export async function getUsuarios(req: Request, res: Response): Promise<Response
 }
 
 // 🔹 GET /me
-export async function getCurrentUsuario(req: Request, res: Response): Promise<Response> {
+
+export async function getCurrentUsuario(
+  req: Request,
+  res: Response,
+): Promise<Response> {
   try {
-    const token = req.cookies.token ?? req.headers.authorization?.replace(/^Bearer\s+/i, '');
+    const token =
+      req.headers.authorization?.replace(/^Bearer\s+/i, '') ||
+      req.cookies?.token;
 
     if (!token) {
-      return res.status(HttpStatusCode.Unauthorized).json({ message: "No autenticado" });
+      return res.status(HttpStatusCode.Unauthorized).json({
+        message: 'No autenticado',
+      });
     }
 
-    const decoded: any = jwt.verify(token, secretKey);
-    const usuario = await getUsuarioConTipoById_get(decoded.userId);
+    const decoded = jwt.verify(token, secretKey) as jwt.JwtPayload;
+
+    if (typeof decoded.userId !== 'string' && typeof decoded.userId !== 'object') {
+      return res.status(HttpStatusCode.Unauthorized).json({
+        message: 'Token invalido',
+      });
+    }
+
+    const usuario = await getUsuarioConTipoById_get(
+      String(decoded.userId),
+    );
 
     if (!usuario) {
-      return res.status(HttpStatusCode.NotFound).json({ message: "Usuario no encontrado" });
+      return res.status(HttpStatusCode.NotFound).json({
+        message: 'Usuario no encontrado',
+      });
     }
 
-    return res.status(HttpStatusCode.Ok).json({ data: usuario });
+    return res.status(HttpStatusCode.Ok).json({
+      data: usuario,
+    });
   } catch (error) {
+    if (
+      error instanceof jwt.TokenExpiredError ||
+      error instanceof jwt.JsonWebTokenError
+    ) {
+      return res.status(HttpStatusCode.Unauthorized).json({
+        message: 'Sesion invalida o expirada',
+      });
+    }
+
     console.error(error);
-    return res.status(HttpStatusCode.InternalServerError).json({ message: "Error al verificar sesión" });
+
+    return res.status(HttpStatusCode.InternalServerError).json({
+      message: 'Error al verificar sesion',
+    });
   }
 }
+
 
 // 🔹 GET by ID
 export async function getUsuarioById(req: Request, res: Response): Promise<Response> {

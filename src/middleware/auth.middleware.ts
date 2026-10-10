@@ -31,3 +31,24 @@ export function requireAuth(req: Request, res: Response, next: NextFunction): Re
     return res.status(HttpStatusCode.Unauthorized).json({ message: "Token inválido o expirado" });
   }
 }
+
+
+export function requireAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Response | void {
+  if (!req.userId) {
+    return res.status(HttpStatusCode.Unauthorized).json({
+      message: "No autenticado",
+    });
+  }
+
+  if (req.tipoUsuario?.toLowerCase() !== "admin") {
+    return res.status(HttpStatusCode.Forbidden).json({
+      message: "No tienes permisos de administrador",
+    });
+  }
+
+  next();
+}

@@ -1,8 +1,14 @@
+
 import { ObjectId } from "mongodb";
+
+export type EstadoAprobacion =
+  | "pendiente"
+  | "aprobado"
+  | "rechazado";
 
 export interface IUbicacionGeoJSON {
   type: "Point";
-  coordinates: [number, number]; 
+  coordinates: [number, number];
 }
 
 export interface IServicio {
@@ -20,6 +26,11 @@ export interface IServicio {
   horario_atencion?: string;
   precio?: number;
   fecha_creacion?: Date;
+
+  estado_aprobacion?: EstadoAprobacion;
+  fecha_revision?: Date;
+  revisado_por?: ObjectId;
+  observacion_revision?: string;
 }
 
 export interface ICreateServicioInput {

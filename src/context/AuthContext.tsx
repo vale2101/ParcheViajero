@@ -1,9 +1,12 @@
+
 import React, {
   createContext,
   useContext,
   useState,
+  useEffect,
   type ReactNode,
 } from 'react';
+
 import {
   login as loginRequest,
   register as registerRequest,
@@ -12,7 +15,8 @@ import {
   type TipoUsuario,
   type Usuario,
 } from '../api/usuario';
-import { setToken as setClientToken } from '../api/client';
+
+import { setToken } from '../api/client';
 
 interface AuthUser extends Usuario {
   tipo_usuario: TipoUsuario;
@@ -38,14 +42,56 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
-  const [isLoading, setIsLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(true);
 
-  async function login(email: string, contrasena: string): Promise<void> {
-    const { token } = await loginRequest(email, contrasena);
-    setClientToken(token);
+  useEffect(() => {
+    let active = true;
 
-    const { data } = await getCurrentUsuario();
-    setUser(data);
+    async function restoreSession() {
+      try {
+        const { data } = await getCurrentUsuario();
+
+        if (active) {
+          setUser(data);
+        }
+      } catch {
+        if (active) {
+          setUser(null);
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
+      }
+    }
+
+    void restoreSession();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  async function login(
+    email: string,
+    contrasena: string,
+  ): Promise<void> {
+    setIsLoading(true);
+
+    try {
+      const result = await loginRequest(email, contrasena);
+
+      await setToken(result.token);
+
+      const { data } = await getCurrentUsuario();
+      setUser(data);
+    } catch (error) {
+      setUser(null);
+      await setToken(null);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   async function register(
@@ -55,16 +101,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     tipo_usuario: TipoUsuario,
     telefono?: string,
   ): Promise<void> {
-    await registerRequest(nombre, email, contrasena, tipo_usuario, telefono);
+    await registerRequest(
+      nombre,
+      email,
+      contrasena,
+      tipo_usuario,
+      telefono,
+    );
+
     await login(email, contrasena);
   }
 
   async function logout(): Promise<void> {
     try {
       await logoutRequest();
-    } catch {
     } finally {
-      setClientToken(null);
+      await setToken(null);
       setUser(null);
     }
   }
@@ -92,9 +144,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 export function useAuth(): AuthContextValue {
-  const ctx = useContext(AuthContext);
-  if (!ctx) {
+  const context = useContext(AuthContext);
+
+  if (!context) {
     throw new Error('useAuth debe usarse dentro de un <AuthProvider>');
   }
-  return ctx;
+
+  return context;
 }

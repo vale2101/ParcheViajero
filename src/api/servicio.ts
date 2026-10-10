@@ -60,3 +60,10 @@ export async function updateServicio(
 export async function deleteServicio(id: string): Promise<MessageResponse> {
   return request<MessageResponse>(`/servicios/delete/${id}`, undefined, 'DELETE');
 }
+
+export async function getServiciosByUsuarioId_get(): Promise<{ data: Servicio[] }> {
+  return request('/servicios/mis-servicios');
+}
+
+// Alias para no romper imports anteriores
+export const getMisServicios = getServiciosByUsuarioId_get;

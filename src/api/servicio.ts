@@ -1,4 +1,5 @@
 import { request } from './client';
+import { notificarServiciosCambiados } from '../utils/serviciosSync';
 
 export interface Servicio {
   _id: string;
@@ -47,16 +48,22 @@ export async function getServicioById(id: string): Promise<{ data: Servicio }> {
 export async function createServicio(
   servicio: CreateServicioInput,
 ): Promise<MessageResponse> {
-  return request<MessageResponse>('/servicios/createServicio', servicio, 'POST');
+  const resultado = await request<MessageResponse>('/servicios/createServicio', servicio, 'POST');
+  notificarServiciosCambiados();
+  return resultado;
 }
 
 export async function updateServicio(
   id: string,
   cambios: UpdateServicioInput,
 ): Promise<MessageResponse> {
-  return request<MessageResponse>(`/servicios/updateServicio/${id}`, cambios, 'PUT');
+  const resultado = await request<MessageResponse>(`/servicios/updateServicio/${id}`, cambios, 'PUT');
+  notificarServiciosCambiados();
+  return resultado;
 }
 
 export async function deleteServicio(id: string): Promise<MessageResponse> {
-  return request<MessageResponse>(`/servicios/delete/${id}`, undefined, 'DELETE');
+  const resultado = await request<MessageResponse>(`/servicios/delete/${id}`, undefined, 'DELETE');
+  notificarServiciosCambiados();
+  return resultado;
 }

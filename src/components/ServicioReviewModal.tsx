@@ -48,8 +48,8 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.backdrop}>
-        <View style={styles.sheet}>
+      <Pressable style={styles.backdrop} onPress={onClose}>
+        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
           <View style={styles.header}>
             <Text style={styles.title}>{servicio.nombre}</Text>
             <Pressable onPress={onClose} hitSlop={8}>
@@ -123,8 +123,8 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
               </View>
             }
           />
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }

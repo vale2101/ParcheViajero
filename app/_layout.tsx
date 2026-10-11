@@ -43,6 +43,9 @@ function Navigator() {
         <Stack.Screen name="login" />
         <Stack.Screen name="register" />
       </Stack.Protected>
+
+      <Stack.Screen name="vista_resena" />
+
     </Stack>
   );
 }

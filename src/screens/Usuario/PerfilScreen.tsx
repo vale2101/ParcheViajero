@@ -1,4 +1,5 @@
 import { ScrollView, Text, View } from 'react-native';
+import AvatarEditable from '../../components/AvatarEditable';
 import Button from '../../components/Button';
 import FavoritosSection from '../../components/FavoritosSection';
 import MisResenasSection from '../../components/MisResenasSection';
@@ -16,11 +17,7 @@ export default function PerfilScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         <View style={styles.profileHeader}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>
-              {user?.email.charAt(0).toUpperCase() ?? '?'}
-            </Text>
-          </View>
+          <AvatarEditable />
           <Text style={styles.name}>{user?.nombre}</Text>
           <Text style={styles.email}>{user?.email}</Text>
 

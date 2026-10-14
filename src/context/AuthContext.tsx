@@ -33,7 +33,13 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
-
+const USUARIO_PRUEBA: AuthUser = {
+  _id: 'u-prueba',
+  tipo_usuario_id: 'registrado',
+  tipo_usuario: 'registrado',
+  nombre: 'Laura Gómez',
+  email: 'laura@correo.com',
+};
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {

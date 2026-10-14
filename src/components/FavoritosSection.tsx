@@ -1,71 +1,78 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import ServicioFichaModal from './ServicioResenaModal';
-import ServicioReviewModal from './ServicioReviewModal';
-import { useFavoritos } from '../context/FavoritosContext';
-import { getServicios, type Servicio } from '../api/servicio';
+import { getFavoritos, type Favorito } from '../favoritosejmplos';
+import { getCategoriaVisual } from '../utils/categoriaVisual';
 import { styles } from '../styles/FavoritosSection.styles';
 
+// Cuántos favoritos se ven antes de desplegar
+const MAX_VISIBLES = 4;
+
 export default function FavoritosSection() {
-  const { favoritos, toggleFavorito } = useFavoritos();
-  const [servicios, setServicios] = useState<Servicio[]>([]);
-  const [seleccionado, setSeleccionado] = useState<Servicio | null>(null);
-  const [resenando, setResenando] = useState(false);
+  const [favoritos, setFavoritos] = useState<Favorito[]>([]);
+  const [expandido, setExpandido] = useState(false);
 
   useEffect(() => {
-    getServicios()
-      .then(({ data }) => setServicios(data))
-      .catch(() => setServicios([]));
+    getFavoritos().then(setFavoritos);
   }, []);
 
-  // Nos quedamos solo con los servicios que el usuario marcó con corazón
-  const misFavoritos = servicios.filter((s) => favoritos.includes(s._id));
+  // Quita el favorito de la lista (por ahora solo en la pantalla;
+  // cuando haya backend aquí se llama a la API para borrarlo)
+  function quitarFavorito(id: string) {
+    setFavoritos((prev) => prev.filter((f) => f._id !== id));
+  }
+
+  const visibles = expandido ? favoritos : favoritos.slice(0, MAX_VISIBLES);
+  const ocultos = favoritos.length - MAX_VISIBLES;
 
   return (
     <View style={styles.container}>
-      <Text style={styles.sectionTitle}>Mis favoritos</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.sectionTitle}>Mis favoritos</Text>
+        {favoritos.length > 0 && <Text style={styles.count}>{favoritos.length} lugares</Text>}
+      </View>
 
-      {misFavoritos.length === 0 ? (
+      {favoritos.length === 0 ? (
         <View style={styles.emptyBox}>
           <Text style={styles.placeholder}>Aún no tienes favoritos guardados</Text>
         </View>
       ) : (
-        <View style={styles.list}>
-          {misFavoritos.map((servicio) => (
-            <Pressable
-              key={servicio._id}
-              style={styles.card}
-              onPress={() => setSeleccionado(servicio)}>
-              <View style={styles.cardInfo}>
-                <Text style={styles.cardTitle}>{servicio.nombre}</Text>
-                {!!servicio.direccion && (
-                  <Text style={styles.cardSubtitle}>{servicio.direccion}</Text>
-                )}
-              </View>
+        <View style={styles.box}>
+          {visibles.map((fav, index) => {
+            const visual = getCategoriaVisual(fav.categoria);
 
-              {/* Corazón para quitarlo de favoritos */}
-              <Pressable onPress={() => toggleFavorito(servicio._id)} hitSlop={8}>
-                <Ionicons name="heart" size={22} color="#dc2626" />
-              </Pressable>
+            return (
+              <View key={fav._id} style={[styles.row, index > 0 && styles.rowBorder]}>
+                <View style={[styles.iconCircle, { backgroundColor: visual.color }]}>
+                  <Text style={styles.emoji}>{visual.emoji}</Text>
+                </View>
+
+                <View style={styles.info}>
+                  <Text style={styles.nombre}>{fav.nombre}</Text>
+                  <Text style={styles.municipio}>{fav.municipio}</Text>
+                </View>
+
+                <Pressable onPress={() => quitarFavorito(fav._id)} hitSlop={8}>
+                  <Ionicons name="heart" size={20} color="#dc2626" />
+                </Pressable>
+              </View>
+            );
+          })}
+
+          {ocultos > 0 && (
+            <Pressable style={styles.verMasButton} onPress={() => setExpandido(!expandido)}>
+              <Text style={styles.verMasText}>
+                {expandido ? 'Ver menos' : `Ver los otros ${ocultos}`}
+              </Text>
+              <Ionicons
+                name={expandido ? 'chevron-up' : 'chevron-down'}
+                size={18}
+                color="#0147B9"
+              />
             </Pressable>
-          ))}
+          )}
         </View>
       )}
-
-      {/* Al tocar un favorito se abre la ficha del lugar */}
-      <ServicioFichaModal
-        visible={!!seleccionado && !resenando}
-        servicio={seleccionado}
-        onClose={() => setSeleccionado(null)}
-        onDejarResena={() => setResenando(true)}
-      />
-
-      <ServicioReviewModal
-        visible={resenando}
-        servicio={seleccionado}
-        onClose={() => setResenando(false)}
-      />
     </View>
   );
 }

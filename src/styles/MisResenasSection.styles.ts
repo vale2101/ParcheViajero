@@ -2,7 +2,13 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   container: { gap: 10 },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+  },
   sectionTitle: { fontSize: 16, fontWeight: '700', color: '#0147B9' },
+  count: { fontSize: 12, color: '#a3a3a3' },
   placeholder: { color: '#a3a3a3', fontSize: 14 },
   emptyBox: {
     borderRadius: 12,
@@ -48,4 +54,12 @@ export const styles = StyleSheet.create({
   editActionsRow: { flexDirection: 'row', justifyContent: 'flex-end', gap: 16 },
   cancelText: { fontSize: 13, fontWeight: '600', color: '#a3a3a3' },
   saveText: { fontSize: 13, fontWeight: '700', color: '#0147B9' },
+  verMasButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+  },
+  verMasText: { fontSize: 13, fontWeight: '600', color: '#0147B9' },
 });

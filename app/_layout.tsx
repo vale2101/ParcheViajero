@@ -2,6 +2,7 @@ import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
+import { FavoritosProvider } from '../src/context/FavoritosContext';
 import { useAppFonts } from '../src/hooks/useAppFonts';
 import "../src/global.css";
 
@@ -17,7 +18,9 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="dark" />
       <AuthProvider>
-        <Navigator />
+        <FavoritosProvider>
+          <Navigator />
+        </FavoritosProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
@@ -49,6 +52,8 @@ function Navigator() {
       <Stack.Screen name="vista_resena" />
       {/* Quitar después; esta ruta es solo de prueba. */}
       <Stack.Screen name="vista_resenas_negocio" />
+      {/* Quitar después; esta ruta es solo de prueba. */}
+      <Stack.Screen name="vista_perfil" />
 
     </Stack>
   );

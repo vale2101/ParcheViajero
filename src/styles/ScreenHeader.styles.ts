@@ -12,4 +12,12 @@ export const styles = StyleSheet.create({
     color: '#0147B9',
     fontFamily: 'Fredoka_700Bold',
   },
+  menuButton: {
+    position: 'absolute',
+    right: 16,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

@@ -1,13 +1,14 @@
+
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { useAppFonts } from '../src/hooks/useAppFonts';
+import { View, ActivityIndicator } from 'react-native';
 import "../src/global.css";
 
 export default function RootLayout() {
   const fontsReady = useAppFonts();
-
 
   if (!fontsReady) {
     return null;
@@ -24,7 +25,23 @@ export default function RootLayout() {
 }
 
 function Navigator() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#FFFFFF',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <ActivityIndicator size="large" color="#000000" />
+      </View>
+    );
+  }
+
   const esNegocio = user?.tipo_usuario === 'negocio';
 
   return (

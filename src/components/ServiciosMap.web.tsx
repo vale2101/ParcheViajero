@@ -21,6 +21,7 @@ interface Props {
   ubicacionUsuario?: { lat: number; lng: number } | null;
   centerLat?: number;
   centerLng?: number;
+  ajustarVista?: boolean;
 }
 
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
@@ -55,6 +56,9 @@ function ServiciosMap(
     ubicacionUsuario,
     centerLat,
     centerLng,
+    ajustarVista,
+
+    
   }: Props,
   ref: Ref<ServiciosMapHandle>,
 ) {
@@ -128,7 +132,7 @@ function ServiciosMap(
       marker.addListener('click', () => onSelectRef.current(servicio));
       markersRef.current.push(marker);
     });
-  }, [ready, servicios, categoriaPorId, destacadoId]);
+  }, [ready, servicios, categoriaPorId, destacadoId, ajustarVista]);
   useEffect(() => {
     if (!ready || !mapRef.current) return;
 

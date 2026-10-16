@@ -17,7 +17,6 @@ export interface Servicio {
   fecha_creacion?: string;
 }
 
-
 export interface CreateServicioInput {
   categoria_id: string;
   municipio_id: string;
@@ -67,3 +66,10 @@ export async function deleteServicio(id: string): Promise<MessageResponse> {
   notificarServiciosCambiados();
   return resultado;
 }
+
+export async function getServiciosByUsuarioId_get(): Promise<{ data: Servicio[] }> {
+  return request('/servicios/mis-servicios');
+}
+
+// Alias para no romper imports anteriores
+export const getMisServicios = getServiciosByUsuarioId_get;

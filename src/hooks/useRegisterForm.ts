@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import type { TipoUsuario } from '../api/usuario';
-import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 
 type RegisterForm = {
   nombre: string;
@@ -24,13 +23,7 @@ export function useRegisterForm() {
     try {
       await register(nombre, email, contrasena, tipoUsuario, telefono || undefined);
     } catch (error) {
-      logError('Error al registrar la cuenta', error);
-      setError('root', {
-        message: mensajeErrorUsuario(
-          error,
-          'No se pudo crear la cuenta. Inténtalo de nuevo.',
-        ),
-      });
+      setError('root', { message: (error as Error).message });
     }
   };
 

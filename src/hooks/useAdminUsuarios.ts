@@ -1,7 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { getUsuariosAdmin, type Orden, type TipoCuenta, type UsuarioAdmin } from '../api/admin';
-import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 
 export function useAdminUsuarios(tipo: TipoCuenta, q: string, orden: Orden) {
   const [resultado, setResultado] = useState<{ tipo: TipoCuenta; lista: UsuarioAdmin[] } | null>(null);
@@ -19,8 +18,7 @@ export function useAdminUsuarios(tipo: TipoCuenta, q: string, orden: Orden) {
       setResultado({ tipo, lista: data });
     } catch (e) {
       if (id !== peticion.current) return;
-      logError('No se pudieron cargar los usuarios', e);
-      setError(mensajeErrorUsuario(e, 'No hemos podido obtener los datos'));
+      setError((e as Error).message || 'No se pudieron cargar los usuarios');
     } finally {
       if (id === peticion.current) setCargando(false);
     }

@@ -6,7 +6,6 @@ import { getMunicipios, type Municipio } from '../api/municipio';
 import { createServicio } from '../api/servicio';
 import { PATRON_PRECIO, PATRON_TELEFONO } from '../utils/validacionesServicio';
 import { useUbicacionServicio } from './useUbicacionServicio';
-import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 
 export const TOTAL_PASOS = 5;
 export const NOMBRES_PASOS = ['Básico', 'Ubicación', 'Contacto', 'Imágenes', 'Resumen'] as const;
@@ -91,8 +90,9 @@ export function useServicioWizard() {
       setCategorias(c.data);
       setMunicipios(m.data);
     } catch (e) {
-      logError('No se pudieron cargar categorías y municipios', e);
-      setErrorCatalogos(mensajeErrorUsuario(e, 'No hemos podido obtener los datos'));
+      setErrorCatalogos(
+        (e as Error).message || 'No se pudieron cargar las categorías y los municipios',
+      );
     } finally {
       setCargandoCatalogos(false);
     }
@@ -255,8 +255,7 @@ export function useServicioWizard() {
       });
       setEnviado(true);
     } catch (e) {
-      logError('No se pudo enviar el servicio', e);
-      setErrorEnvio(mensajeErrorUsuario(e, 'Error en la base de datos. Inténtalo más tarde.'));
+      setErrorEnvio((e as Error).message || 'No se pudo enviar el servicio. Inténtalo de nuevo.');
     } finally {
       enviandoRef.current = false;
       setEnviando(false);

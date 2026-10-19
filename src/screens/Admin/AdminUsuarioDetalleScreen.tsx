@@ -8,7 +8,6 @@ import InfoRow from '../../components/InfoRow';
 import ServicioAdminCard from '../../components/ServicioAdminCard';
 import { getUsuarioAdmin, type ServicioAdmin, type UsuarioAdmin } from '../../api/admin';
 import { ETIQUETA_TIPO, formatearFecha, iniciales } from '../../utils/adminFormat';
-import { logError, mensajeErrorUsuario } from '../../utils/errorApp';
 import { styles } from '../../styles/Admin.styles';
 
 export default function AdminUsuarioDetalleScreen() {
@@ -28,8 +27,7 @@ export default function AdminUsuarioDetalleScreen() {
       setUsuario(r.data);
       setServicios(r.servicios);
     } catch (e) {
-      logError('No se pudo cargar el usuario', e);
-      setError(mensajeErrorUsuario(e, 'No hemos podido obtener los datos'));
+      setError((e as Error).message || 'No se pudo cargar el usuario');
     } finally {
       setCargando(false);
     }

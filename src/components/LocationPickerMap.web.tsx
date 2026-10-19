@@ -3,7 +3,6 @@ import { StyleSheet, Text, View } from 'react-native';
 import { loadGoogleMapsScript } from '../utils/googleMapsLoader';
 import { buildPinIcon } from '../utils/mapMarkerIcon';
 import type { LocationPickerMapProps } from './LocationPickerMap.types';
-import { logError } from '../utils/errorApp';
 
 const DEFAULT_LAT = 5.0703;
 const DEFAULT_LNG = -75.5138;
@@ -55,10 +54,7 @@ export default function LocationPickerMap({
         setReady(true);
       })
       .catch((e: Error) => {
-        logError('No se pudo cargar Google Maps', e);
-        if (!cancelled) {
-          setLoadError('No hemos podido cargar el mapa. Inténtalo de nuevo.');
-        }
+        if (!cancelled) setLoadError(e.message);
       });
 
     return () => {

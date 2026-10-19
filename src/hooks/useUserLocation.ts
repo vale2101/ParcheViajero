@@ -1,6 +1,5 @@
 import * as Location from 'expo-location';
 import { useCallback, useState } from 'react';
-import { logError } from '../utils/errorApp';
 
 export interface UserLocation {
   lat: number;
@@ -26,8 +25,7 @@ export function useUserLocation() {
       const posicion = await Location.getCurrentPositionAsync({});
       return { lat: posicion.coords.latitude, lng: posicion.coords.longitude };
     } catch (err) {
-      logError('No se pudo obtener la ubicación', err);
-      setError('No hemos podido obtener tu ubicación. Inténtalo de nuevo.');
+      setError((err as Error).message);
       return null;
     } finally {
       setLoading(false);

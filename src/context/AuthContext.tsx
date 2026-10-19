@@ -17,7 +17,6 @@ import {
 } from '../api/usuario';
 
 import { setToken } from '../api/client';
-import { logError } from '../utils/errorApp';
 
 interface AuthUser extends Usuario {
   tipo_usuario: TipoUsuario;
@@ -55,8 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (active) {
           setUser(data);
         }
-      } catch (error) {
-        logError('No se pudo restaurar la sesión', error);
+      } catch {
         if (active) {
           setUser(null);
         }

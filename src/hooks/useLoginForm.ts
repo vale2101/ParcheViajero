@@ -1,6 +1,5 @@
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
-import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 
 type LoginForm = { email: string; contrasena: string };
 
@@ -15,13 +14,7 @@ export function useLoginForm() {
     try {
       await login(email, contrasena);
     } catch (error) {
-      logError('Error al iniciar sesión', error);
-      setError('root', {
-        message: mensajeErrorUsuario(
-          error,
-          'No se pudo iniciar sesión. Verifica tus datos e inténtalo de nuevo.',
-        ),
-      });
+      setError('root', { message: (error as Error).message });
     }
   };
 

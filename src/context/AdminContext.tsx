@@ -1,6 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import { getResumenAdmin, type ResumenAdmin } from '../api/admin';
-import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 
 interface AdminContextValue {
   resumen: ResumenAdmin | null;
@@ -23,8 +22,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
       const { data } = await getResumenAdmin();
       setResumen(data);
     } catch (e) {
-      logError('No se pudieron cargar los indicadores', e);
-      setError(mensajeErrorUsuario(e, 'No hemos podido obtener los datos'));
+      setError((e as Error).message || 'No se pudieron cargar los indicadores');
     } finally {
       setCargando(false);
     }

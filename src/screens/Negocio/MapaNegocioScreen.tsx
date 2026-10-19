@@ -17,7 +17,6 @@ import {
 } from '../../api/servicio';
 
 import { getCategorias, type Categoria } from '../../api/categoria';
-import { logError, mensajeErrorUsuario } from '../../utils/errorApp';
 import styles from '../../styles/MapaNegocio.styles';
 
 function tieneCoordenadasValidas(s: Servicio): boolean {
@@ -68,8 +67,9 @@ export default function MapaNegocioScreen() {
     } catch (err) {
       if (id !== peticionRef.current) return;
 
-      logError('No se pudieron cargar tus servicios en el mapa', err);
-      setError(mensajeErrorUsuario(err, 'No hemos podido obtener los datos'));
+      setError(
+        (err as Error).message || 'No se pudieron cargar tus servicios',
+      );
     } finally {
       if (id === peticionRef.current) {
         setCargando(false);

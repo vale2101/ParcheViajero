@@ -18,7 +18,6 @@ import StepUbicacion from '../components/StepUbicacion';
 import { updateServicio, type Servicio, type UpdateServicioInput } from '../api/servicio';
 import type { Categoria } from '../api/categoria';
 import type { Municipio } from '../api/municipio';
-import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 import { useUbicacionServicio } from '../hooks/useUbicacionServicio';
 import { reglaNombre } from '../utils/validaciones';
 import { reglaPrecio, reglaTelefonoServicio } from '../utils/validacionesServicio';
@@ -170,8 +169,7 @@ export default function ServicioEditarModal({
         onSaved();
         onClose();
       } catch (e) {
-        logError('No se pudieron guardar los cambios del servicio', e);
-        setErrorEnvio(mensajeErrorUsuario(e, 'Error en la base de datos. Inténtalo más tarde.'));
+        setErrorEnvio((e as Error).message || 'No se pudieron guardar los cambios');
       } finally {
         guardandoRef.current = false;
         setGuardando(false);

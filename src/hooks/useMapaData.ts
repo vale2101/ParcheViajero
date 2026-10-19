@@ -4,7 +4,6 @@ import { getCategorias, type Categoria } from '../api/categoria';
 import { getMunicipios, type Municipio } from '../api/municipio';
 import { getResenas, type Resena } from '../api/resena';
 import { suscribirServiciosCambiados } from '../utils/serviciosSync';
-import { logError } from '../utils/errorApp';
 
 export function useMapaData() {
   const [servicios, setServicios] = useState<Servicio[]>([]);
@@ -20,8 +19,7 @@ export function useMapaData() {
     try {
       const serviciosRes = await getServicios();
       setServicios(serviciosRes.data);
-    } catch (e) {
-      logError('No se pudieron recargar los servicios del mapa', e);
+    } catch {
     } finally {
       recargaEnCursoRef.current = false;
     }
@@ -43,8 +41,7 @@ export function useMapaData() {
         setCategorias(categoriasRes.data);
         setMunicipios(municipiosRes.data);
         setResenas(resenasRes.data);
-      } catch (e) {
-        logError('No se pudieron cargar los datos del mapa', e);
+      } catch {
       }
     }
 

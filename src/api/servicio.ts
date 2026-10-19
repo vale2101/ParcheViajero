@@ -1,6 +1,8 @@
 import { request } from './client';
 import { notificarServiciosCambiados } from '../utils/serviciosSync';
 
+export type EstadoAprobacion = 'pendiente' | 'aprobado' | 'rechazado';
+
 export interface Servicio {
   _id: string;
   usuario_id: string;
@@ -15,6 +17,9 @@ export interface Servicio {
   horario_atencion?: string;
   precio?: number;
   fecha_creacion?: string;
+  estado_aprobacion?: EstadoAprobacion;
+  fecha_revision?: string;
+  observacion_revision?: string;
 }
 
 export interface CreateServicioInput {

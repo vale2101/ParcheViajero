@@ -1,4 +1,3 @@
-
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -43,17 +42,22 @@ function Navigator() {
   }
 
   const esNegocio = user?.tipo_usuario === 'negocio';
+  const esAdmin = user?.tipo_usuario === 'admin';
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
 
-      <Stack.Protected guard={!!user && !esNegocio}>
+      <Stack.Protected guard={!!user && !esNegocio && !esAdmin}>
         <Stack.Screen name="usuario" />
       </Stack.Protected>
 
       <Stack.Protected guard={!!user && esNegocio}>
         <Stack.Screen name="negocio" />
+      </Stack.Protected>
+
+      <Stack.Protected guard={!!user && esAdmin}>
+        <Stack.Screen name="admin" />
       </Stack.Protected>
 
       <Stack.Protected guard={!user}>

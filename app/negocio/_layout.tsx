@@ -1,7 +1,5 @@
-
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-
 
 export default function NegocioTabsLayout() {
   return (
@@ -39,6 +37,11 @@ export default function NegocioTabsLayout() {
             <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
+      />
+      {/* Asistente "Añadir servicio": ruta sin pestaña y a pantalla completa */}
+      <Tabs.Screen
+        name="nuevo-servicio"
+        options={{ href: null, tabBarStyle: { display: 'none' } }}
       />
     </Tabs>
   );

@@ -12,6 +12,7 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import { getServicioAdmin, revisarServicio, type RevisionEvento, type ServicioAdmin } from '../../api/admin';
 import { useAdmin } from '../../context/AdminContext';
 import { formatearFecha, formatearFechaHora } from '../../utils/adminFormat';
+import { logError, mensajeErrorUsuario } from '../../utils/errorApp';
 import { getEstadoVisual } from '../../utils/estadoServicio';
 import { coordenadasValidas, formatearPrecioCOP } from '../../utils/formatoServicio';
 import { styles } from '../../styles/Admin.styles';
@@ -45,7 +46,8 @@ export default function AdminServicioDetalleScreen() {
       setServicio(r.data);
       setHistorial(r.historial);
     } catch (e) {
-      setError((e as Error).message || 'No se pudo cargar el servicio');
+      logError('No se pudo cargar el servicio', e);
+      setError(mensajeErrorUsuario(e, 'No hemos podido obtener los datos'));
     } finally {
       setCargando(false);
     }
@@ -86,7 +88,8 @@ export default function AdminServicioDetalleScreen() {
       setAviso(tomada === 'aprobado' ? 'Servicio aprobado correctamente' : 'Servicio rechazado correctamente');
     } catch (e) {
       setDecision(null);
-      setErrorAccion((e as Error).message || 'No se pudo registrar la decisión');
+      logError('No se pudo registrar la decisión', e);
+      setErrorAccion(mensajeErrorUsuario(e, 'Error en la base de datos. Inténtalo más tarde.'));
     } finally {
       enviandoRef.current = false;
       setEnviando(false);

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getServicios, type Servicio } from '../api/servicio';
+import { logError } from '../utils/errorApp';
 
 export function useBuscarServicios() {
   const [servicios, setServicios] = useState<Servicio[]>([]);
@@ -8,7 +9,10 @@ export function useBuscarServicios() {
   useEffect(() => {
     getServicios()
       .then(({ data }) => setServicios(data))
-      .catch(() => setServicios([]));
+      .catch((e) => {
+        logError('No se pudieron cargar los servicios de búsqueda', e);
+        setServicios([]);
+      });
   }, []);
 
   const busquedaActiva = query.trim().length > 0;

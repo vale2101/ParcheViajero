@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { deleteResena, getResenas, updateResena, type Resena } from '../api/resena';
 import { getServicios, type Servicio } from '../api/servicio';
+import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 
 export function useMisResenas() {
   const { user } = useAuth();
@@ -30,7 +31,8 @@ export function useMisResenas() {
 
       setResenas(mias);
       setServicios(mapaServicios);
-    } catch {
+    } catch (err) {
+      logError('No se pudieron cargar tus reseñas', err);
       setResenas([]);
     } finally {
       setLoading(false);
@@ -70,7 +72,8 @@ export function useMisResenas() {
       );
       setEditandoId(null);
     } catch (err) {
-      setErrorEdit((err as Error).message);
+      logError('No se pudo actualizar la reseña', err);
+      setErrorEdit(mensajeErrorUsuario(err, 'Error en la base de datos. Inténtalo más tarde.'));
     } finally {
       setGuardando(false);
     }
@@ -81,7 +84,8 @@ export function useMisResenas() {
     try {
       await deleteResena(id);
       setResenas((prev) => prev.filter((r) => r._id !== id));
-    } catch {
+    } catch (err) {
+      logError('No se pudo eliminar la reseña', err);
     } finally {
       setBorrandoId(null);
     }

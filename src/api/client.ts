@@ -1,5 +1,12 @@
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  esMensajeTecnico,
+  logError,
+  MENSAJE_ERROR_ACCION,
+  MENSAJE_ERROR_BASE,
+  MENSAJE_ERROR_CONEXION,
+  MENSAJE_ERROR_SESION,
+} from '../utils/errorApp';
 
 const API_URL =
   process.env.EXPO_PUBLIC_API_URL ??
@@ -56,10 +63,9 @@ export async function request<T>(
       },
       body: serializedBody,
     });
-  } catch {
-    throw new Error(
-      `No se pudo conectar con ${API_URL}. ¿Está encendido el servidor?`,
-    );
+  } catch (err) {
+    logError(`No se pudo conectar con ${API_URL}${path}`, err);
+    throw new Error(MENSAJE_ERROR_CONEXION);
   }
 
   const data = (await response.json().catch(() => ({}))) as Record<
@@ -81,8 +87,28 @@ export async function request<T>(
       message = (data['error'] as string[]).join('\n');
     }
 
+    logError(`Error ${response.status} en ${finalMethod} ${path}`, data);
+
+    if (response.status >= 500) {
+      throw new Error(MENSAJE_ERROR_BASE);
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      if (message && !esMensajeTecnico(message)) {
+        throw new Error(message);
+      }
+
+      throw new Error(
+        savedToken
+          ? MENSAJE_ERROR_SESION
+          : 'No se pudo iniciar sesión. Verifica tus datos e inténtalo de nuevo.',
+      );
+    }
+
     throw new Error(
-      message ?? `Error ${response.status} al llamar ${path}`,
+      message && !esMensajeTecnico(message)
+        ? message
+        : MENSAJE_ERROR_ACCION,
     );
   }
 

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { createResena, updateResena, getResenasByServicio, type Resena } from '../api/resena';
 import type { Servicio } from '../api/servicio';
+import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 
 export function useServicioResenas(servicio: Servicio | null, visible: boolean) {
   const { user } = useAuth();
@@ -24,7 +25,8 @@ export function useServicioResenas(servicio: Servicio | null, visible: boolean) 
       setMiResena(propia);
       setCalificacion(propia?.calificacion ?? 0);
       setComentario(propia?.comentario ?? '');
-    } catch {
+    } catch (err) {
+      logError('No se pudieron cargar las reseñas del servicio', err);
       setResenas([]);
     } finally {
       setLoading(false);
@@ -61,7 +63,8 @@ export function useServicioResenas(servicio: Servicio | null, visible: boolean) 
 
       await cargarResenas();
     } catch (err) {
-      setError((err as Error).message);
+      logError('No se pudo guardar la reseña', err);
+      setError(mensajeErrorUsuario(err, 'Error en la base de datos. Inténtalo más tarde.'));
     } finally {
       setSubmitting(false);
     }

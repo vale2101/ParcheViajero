@@ -11,6 +11,7 @@ import ServicioEditarModal from '../../components/ServicioEditarModal';
 import { useAuth } from '../../context/AuthContext';
 import { useMisServicios } from '../../hooks/useMisServicios';
 import { deleteServicio, type Servicio } from '../../api/servicio';
+import { logError, mensajeErrorUsuario } from '../../utils/errorApp';
 import { styles as botones } from '../../styles/Button.styles';
 import { styles } from '../../styles/PerfilNegocio.styles';
 
@@ -64,7 +65,8 @@ export default function PerfilNegocioScreen() {
       setPorBorrar(null);
       setAviso('Servicio eliminado correctamente');
     } catch (e) {
-      setErrorBorrado((e as Error).message || 'No se pudo eliminar el servicio');
+      logError('No se pudo eliminar el servicio', e);
+      setErrorBorrado(mensajeErrorUsuario(e, 'Error en la base de datos. Inténtalo más tarde.'));
     } finally {
       borrandoRef.current = false;
       setBorrando(false);

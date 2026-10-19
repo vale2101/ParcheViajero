@@ -1,6 +1,6 @@
 import { request } from './client';
 
-export type TipoUsuario = 'negocio' | 'registrado';
+export type TipoUsuario = 'negocio' | 'registrado' | 'admin';
 
 export interface Usuario {
   _id: string;

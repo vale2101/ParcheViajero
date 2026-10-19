@@ -17,7 +17,7 @@ import {
 } from '../../api/servicio';
 
 import { getCategorias, type Categoria } from '../../api/categoria';
-import styles from '../../styles/MapaNegocio.styles'; '../../styles/NegocioMapa.styles';
+import styles from '../../styles/MapaNegocio.styles';
 
 function tieneCoordenadasValidas(s: Servicio): boolean {
   const { latitud, longitud } = s;
@@ -88,12 +88,17 @@ export default function MapaNegocioScreen() {
     }, [cargar]),
   );
 
-  const serviciosVisibles = useMemo(
-    () => servicios.filter(tieneCoordenadasValidas),
+  const serviciosAprobados = useMemo(
+    () => servicios.filter((s) => s.estado_aprobacion === 'aprobado'),
     [servicios],
   );
 
-  const sinUbicacion = servicios.length - serviciosVisibles.length;
+  const serviciosVisibles = useMemo(
+    () => serviciosAprobados.filter(tieneCoordenadasValidas),
+    [serviciosAprobados],
+  );
+
+  const sinUbicacion = serviciosAprobados.length - serviciosVisibles.length;
 
   const vacio =
     cargado &&
@@ -149,13 +154,9 @@ export default function MapaNegocioScreen() {
             </Text>
 
             <Text style={styles.emptyText}>
-              Publica tu primer servicio y aparecerá aquí con su ubicación.
+              Tus servicios aparecerán aquí cuando un administrador los apruebe.
             </Text>
 
-            <Button
-              text="＋ Añadir servicio"
-              onPress={() => router.push('/negocio/servicios')}
-            />
           </View>
         )}
 

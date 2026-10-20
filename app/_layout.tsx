@@ -4,11 +4,11 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { FavoritosProvider } from '../src/context/FavoritosContext';
 import { useAppFonts } from '../src/hooks/useAppFonts';
+import { View, ActivityIndicator } from 'react-native';
 import "../src/global.css";
 
 export default function RootLayout() {
   const fontsReady = useAppFonts();
-
 
   if (!fontsReady) {
     return null;
@@ -27,19 +27,40 @@ export default function RootLayout() {
 }
 
 function Navigator() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: '#FFFFFF',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <ActivityIndicator size="large" color="#000000" />
+      </View>
+    );
+  }
+
   const esNegocio = user?.tipo_usuario === 'negocio';
+  const esAdmin = user?.tipo_usuario === 'admin';
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
 
-      <Stack.Protected guard={!!user && !esNegocio}>
+      <Stack.Protected guard={!!user && !esNegocio && !esAdmin}>
         <Stack.Screen name="usuario" />
       </Stack.Protected>
 
       <Stack.Protected guard={!!user && esNegocio}>
         <Stack.Screen name="negocio" />
+      </Stack.Protected>
+
+      <Stack.Protected guard={!!user && esAdmin}>
+        <Stack.Screen name="admin" />
       </Stack.Protected>
 
       <Stack.Protected guard={!user}>

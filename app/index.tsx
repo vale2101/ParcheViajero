@@ -9,6 +9,10 @@ export default function Index() {
     return <Redirect href="/login" />;
   }
 
+  if (user.tipo_usuario === 'admin') {
+    return <Redirect href="/admin/inicio" />;
+  }
+
   if (user.tipo_usuario === 'negocio') {
     return <Redirect href="/negocio/mapa" />;
   }

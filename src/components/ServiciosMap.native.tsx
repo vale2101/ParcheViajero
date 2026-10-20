@@ -1,6 +1,6 @@
 import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import type { Ref } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import WebView from 'react-native-webview';
 import type { Servicio } from '../api/servicio';
 import type { Categoria } from '../api/categoria';
@@ -8,7 +8,6 @@ import { getCategoriaVisual, DESTACADO_VISUAL } from '../utils/categoriaVisual';
 import { buildPinIcon } from '../utils/mapMarkerIcon';
 import { PERSONA_PIN_ICON, PERSONA_PIN_SIZE } from '../utils/personaPinIcon';
 import { MAP_STYLE } from '../utils/mapStyle';
-import { styles } from '../styles/ServiciosMapNative.styles';
 
 export interface ServiciosMapHandle {
   centerOn: (lat: number, lng: number, zoom?: number) => void;
@@ -22,6 +21,7 @@ interface Props {
   ubicacionUsuario?: { lat: number; lng: number } | null;
   centerLat?: number;
   centerLng?: number;
+  ajustarVista?: boolean;
 }
 
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY ?? '';
@@ -44,6 +44,7 @@ function buildHtml(
   userMarker: MarkerData | null,
   centerLat: number,
   centerLng: number,
+  ajustarVista: boolean,
 ) {
   return `
 <!DOCTYPE html>
@@ -96,6 +97,16 @@ function buildHtml(
           addMarker(userMarkerData);
         }
 
+        // Ajusta la vista a los marcadores (solo si se pidió con ajustarVista)
+        if (${ajustarVista} && markersData.length === 1) {
+          map.setCenter({ lat: markersData[0].lat, lng: markersData[0].lng });
+          map.setZoom(15);
+        } else if (${ajustarVista} && markersData.length > 1) {
+          const bounds = new google.maps.LatLngBounds();
+          markersData.forEach(function (m) { bounds.extend({ lat: m.lat, lng: m.lng }); });
+          map.fitBounds(bounds, 60);
+        }
+
         // Expuesto para que RN pueda recentrar el mapa vía injectJavaScript
         // (desde el botón de "mi ubicación" o al elegir un municipio)
         window.centerMap = function (lat, lng, zoom) {
@@ -118,6 +129,7 @@ function ServiciosMap(
     ubicacionUsuario,
     centerLat,
     centerLng,
+    ajustarVista,
   }: Props,
   ref: Ref<ServiciosMapHandle>,
 ) {
@@ -165,9 +177,16 @@ function ServiciosMap(
   // El HTML solo se reconstruye si cambian los marcadores o el centro inicial,
   // para no reiniciar el mapa (y perder el zoom/posición) en cada render.
   const html = useMemo(
-    () => buildHtml(markers, userMarker, centerLat ?? DEFAULT_LAT, centerLng ?? DEFAULT_LNG),
+    () =>
+      buildHtml(
+        markers,
+        userMarker,
+        centerLat ?? DEFAULT_LAT,
+        centerLng ?? DEFAULT_LNG,
+        !!ajustarVista,
+      ),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [JSON.stringify(markers), JSON.stringify(userMarker), centerLat, centerLng],
+    [JSON.stringify(markers), JSON.stringify(userMarker), centerLat, centerLng, ajustarVista],
   );
 
   useImperativeHandle(ref, () => ({
@@ -203,3 +222,8 @@ function ServiciosMap(
 }
 
 export default forwardRef(ServiciosMap);
+
+const styles = StyleSheet.create({
+  container: { flex: 1 },
+  map: { flex: 1 },
+});

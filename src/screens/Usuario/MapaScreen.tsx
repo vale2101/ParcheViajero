@@ -37,12 +37,9 @@ export default function MapaScreen() {
     [servicios, filtros],
   );
 
-  // Servicio con mejor calificación promedio (con al menos N reseñas),
-  // para destacarlo con el pin dorado (⭐) en el mapa
+
   const destacadoId = useMemo(() => calcularDestacadoId(resenas), [resenas]);
 
-  // Al elegir un municipio en los filtros, el mapa se recentra automáticamente
-  // en ese municipio (Manizales -> Manizales, Neira -> Neira, etc.)
   useEffect(() => {
     if (!filtros.municipioId) return;
 

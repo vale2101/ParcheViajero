@@ -46,15 +46,6 @@ function Navigator() {
         <Stack.Screen name="login" />
         <Stack.Screen name="register" />
       </Stack.Protected>
-
-
-      {/* Quitar después; esta ruta es solo de prueba. */}
-      <Stack.Screen name="vista_resena" />
-      {/* Quitar después; esta ruta es solo de prueba. */}
-      <Stack.Screen name="vista_resenas_negocio" />
-      {/* Quitar después; esta ruta es solo de prueba. */}
-      <Stack.Screen name="vista_perfil" />
-
     </Stack>
   );
 }

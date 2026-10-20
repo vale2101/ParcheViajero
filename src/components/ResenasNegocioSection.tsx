@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Image, Text, View } from 'react-native';
 import StarRating from './StarRating';
-import { getResenasNegocio, type ResenaNegocio } from '../resenasNegocioejemplos';
+
 import { styles } from '../styles/ResenasNegocioSection.styles';
+import { getResenas } from '../api/resena';
 
 // Convierte una fecha en "hace 2 días"
 function haceCuanto(fecha: string) {
@@ -13,10 +14,10 @@ function haceCuanto(fecha: string) {
 }
 
 export default function ResenasNegocioSection() {
-  const [resenas, setResenas] = useState<ResenaNegocio[]>([]);
+  const [resenas, setResenas] = useState<any[]>([]);
 
   useEffect(() => {
-    getResenasNegocio().then(setResenas);
+    getResenas().then((respuesta) => setResenas(respuesta.data));
   }, []);
 
   const promedio =

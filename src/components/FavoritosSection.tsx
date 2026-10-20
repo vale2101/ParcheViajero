@@ -1,7 +1,10 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { getFavoritos, type Favorito } from '../favoritosejmplos';
+import { getCategorias, type Categoria } from '../api/categoria';
+import { getMunicipios, type Municipio } from '../api/municipio';
+import { getServicios, type Servicio } from '../api/servicio';
+import { useFavoritos } from '../context/FavoritosContext';
 import { getCategoriaVisual } from '../utils/categoriaVisual';
 import { styles } from '../styles/FavoritosSection.styles';
 
@@ -9,17 +12,41 @@ import { styles } from '../styles/FavoritosSection.styles';
 const MAX_VISIBLES = 4;
 
 export default function FavoritosSection() {
-  const [favoritos, setFavoritos] = useState<Favorito[]>([]);
+  const { favoritos: favoritosIds, toggleFavorito } = useFavoritos();
+  const [servicios, setServicios] = useState<Servicio[]>([]);
+  const [categorias, setCategorias] = useState<Categoria[]>([]);
+  const [municipios, setMunicipios] = useState<Municipio[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const [expandido, setExpandido] = useState(false);
 
   useEffect(() => {
-    getFavoritos().then(setFavoritos);
+    async function cargarDatos() {
+      try {
+        const [serviciosRespuesta, categoriasRespuesta, municipiosRespuesta] =
+          await Promise.all([getServicios(), getCategorias(), getMunicipios()]);
+
+        setServicios(serviciosRespuesta.data);
+        setCategorias(categoriasRespuesta.data);
+        setMunicipios(municipiosRespuesta.data);
+        setError(null);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'No se pudieron cargar los favoritos');
+      }
+    }
+
+    cargarDatos();
   }, []);
 
-  // Quita el favorito de la lista (por ahora solo en la pantalla;
-  // cuando haya backend aquí se llama a la API para borrarlo)
-  function quitarFavorito(id: string) {
-    setFavoritos((prev) => prev.filter((f) => f._id !== id));
+  const favoritos = favoritosIds
+    .map((id) => servicios.find((servicio) => servicio._id === id))
+    .filter((servicio): servicio is Servicio => servicio !== undefined);
+
+  function obtenerCategoria(servicio: Servicio) {
+    return categorias.find((categoria) => categoria._id === servicio.categoria_id)?.nombre;
+  }
+
+  function obtenerMunicipio(servicio: Servicio) {
+    return municipios.find((municipio) => municipio._id === servicio.municipio_id)?.nombre;
   }
 
   const visibles = expandido ? favoritos : favoritos.slice(0, MAX_VISIBLES);
@@ -32,14 +59,18 @@ export default function FavoritosSection() {
         {favoritos.length > 0 && <Text style={styles.count}>{favoritos.length} lugares</Text>}
       </View>
 
-      {favoritos.length === 0 ? (
+      {error ? (
+        <View style={styles.emptyBox}>
+          <Text style={styles.placeholder}>{error}</Text>
+        </View>
+      ) : favoritos.length === 0 ? (
         <View style={styles.emptyBox}>
           <Text style={styles.placeholder}>Aún no tienes favoritos guardados</Text>
         </View>
       ) : (
         <View style={styles.box}>
           {visibles.map((fav, index) => {
-            const visual = getCategoriaVisual(fav.categoria);
+            const visual = getCategoriaVisual(obtenerCategoria(fav));
 
             return (
               <View key={fav._id} style={[styles.row, index > 0 && styles.rowBorder]}>
@@ -49,10 +80,10 @@ export default function FavoritosSection() {
 
                 <View style={styles.info}>
                   <Text style={styles.nombre}>{fav.nombre}</Text>
-                  <Text style={styles.municipio}>{fav.municipio}</Text>
+                  <Text style={styles.municipio}>{obtenerMunicipio(fav) ?? 'Municipio no disponible'}</Text>
                 </View>
 
-                <Pressable onPress={() => quitarFavorito(fav._id)} hitSlop={8}>
+                <Pressable onPress={() => toggleFavorito(fav._id)} hitSlop={8}>
                   <Ionicons name="heart" size={20} color="#dc2626" />
                 </Pressable>
               </View>

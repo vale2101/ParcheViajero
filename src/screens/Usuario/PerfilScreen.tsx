@@ -5,7 +5,7 @@ import FavoritosSection from '../../components/FavoritosSection';
 import InfoModal from '../../components/InfoModal';
 import MisResenasSection from '../../components/MisResenasSection';
 import PerfilDrawer from '../../components/PerfilDrawer';
-import ResenasSection from '../../components/ResenasSection';
+//import ResenasSection from '../../components/ResenasSection';
 import ScreenHeader from '../../components/ScreenHeader';
 import { useAuth } from '../../context/AuthContext';
 import { styles } from '../../styles/UsuarioPerfil.styles';

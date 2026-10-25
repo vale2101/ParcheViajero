@@ -1,10 +1,12 @@
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
+import { useAlert } from '../context/AlertContext';
 
 type LoginForm = { email: string; contrasena: string };
 
 export function useLoginForm() {
   const { login } = useAuth();
+  const { errorVital } = useAlert();
 
   const { control, handleSubmit, setError, formState } = useForm<LoginForm>({
     defaultValues: { email: '', contrasena: '' },
@@ -14,7 +16,14 @@ export function useLoginForm() {
     try {
       await login(email, contrasena);
     } catch (error) {
-      setError('root', { message: (error as Error).message });
+      setError('root', {
+        message: errorVital(
+          'Error al iniciar sesión',
+          error,
+          'No se pudo iniciar sesión. Verifica tus datos e inténtalo de nuevo.',
+          'No se pudo entrar',
+        ),
+      });
     }
   };
 

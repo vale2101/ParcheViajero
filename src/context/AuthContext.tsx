@@ -17,6 +17,7 @@ import {
 } from '../api/usuario';
 
 import { setToken } from '../api/client';
+import { logError } from '../utils/errorApp';
 
 interface AuthUser extends Usuario {
   tipo_usuario: TipoUsuario;
@@ -37,13 +38,7 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
-const USUARIO_PRUEBA: AuthUser = {
-  _id: 'u-prueba',
-  tipo_usuario_id: 'registrado',
-  tipo_usuario: 'registrado',
-  nombre: 'Laura Gómez',
-  email: 'laura@correo.com',
-};
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -60,7 +55,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (active) {
           setUser(data);
         }
-      } catch {
+      } catch (error) {
+        logError('No se pudo restaurar la sesión', error);
         if (active) {
           setUser(null);
         }

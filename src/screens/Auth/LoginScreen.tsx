@@ -20,7 +20,6 @@ export default function LoginScreen() {
             resizeMode="contain"
             accessibilityLabel="Parche Viajero"
           />
-          <Text style={styles.subtitle}>Entra con tu cuenta</Text>
         </View>
 
         <Field

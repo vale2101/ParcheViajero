@@ -8,6 +8,8 @@ import { buildPinIcon } from '../utils/mapMarkerIcon';
 import { PERSONA_PIN_ICON, PERSONA_PIN_SIZE } from '../utils/personaPinIcon';
 import { MAP_STYLE } from '../utils/mapStyle';
 import { styles } from '../styles/ServiciosMapWeb.styles';
+import Loader from './Loader';
+import { logError } from '../utils/errorApp';
 
 export interface ServiciosMapHandle {
   centerOn: (lat: number, lng: number, zoom?: number) => void;
@@ -70,6 +72,7 @@ function ServiciosMap(
   onSelectRef.current = onSelectServicio;
 
   const [ready, setReady] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const categoriaPorId = useMemo(
     () => Object.fromEntries(categorias.map((c) => [c._id, c.nombre])),
@@ -80,22 +83,29 @@ function ServiciosMap(
   useEffect(() => {
     let cancelled = false;
 
-    loadGoogleMapsScript().then(() => {
-      if (cancelled || !mapDivRef.current) return;
+    loadGoogleMapsScript()
+      .then(() => {
+        if (cancelled || !mapDivRef.current) return;
 
-      const google = (window as any).google;
-      const center = { lat: centerLat ?? DEFAULT_LAT, lng: centerLng ?? DEFAULT_LNG };
+        const google = (window as any).google;
+        const center = { lat: centerLat ?? DEFAULT_LAT, lng: centerLng ?? DEFAULT_LNG };
 
-      mapRef.current = new google.maps.Map(mapDivRef.current, {
-        center,
-        zoom: 13,
-        disableDefaultUI: true,
-        zoomControl: true,
-        styles: MAP_STYLE,
+        mapRef.current = new google.maps.Map(mapDivRef.current, {
+          center,
+          zoom: 13,
+          disableDefaultUI: true,
+          zoomControl: true,
+          styles: MAP_STYLE,
+        });
+
+        setReady(true);
+      })
+      .catch((e: Error) => {
+        logError('No se pudo cargar Google Maps', e);
+        if (!cancelled) {
+          setLoadError('No hemos podido cargar el mapa. Inténtalo de nuevo.');
+        }
       });
-
-      setReady(true);
-    });
 
     return () => {
       cancelled = true;
@@ -169,7 +179,14 @@ function ServiciosMap(
     <View style={styles.container}>
       {/* @ts-expect-error - ref de DOM, válido en react-native-web */}
       <View ref={mapDivRef} style={styles.map} />
-      {!ready && <Text style={styles.loadingText}>Cargando mapa…</Text>}
+      {!ready &&
+        (loadError ? (
+          <Text style={styles.loadingText}>{loadError}</Text>
+        ) : (
+          <View style={styles.loadingWrap} pointerEvents="none">
+            <Loader tipo="compacto" texto="Cargando mapa…" />
+          </View>
+        ))}
     </View>
   );
 }

@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import Button from './Button';
+import Loader from './Loader';
 import StarRating from './StarRating';
 import { useServicioResenas } from '../hooks/useServicioResenas';
 import { validarCalificacion } from '../utils/validaciones';
@@ -72,9 +73,11 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
             style={styles.list}
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
-              !loading ? (
+              loading ? (
+                <Loader tipo="bloque" texto="Cargando reseñas…" />
+              ) : (
                 <Text style={styles.placeholder}>Aún no hay reseñas para este lugar</Text>
-              ) : null
+              )
             }
             renderItem={({ item }) => (
               <View style={styles.reviewCard}>

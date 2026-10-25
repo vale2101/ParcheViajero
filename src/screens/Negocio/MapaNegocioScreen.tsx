@@ -1,6 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Pressable,
   Text,
   View,
@@ -9,6 +8,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 
 import Button from '../../components/Button';
 import ScreenHeader from '../../components/ScreenHeader';
+import Loader from '../../components/Loader';
 import ServiciosMap from '../../components/ServiciosMap';
 
 import {
@@ -17,6 +17,7 @@ import {
 } from '../../api/servicio';
 
 import { getCategorias, type Categoria } from '../../api/categoria';
+import { logError, mensajeErrorUsuario } from '../../utils/errorApp';
 import styles from '../../styles/MapaNegocio.styles';
 
 function tieneCoordenadasValidas(s: Servicio): boolean {
@@ -67,9 +68,8 @@ export default function MapaNegocioScreen() {
     } catch (err) {
       if (id !== peticionRef.current) return;
 
-      setError(
-        (err as Error).message || 'No se pudieron cargar tus servicios',
-      );
+      logError('No se pudieron cargar tus servicios en el mapa', err);
+      setError(mensajeErrorUsuario(err, 'No hemos podido obtener los datos'));
     } finally {
       if (id === peticionRef.current) {
         setCargando(false);
@@ -120,10 +120,7 @@ export default function MapaNegocioScreen() {
 
         {cargando && (
           <View style={styles.loadingBadge} pointerEvents="none">
-            <ActivityIndicator color="#0147B9" size="small" />
-            <Text style={styles.loadingText}>
-              Cargando tus lugares…
-            </Text>
+            <Loader tipo="compacto" texto="Cargando tus lugares…" />
           </View>
         )}
 

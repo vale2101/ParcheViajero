@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Animated,
   KeyboardAvoidingView,
   Platform,
@@ -13,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
+import Loader from '../../components/Loader';
 import StepBasica from '../../components/StepBasica';
 import StepContacto from '../../components/StepContacto';
 import StepImagenes from '../../components/StepImagenes';
@@ -204,7 +204,7 @@ function Contenido() {
             <View
               style={{ position: 'absolute', top: insets.top + 60, alignSelf: 'center' }}
               pointerEvents="none">
-              <ActivityIndicator color="#0147B9" />
+              <Loader tipo="compacto" texto="Publicando tu servicio…" />
             </View>
           )}
         </>

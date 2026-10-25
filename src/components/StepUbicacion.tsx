@@ -1,6 +1,7 @@
-import { ActivityIndicator, Text, TextInput, View, type LayoutChangeEvent } from 'react-native';
+import { Text, TextInput, View, type LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../components/Button';
+import Loader from '../components/Loader';
 import LocationPickerMap from '../components/LocationPickerMap';
 import PickerField from '../components/PickerField';
 import type { Municipio } from '../api/municipio';
@@ -54,10 +55,7 @@ export default function StepUbicacion({
 
       <View onLayout={ancla('municipio')} style={styles.block}>
         {cargando ? (
-          <View style={styles.loadingRow}>
-            <ActivityIndicator color="#0147B9" />
-            <Text style={styles.loadingText}>Cargando municipios…</Text>
-          </View>
+          <Loader tipo="compacto" texto="Cargando municipios…" />
         ) : error ? (
           <View style={styles.retryBox}>
             <Text style={styles.retryText}>{error}</Text>

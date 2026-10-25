@@ -1,13 +1,15 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, Text, View } from 'react-native';
+import { Image, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '../../components/Button';
+import Loader from '../../components/Loader';
 import AdminSubHeader from '../../components/AdminSubHeader';
 import InfoRow from '../../components/InfoRow';
 import ServicioAdminCard from '../../components/ServicioAdminCard';
 import { getUsuarioAdmin, type ServicioAdmin, type UsuarioAdmin } from '../../api/admin';
 import { ETIQUETA_TIPO, formatearFecha, iniciales } from '../../utils/adminFormat';
+import { logError, mensajeErrorUsuario } from '../../utils/errorApp';
 import { styles } from '../../styles/Admin.styles';
 
 export default function AdminUsuarioDetalleScreen() {
@@ -27,7 +29,8 @@ export default function AdminUsuarioDetalleScreen() {
       setUsuario(r.data);
       setServicios(r.servicios);
     } catch (e) {
-      setError((e as Error).message || 'No se pudo cargar el usuario');
+      logError('No se pudo cargar el usuario', e);
+      setError(mensajeErrorUsuario(e, 'No hemos podido obtener los datos'));
     } finally {
       setCargando(false);
     }
@@ -45,9 +48,7 @@ export default function AdminUsuarioDetalleScreen() {
 
       <ScrollView contentContainerStyle={styles.content}>
         {cargando && !usuario && (
-          <View style={styles.centerBox}>
-            <ActivityIndicator size="large" color="#0147B9" />
-          </View>
+          <Loader tipo="bloque" texto="Cargando usuario…" />
         )}
 
         {!!error && (

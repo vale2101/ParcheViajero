@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
+import Loader from './Loader';
 import StarRating from './StarRating';
 import { useMisResenas } from '../hooks/useMisResenas';
 import { validarCalificacion } from '../utils/validaciones';
@@ -55,7 +56,7 @@ export default function MisResenasSection() {
       </View>
 
       {loading ? (
-        <Text style={styles.placeholder}>Cargando tus reseñas…</Text>
+        <Loader tipo="bloque" texto="Cargando tus reseñas…" />
       ) : resenas.length === 0 ? (
         <View style={styles.emptyBox}>
           <Text style={styles.placeholder}>Aún no has escrito ninguna reseña</Text>

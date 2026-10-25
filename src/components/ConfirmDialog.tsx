@@ -1,5 +1,6 @@
-import { ActivityIndicator, Modal, Pressable, Text, View } from 'react-native';
+import { Modal, Pressable, Text, View } from 'react-native';
 import Button from '../components/Button';
+import Loader from './Loader';
 import { styles } from '../styles/PerfilNegocio.styles';
 
 interface Props {
@@ -64,7 +65,7 @@ export default function ConfirmDialog({
               disabled={cargando}
               accessibilityRole="button">
               {cargando ? (
-                <ActivityIndicator color="#fff" />
+                <Loader tipo="boton" color="#fff" />
               ) : (
                 <Text style={styles.confirmDangerText}>{confirmarTexto}</Text>
               )}

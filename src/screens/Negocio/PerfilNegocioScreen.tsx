@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import ScreenHeader from '../../components/ScreenHeader';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import Loader from '../../components/Loader';
 import PerfilEditModal from '../../components/PerfilEditModal';
 import ServicioCard from '../../components/ServicioCard';
 import ServicioEditarModal from '../../components/ServicioEditarModal';
@@ -106,10 +107,7 @@ export default function PerfilNegocioScreen() {
 
         {/* Servicios del usuario (sin título) */}
         {cargando && !cargado && (
-          <View style={styles.loadingRow}>
-            <ActivityIndicator color="#0147B9" />
-            <Text style={styles.loadingText}>Cargando tus servicios…</Text>
-          </View>
+          <Loader tipo="bloque" texto="Cargando tus servicios…" />
         )}
 
         {!!error && (

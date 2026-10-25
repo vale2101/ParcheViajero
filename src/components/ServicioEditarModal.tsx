@@ -18,6 +18,7 @@ import StepUbicacion from '../components/StepUbicacion';
 import { updateServicio, type Servicio, type UpdateServicioInput } from '../api/servicio';
 import type { Categoria } from '../api/categoria';
 import type { Municipio } from '../api/municipio';
+import { useAlert } from '../context/AlertContext';
 import { useUbicacionServicio } from '../hooks/useUbicacionServicio';
 import { reglaNombre } from '../utils/validaciones';
 import { reglaPrecio, reglaTelefonoServicio } from '../utils/validacionesServicio';
@@ -52,6 +53,7 @@ export default function ServicioEditarModal({
   onClose,
   onSaved,
 }: Props) {
+  const { errorVital } = useAlert();
   const insets = useSafeAreaInsets();
   const scrollRef = useRef<ScrollView>(null);
   const guardandoRef = useRef(false);
@@ -169,7 +171,14 @@ export default function ServicioEditarModal({
         onSaved();
         onClose();
       } catch (e) {
-        setErrorEnvio((e as Error).message || 'No se pudieron guardar los cambios');
+        setErrorEnvio(
+          errorVital(
+            'No se pudieron guardar los cambios del servicio',
+            e,
+            'Error en la base de datos. Inténtalo más tarde.',
+            'No se pudo guardar',
+          ),
+        );
       } finally {
         guardandoRef.current = false;
         setGuardando(false);

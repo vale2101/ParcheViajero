@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '../context/AuthContext';
 import type { TipoUsuario } from '../api/usuario';
+import { useAlert } from '../context/AlertContext';
 
 type RegisterForm = {
   nombre: string;
@@ -13,6 +14,7 @@ type RegisterForm = {
 
 export function useRegisterForm() {
   const { register } = useAuth();
+  const { errorVital } = useAlert();
   const [tipoUsuario, setTipoUsuario] = useState<TipoUsuario>('registrado');
 
   const { control, handleSubmit, setError, getValues, formState } = useForm<RegisterForm>({
@@ -23,7 +25,14 @@ export function useRegisterForm() {
     try {
       await register(nombre, email, contrasena, tipoUsuario, telefono || undefined);
     } catch (error) {
-      setError('root', { message: (error as Error).message });
+      setError('root', {
+        message: errorVital(
+          'Error al registrar la cuenta',
+          error,
+          'No se pudo crear la cuenta. Inténtalo de nuevo.',
+          'No se pudo registrar',
+        ),
+      });
     }
   };
 

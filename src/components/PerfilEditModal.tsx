@@ -16,6 +16,8 @@ import Field from '../components/Field';
 import { useAuth } from '../context/AuthContext';
 import { updateUsuario } from '../api/usuario';
 import { reglaEmail, reglaNombre, reglaTelefonoOpcional } from '../utils/validaciones';
+import { logError } from '../utils/errorApp';
+import { useAlert } from '../context/AlertContext';
 import { styles } from '../styles/PerfilNegocio.styles';
 
 type PerfilForm = { nombre: string; email: string; telefono: string };
@@ -28,6 +30,7 @@ interface Props {
 
 export default function PerfilEditModal({ visible, onClose, onSaved }: Props) {
   const { user, refreshUser } = useAuth();
+  const { errorVital } = useAlert();
   const insets = useSafeAreaInsets();
   const enviandoRef = useRef(false);
   const [guardando, setGuardando] = useState(false);
@@ -73,7 +76,14 @@ export default function PerfilEditModal({ visible, onClose, onSaved }: Props) {
     try {
       await updateUsuario(user._id, cambios);
     } catch (e) {
-      setErrorEnvio((e as Error).message || 'No se pudo actualizar el perfil');
+      setErrorEnvio(
+        errorVital(
+          'No se pudo actualizar el perfil',
+          e,
+          'Error en la base de datos. Inténtalo más tarde.',
+          'No se pudo guardar',
+        ),
+      );
       enviandoRef.current = false;
       setGuardando(false);
       return;
@@ -81,7 +91,8 @@ export default function PerfilEditModal({ visible, onClose, onSaved }: Props) {
 
     try {
       await refreshUser(); 
-    } catch {
+    } catch (e) {
+      logError('No se pudo refrescar el perfil después de guardar', e);
     }
 
     enviandoRef.current = false;

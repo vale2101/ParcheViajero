@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { FlatList, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import Button from '../../components/Button';
@@ -9,6 +9,7 @@ import { useMisServicios } from '../../hooks/useMisServicios';
 import type { Servicio } from '../../api/servicio';
 import { getEstadoVisual } from '../../utils/estadoServicio';
 import { styles } from '../../styles/NegocioServicios.styles';
+import Loader from '../../components/Loader';
 
 export default function ServiciosScreen() {
   const router = useRouter();
@@ -104,10 +105,7 @@ export default function ServiciosScreen() {
         }
         ListEmptyComponent={
           cargando && !cargado ? (
-            <View style={styles.centerBox}>
-              <ActivityIndicator size="large" color="#0147B9" />
-              <Text style={styles.centerText}>Cargando tus servicios…</Text>
-            </View>
+            <Loader tipo="bloque" texto="Cargando tus servicios…" />
           ) : !error ? (
             <View style={styles.emptyBox}>
               <View style={styles.emptyIcon}>

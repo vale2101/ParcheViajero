@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { getServiciosByUsuarioId_get, type Servicio } from '../api/servicio';
 import { getCategorias, type Categoria } from '../api/categoria';
 import { getMunicipios, type Municipio } from '../api/municipio';
+import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 
 export function useMisServicios() {
   const [servicios, setServicios] = useState<Servicio[]>([]);
@@ -32,7 +33,8 @@ export function useMisServicios() {
       setCargado(true);
     } catch (e) {
       if (id !== peticion.current) return;
-      setError((e as Error).message || 'No se pudieron cargar tus servicios');
+      logError('No se pudieron cargar tus servicios', e);
+      setError(mensajeErrorUsuario(e, 'No hemos podido obtener los datos'));
     } finally {
       if (id === peticion.current) setCargando(false);
     }

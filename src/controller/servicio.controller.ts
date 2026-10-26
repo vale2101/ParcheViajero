@@ -119,6 +119,7 @@ export async function createServicio(
 }
 
 // PUT: editar un servicio propio
+// El modelo decide si el cambio requiere nueva revisión (nombre, categoría o ubicación).
 export async function updateServicio(
   req: Request,
   res: Response,
@@ -147,8 +148,7 @@ export async function updateServicio(
     }
 
     return res.status(HttpStatusCode.Ok).json({
-      message:
-        "Servicio actualizado y enviado nuevamente a revisión",
+      message: "Servicio actualizado correctamente",
     });
   } catch (error: unknown) {
     console.error(error);
@@ -243,7 +243,7 @@ export async function getMisServicios(
 }
 
 // PUT: aprobar o rechazar un servicio.
-// La ruta DEBE utilizar middleware de autenticación y autorización de administrador.
+// La ruta usa requireAuth + requireAdmin.
 export async function revisarServicio(
   req: Request,
   res: Response,
@@ -273,35 +273,35 @@ export async function revisarServicio(
       });
     }
 
-    if (
-      observacion !== undefined &&
-      typeof observacion !== "string"
-    ) {
+    if (observacion !== undefined && typeof observacion !== "string") {
       return res.status(HttpStatusCode.BadRequest).json({
         message: "La observación debe ser texto",
       });
     }
 
-    if (
-      estado_aprobacion === "rechazado" &&
-      !observacion?.trim()
-    ) {
+    if (estado_aprobacion === "rechazado" && !observacion?.trim()) {
       return res.status(HttpStatusCode.BadRequest).json({
         message: "Debes escribir el motivo del rechazo",
       });
     }
 
-    const success = await revisarServicio_put(
+    const resultado = await revisarServicio_put(
       id,
       req.userId,
       estado_aprobacion,
       observacion,
     );
 
-    if (!success) {
-      return res.status(HttpStatusCode.BadRequest).json({
+    if (resultado.resultado === "no_encontrado") {
+      return res.status(HttpStatusCode.NotFound).json({
+        message: "Servicio no encontrado",
+      });
+    }
+
+    if (resultado.resultado === "estado_cambiado") {
+      return res.status(HttpStatusCode.Conflict).json({
         message:
-          "No se pudo revisar el servicio. Puede que no exista o ya haya sido revisado.",
+          "Este servicio ya fue revisado desde otra sesión. Se actualizaron los datos.",
       });
     }
 

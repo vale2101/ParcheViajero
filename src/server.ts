@@ -7,6 +7,7 @@ import servicioRoutes from "./routes/servicio.routes.js";
 import ResenaRoutes from "./routes/resena.routes.js";
 import categoriaRoutes from "./routes/categoria.routes.js";
 import municipioRoutes from "./routes/municipio.routes.js";
+import adminRoutes from "./routes/admin.routes.js";
 
 class Server {
   private app: Application;
@@ -41,6 +42,7 @@ class Server {
     this.app.use("/api/resenas", ResenaRoutes);
     this.app.use("/api/categorias", categoriaRoutes);
     this.app.use("/api/municipios", municipioRoutes);
+    this.app.use("/api/admin", adminRoutes);
   }
 }
 

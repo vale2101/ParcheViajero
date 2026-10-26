@@ -5,8 +5,11 @@ import type {
   IServicio,
   ICreateServicioInput,
 } from "../interfaces/servicio.interface.js";
+import type { EstadoAprobacion } from "../interfaces/servicio.interface.js";
+import type { IRevisionServicio } from "../interfaces/revision.interface.js";
 
 const COLLECTION = "servicios";
+const REVISIONES = "revisiones_servicio";
 
 export type EstadoRevision = "aprobado" | "rechazado";
 
@@ -130,6 +133,7 @@ export async function createServicio_post(
 
 // PUT: editar un servicio propio
 // Los campos de aprobación no pueden ser modificados por el propietario.
+// Solo se vuelve a enviar a revisión si cambia el nombre, la categoría o la ubicación.
 export async function updateServicio_put(
   id: string,
   cambios: Partial<
@@ -251,20 +255,37 @@ export async function updateServicio_put(
     return true;
   }
 
-  // Si se modifica un servicio, debe revisarse de nuevo.
+  // Solo se vuelve a revisar si cambió el nombre, la categoría o la ubicación.
+  const nombreCambio =
+    typeof datos.nombre === "string" &&
+    datos.nombre.trim() !== servicioExistente.nombre.trim();
+
+  const categoriaCambio =
+    datos.categoria_id instanceof ObjectId &&
+    !datos.categoria_id.equals(servicioExistente.categoria_id);
+
+  const ubicacionCambio =
+    (datos.municipio_id instanceof ObjectId &&
+      !datos.municipio_id.equals(servicioExistente.municipio_id)) ||
+    (datos.direccion !== undefined &&
+      datos.direccion !== (servicioExistente.direccion ?? "")) ||
+    (datos.latitud !== undefined && datos.latitud !== servicioExistente.latitud) ||
+    (datos.longitud !== undefined && datos.longitud !== servicioExistente.longitud);
+
+  const requiereRevision = nombreCambio || categoriaCambio || ubicacionCambio;
+
   const response = await coleccion.updateOne(
     { _id: new ObjectId(id) },
-    {
-      $set: {
-        ...datos,
-        estado_aprobacion: "pendiente",
-      },
-      $unset: {
-        fecha_revision: "",
-        revisado_por: "",
-        observacion_revision: "",
-      },
-    },
+    requiereRevision
+      ? {
+          $set: { ...datos, estado_aprobacion: "pendiente" },
+          $unset: {
+            fecha_revision: "",
+            revisado_por: "",
+            observacion_revision: "",
+          },
+        }
+      : { $set: datos },
   );
 
   return response.matchedCount > 0;
@@ -272,12 +293,19 @@ export async function updateServicio_put(
 
 // PUT: aprobar o rechazar un servicio.
 // adminId debe proceder del token de un administrador autorizado.
+export type ResultadoRevision =
+  | { resultado: "ok" }
+  | { resultado: "no_encontrado" }
+  | { resultado: "estado_cambiado"; estadoActual: EstadoAprobacion | undefined };
+
+// PUT: aprobar o rechazar un servicio pendiente y registrar el evento en el historial.
+// adminId debe proceder del token de un administrador autorizado.
 export async function revisarServicio_put(
   id: string,
   adminId: string,
   estado: EstadoRevision,
   observacion?: string,
-): Promise<boolean> {
+): Promise<ResultadoRevision> {
   if (!ObjectId.isValid(id) || !ObjectId.isValid(adminId)) {
     throw new Error("Identificador inválido");
   }
@@ -293,17 +321,33 @@ export async function revisarServicio_put(
   }
 
   const db = mongoConnector.getDb();
+  const servicios = db.collection<IServicio>(COLLECTION);
+  const revisiones = db.collection<IRevisionServicio>(REVISIONES);
+  const servicioId = new ObjectId(id);
+  const adminOid = new ObjectId(adminId);
 
-  const resultado = await db.collection<IServicio>(COLLECTION).updateOne(
-    {
-      _id: new ObjectId(id),
-      estado_aprobacion: "pendiente",
-    },
+  const previo = await servicios.findOne({ _id: servicioId });
+
+  if (!previo) return { resultado: "no_encontrado" };
+
+  if (previo.usuario_id.equals(adminOid)) {
+    throw new Error("No puedes revisar tus propios servicios");
+  }
+
+  if (previo.estado_aprobacion !== "pendiente") {
+    return { resultado: "estado_cambiado", estadoActual: previo.estado_aprobacion };
+  }
+
+  const fecha = new Date();
+
+  // El filtro por "pendiente" evita decisiones contradictorias entre dos sesiones
+  const actualizado = await servicios.updateOne(
+    { _id: servicioId, estado_aprobacion: "pendiente" },
     {
       $set: {
         estado_aprobacion: estado,
-        fecha_revision: new Date(),
-        revisado_por: new ObjectId(adminId),
+        fecha_revision: fecha,
+        revisado_por: adminOid,
         ...(estado === "rechazado" && comentario
           ? { observacion_revision: comentario }
           : {}),
@@ -314,7 +358,38 @@ export async function revisarServicio_put(
     },
   );
 
-  return resultado.modifiedCount > 0;
+  if (actualizado.modifiedCount === 0) {
+    const actual = await servicios.findOne(
+      { _id: servicioId },
+      { projection: { estado_aprobacion: 1 } },
+    );
+    return actual
+      ? { resultado: "estado_cambiado", estadoActual: actual.estado_aprobacion }
+      : { resultado: "no_encontrado" };
+  }
+
+  try {
+    await revisiones.insertOne({
+      servicio_id: servicioId,
+      admin_id: adminOid,
+      estado_anterior: "pendiente",
+      estado_nuevo: estado,
+      fecha,
+      ...(comentario ? { observacion: comentario } : {}),
+    });
+  } catch (error) {
+    // Sin registro de historial no se deja la decisión a medias: se revierte
+    await servicios.updateOne(
+      { _id: servicioId, estado_aprobacion: estado, revisado_por: adminOid },
+      {
+        $set: { estado_aprobacion: "pendiente" },
+        $unset: { fecha_revision: "", revisado_por: "", observacion_revision: "" },
+      },
+    );
+    throw error;
+  }
+
+  return { resultado: "ok" };
 }
 
 // DELETE: eliminar un servicio propio

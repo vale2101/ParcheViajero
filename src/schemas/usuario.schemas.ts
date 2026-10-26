@@ -17,8 +17,8 @@ export const createUsuarioSchema = z.object({
     .min(6, "La contraseña debe tener al menos 6 caracteres"),
 
   tipo_usuario: z
-    .enum(["negocio", "registrado"], {
-      message: "El tipo de usuario debe ser 'negocio' o 'registrado'",
+    .enum(["negocio", "registrado", "admin"], {
+      message: "El tipo de usuario debe ser 'negocio', 'registrado' o 'admin'",
     }),
 
   telefono: z

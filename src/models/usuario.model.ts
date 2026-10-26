@@ -6,12 +6,17 @@ const COLLECTION = "usuarios";
 
 export async function getUsuarios_get(): Promise<IUsuario[]> {
   const db = mongoConnector.getDb();
-  return await db.collection<IUsuario>(COLLECTION).find({}).toArray();
+  return await db
+    .collection<IUsuario>(COLLECTION)
+    .find({}, { projection: { password_hash: 0 } })
+    .toArray();
 }
 
 export async function getUsuarioById_get(id: string): Promise<IUsuario | null> {
   const db = mongoConnector.getDb();
-  return await db.collection<IUsuario>(COLLECTION).findOne({ _id: new ObjectId(id) });
+  return await db
+    .collection<IUsuario>(COLLECTION)
+    .findOne({ _id: new ObjectId(id) }, { projection: { password_hash: 0 } });
 }
 
 export async function getUsuarioByEmail_get(email: string): Promise<IUsuario | null> {

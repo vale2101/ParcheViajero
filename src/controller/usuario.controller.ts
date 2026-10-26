@@ -198,6 +198,14 @@ export async function updateUsuario(req: Request, res: Response): Promise<Respon
       return res.status(HttpStatusCode.BadRequest).json({ message: "Falta el parámetro id" });
     }
 
+    // Un usuario solo puede modificar su propia cuenta (la identidad sale del token)
+    if (req.userId !== id) {
+      return res
+        .status(HttpStatusCode.Forbidden)
+        .json({ message: "No puedes modificar los datos de otro usuario" });
+    }
+
+    // Solo se toman los campos permitidos: nunca tipo_usuario_id ni campos de rol
     const { nombre, email, contrasena, telefono } = req.body;
 
     const cambios: Partial<IUsuario> = {
@@ -214,12 +222,16 @@ export async function updateUsuario(req: Request, res: Response): Promise<Respon
     }
 
     return res.status(HttpStatusCode.Ok).json({ message: "Usuario actualizado correctamente" });
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
+
+    if (error.code === 11000) {
+      return res.status(HttpStatusCode.BadRequest).json({ message: "Ese correo ya está registrado" });
+    }
+
     return res.status(HttpStatusCode.InternalServerError).json({ message: "Error en el servidor" });
   }
 }
-
 // 🔹 DELETE
 export async function deleteUsuario(req: Request, res: Response): Promise<Response> {
   try {

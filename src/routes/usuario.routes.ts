@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { validateSchema } from "../middleware/validateSchemas.middleware.js";
+import { requireAuth, requireAdmin } from "../middleware/auth.middleware.js";
+
 
 import {
   createUsuarioSchema,
@@ -20,11 +22,10 @@ import {
 
 const router = Router();
 
-router.get("/getUsuarios", getUsuarios);
-router.get("/findUsuarioById/:id", getUsuarioById);
+router.get("/getUsuarios", requireAuth, requireAdmin, getUsuarios);
+router.get("/findUsuarioById/:id", requireAuth, requireAdmin, getUsuarioById);
 router.post("/createUsuario", validateSchema(createUsuarioSchema), createUsuario);
-router.put("/updateUsuario/:id", validateSchema(updateUsuarioSchema), updateUsuario);
-router.delete("/delete/:id", deleteUsuario);
+router.put("/updateUsuario/:id", requireAuth, validateSchema(updateUsuarioSchema), updateUsuario);router.delete("/delete/:id", deleteUsuario);
 router.post("/login", validateSchema(loginUsuarioSchema), loginUsuario);
 router.post("/logout", logoutUsuario);
 router.get("/me", getCurrentUsuario);

@@ -26,7 +26,7 @@ export interface IServicio {
   horario_atencion?: string;
   precio?: number;
   fecha_creacion?: Date;
-
+  imagenes?: { _id: ObjectId; url_imagen: string }[];
   estado_aprobacion?: EstadoAprobacion;
   fecha_revision?: Date;
   revisado_por?: ObjectId;

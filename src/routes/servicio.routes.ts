@@ -16,7 +16,11 @@ import {
   deleteServicio,
   getMisServicios,
   revisarServicio,
+  getImagenesServicio,
+  addImagenesServicio,
+  deleteImagenServicio
 } from "../controller/servicio.controller.js";
+import { upload } from "../middleware/upload.middleware.js";
 
 const router = Router();
 
@@ -48,5 +52,10 @@ router.put(
   requireAdmin,
   revisarServicio,
 );
+
+// Imágenes
+router.get("/:id/imagenes", getImagenesServicio);
+router.post("/:id/imagenes", requireAuth, upload.array("imagenes", 6), addImagenesServicio);
+router.delete("/imagenes/:imagenId", requireAuth, deleteImagenServicio);
 
 export default router;

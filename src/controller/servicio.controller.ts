@@ -2,7 +2,13 @@
 import type { Request, Response } from "express";
 import { ObjectId } from "mongodb";
 import { HttpStatusCode } from "../utils/httpStatus.js";
-
+import { subirImagen, borrarImagen } from "../utils/cloudinary.js";
+import {
+  getImagenesByServicio_get,
+  validarCupoImagenes,
+  addImagenes_post,
+  deleteImagen_delete,
+} from "../models/imagen.model.js";
 import {
   getServicios_get,
   getServicioById_get,
@@ -318,5 +324,79 @@ export async function revisarServicio(
       error instanceof Error ? error.message : "Error al revisar el servicio";
 
     return res.status(HttpStatusCode.BadRequest).json({ message });
+  }
+}
+
+// GET: imágenes de un servicio
+export async function getImagenesServicio(req: Request, res: Response): Promise<Response> {
+  try {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(HttpStatusCode.BadRequest).json({ message: "Falta el id" });
+    }
+    const data = await getImagenesByServicio_get(id);
+    return res.status(HttpStatusCode.Ok).json({ data });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Error al obtener imágenes";
+    return res.status(HttpStatusCode.BadRequest).json({ message });
+  }
+}
+
+// POST: agregar imágenes (multipart, campo "imagenes")
+export async function addImagenesServicio(req: Request, res: Response): Promise<Response> {
+  const subidas: { url: string; public_id: string }[] = [];
+  try {
+    const { id } = req.params;
+    const archivos = (req.files as Express.Multer.File[] | undefined) ?? [];
+
+    if (!id || !req.userId) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: "No autenticado" });
+    }
+    if (archivos.length === 0) {
+      return res
+        .status(HttpStatusCode.BadRequest)
+        .json({ message: "No enviaste imágenes (campo 'imagenes')" });
+    }
+
+    const actuales = await validarCupoImagenes(id, req.userId, archivos.length);
+
+    for (const f of archivos) {
+      subidas.push(await subirImagen(f.buffer, "servicios"));
+    }
+
+    const docs = await addImagenes_post(id, subidas, actuales);
+    return res.status(HttpStatusCode.Ok).json({ message: "Imágenes agregadas", data: docs });
+  } catch (error: unknown) {
+    await Promise.all(subidas.map((s) => borrarImagen(s.public_id))); // limpia lo ya subido
+    const message = error instanceof Error ? error.message : "Error al subir imágenes";
+    const status = message.includes("permiso")
+      ? HttpStatusCode.Forbidden
+      : HttpStatusCode.BadRequest;
+    return res.status(status).json({ message });
+  }
+}
+
+// DELETE: eliminar una imagen
+export async function deleteImagenServicio(req: Request, res: Response): Promise<Response> {
+  try {
+    const { imagenId } = req.params;
+
+    if (!imagenId || !req.userId) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: "No autenticado" });
+    }
+
+    const publicId = await deleteImagen_delete(imagenId, req.userId);
+    if (!publicId) {
+      return res.status(HttpStatusCode.NotFound).json({ message: "Imagen no encontrada" });
+    }
+
+    await borrarImagen(publicId);
+    return res.status(HttpStatusCode.Ok).json({ message: "Imagen eliminada" });
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Error al eliminar la imagen";
+    const status = message.includes("permiso")
+      ? HttpStatusCode.Forbidden
+      : HttpStatusCode.BadRequest;
+    return res.status(status).json({ message });
   }
 }

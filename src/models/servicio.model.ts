@@ -1,5 +1,8 @@
 
 import { ObjectId } from "mongodb";
+import type { Document } from "mongodb";
+import { borrarImagen } from "../utils/cloudinary.js";
+import { deleteImagenesByServicio_delete } from "./imagen.model.js";
 import { mongoConnector } from "../db/connection.js";
 import type {
   IServicio,
@@ -11,31 +14,45 @@ import type { IRevisionServicio } from "../interfaces/revision.interface.js";
 const COLLECTION = "servicios";
 const REVISIONES = "revisiones_servicio";
 
+const LOOKUP_IMAGENES: Document = {
+  $lookup: {
+    from: "imagenes_servicio",
+    let: { sid: "$_id" },
+    pipeline: [
+      { $match: { $expr: { $eq: ["$servicio_id", "$$sid"] } } },
+      { $sort: { orden: 1 } },
+      { $project: { _id: 1, url_imagen: 1 } },
+    ],
+    as: "imagenes",
+  },
+};
+
 export type EstadoRevision = "aprobado" | "rechazado";
 
-// GET: servicios aprobados para el mapa público
 export async function getServicios_get(): Promise<IServicio[]> {
   const db = mongoConnector.getDb();
 
-  return db
-    .collection<IServicio>(COLLECTION)
-    .find({ estado_aprobacion: "aprobado" })
+  const docs = await db
+    .collection(COLLECTION)
+    .aggregate([{ $match: { estado_aprobacion: "aprobado" } }, LOOKUP_IMAGENES])
     .toArray();
+
+  return docs as unknown as IServicio[];
 }
 
-// GET: consultar un servicio por ID
-export async function getServicioById_get(
-  id: string,
-): Promise<IServicio | null> {
+export async function getServicioById_get(id: string): Promise<IServicio | null> {
   if (!ObjectId.isValid(id)) {
     throw new Error("Identificador de servicio inválido");
   }
 
   const db = mongoConnector.getDb();
 
-  return db
-    .collection<IServicio>(COLLECTION)
-    .findOne({ _id: new ObjectId(id) });
+  const [servicio] = await db
+    .collection(COLLECTION)
+    .aggregate([{ $match: { _id: new ObjectId(id) } }, LOOKUP_IMAGENES])
+    .toArray();
+
+  return (servicio as unknown as IServicio | undefined) ?? null;
 }
 
 // POST: crear servicio como pendiente
@@ -416,11 +433,15 @@ export async function deleteServicio_delete(
     throw new Error("No tienes permiso para eliminar este servicio");
   }
 
-  const response = await coleccion.deleteOne({
-    _id: new ObjectId(id),
-  });
+   const response = await coleccion.deleteOne({ _id: new ObjectId(id) });
+
+  if (response.deletedCount > 0) {
+    const publicIds = await deleteImagenesByServicio_delete(servicioExistente._id!);
+    await Promise.all(publicIds.map((p) => borrarImagen(p)));
+  }
 
   return response.deletedCount > 0;
+
 }
 
 // GET: todos los servicios del propietario autenticado, con sus estados

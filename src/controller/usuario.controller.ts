@@ -8,10 +8,12 @@ import {
   createUsuario_post,
   updateUsuario_put,
   deleteUsuario_delete,
+  setFotoPerfil_put
 } from "../models/usuario.model.js";
 import type { ICreateUsuarioInput, IUsuario } from "../interfaces/usuario.interface.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { subirImagen, borrarImagen } from "../utils/cloudinary.js";
 
 const secretKey = process.env.JWT_SECRET || "clave-secreta";
 
@@ -246,6 +248,11 @@ export async function deleteUsuario(req: Request, res: Response): Promise<Respon
     if (!success) {
       return res.status(HttpStatusCode.NotFound).json({ message: "Usuario no encontrado" });
     }
+        if (req.userId !== id) {
+      return res
+        .status(HttpStatusCode.Forbidden)
+        .json({ message: "No puedes eliminar la cuenta de otro usuario" });
+    }
 
     return res.status(HttpStatusCode.Ok).json({ message: "Usuario eliminado correctamente" });
   } catch (error) {
@@ -268,5 +275,72 @@ export function logoutUsuario(req: Request, res: Response): Response {
   } catch (error) {
     console.error(error);
     return res.status(HttpStatusCode.InternalServerError).json({ message: "Error al cerrar sesión" });
+  }
+}
+// 🔹 PUT foto de perfil
+export async function updateFotoPerfil(req: Request, res: Response): Promise<Response> {
+  try {
+    const { id } = req.params;
+
+    if (!id || req.userId !== id) {
+      return res
+        .status(HttpStatusCode.Forbidden)
+        .json({ message: "No puedes modificar la foto de otro usuario" });
+    }
+    if (!req.file) {
+      return res
+        .status(HttpStatusCode.BadRequest)
+        .json({ message: "Falta la imagen (campo 'foto')" });
+    }
+
+    const anterior = await getUsuarioById_get(id);
+    const subida = await subirImagen(req.file.buffer, "usuarios");
+
+    try {
+      await setFotoPerfil_put(id, subida);
+    } catch (e) {
+      await borrarImagen(subida.public_id); // evita huérfanos si falla la BD
+      throw e;
+    }
+
+    if (anterior?.foto_perfil_public_id) {
+      await borrarImagen(anterior.foto_perfil_public_id);
+    }
+
+    return res
+      .status(HttpStatusCode.Ok)
+      .json({ message: "Foto actualizada", foto_perfil: subida.url });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(HttpStatusCode.InternalServerError)
+      .json({ message: "Error al subir la foto" });
+  }
+}
+
+// 🔹 DELETE foto de perfil
+export async function deleteFotoPerfil(req: Request, res: Response): Promise<Response> {
+  try {
+    const { id } = req.params;
+
+    if (!id || req.userId !== id) {
+      return res
+        .status(HttpStatusCode.Forbidden)
+        .json({ message: "No puedes modificar la foto de otro usuario" });
+    }
+
+    const anterior = await getUsuarioById_get(id);
+    await setFotoPerfil_put(id, null);
+
+    if (anterior?.foto_perfil_public_id) {
+      await borrarImagen(anterior.foto_perfil_public_id);
+    }
+
+    return res.status(HttpStatusCode.Ok).json({ message: "Foto eliminada" });
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(HttpStatusCode.InternalServerError)
+      .json({ message: "Error al eliminar la foto" });
   }
 }

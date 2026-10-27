@@ -9,6 +9,7 @@ export interface IUsuario {
   telefono?: string;
   foto_perfil?: string;
   fecha_registro?: Date;
+  foto_perfil_public_id?: string;  
 }
 
 export interface IUsuarioConTipo extends IUsuario {

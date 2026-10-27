@@ -1,4 +1,4 @@
-import { ObjectId } from "mongodb";
+import { ObjectId, type UpdateFilter } from "mongodb";
 import { mongoConnector } from "../db/connection.js";
 import type { IUsuario, IUsuarioConTipo, ICreateUsuarioInput} from "../interfaces/usuario.interface.js";
 
@@ -38,7 +38,7 @@ export async function getUsuarioConTipoById_get(id: string): Promise<IUsuarioCon
     },
     { $unwind: "$tipo" },
     { $addFields: { tipo_usuario: "$tipo.nombre" } },
-    { $project: { tipo: 0 } }
+    { $project: { tipo: 0, password_hash: 0 } }
   ]).toArray();
 
   return resultado[0] as IUsuarioConTipo ?? null;
@@ -96,4 +96,21 @@ export async function deleteUsuario_delete(id: string): Promise<boolean> {
   const db = mongoConnector.getDb();
   const response = await db.collection<IUsuario>(COLLECTION).deleteOne({ _id: new ObjectId(id) });
   return response.deletedCount > 0;
+}
+
+export async function setFotoPerfil_put(
+  id: string,
+  foto: { url: string; public_id: string } | null,
+): Promise<boolean> {
+  const db = mongoConnector.getDb();
+
+  const update: UpdateFilter<IUsuario> = foto
+    ? { $set: { foto_perfil: foto.url, foto_perfil_public_id: foto.public_id } }
+    : { $unset: { foto_perfil: "", foto_perfil_public_id: "" } };
+
+  const r = await db
+    .collection<IUsuario>(COLLECTION)
+    .updateOne({ _id: new ObjectId(id) }, update);
+
+  return r.matchedCount > 0;
 }

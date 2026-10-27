@@ -1,6 +1,6 @@
 import express from "express";
-import type { Application } from "express";
-import cors from "cors";
+import type { Application, Request, Response, NextFunction } from "express";
+import multer from "multer";import cors from "cors";
 import cookieParser from "cookie-parser";
 import usuarioRoutes from "./routes/usuario.routes.js";
 import servicioRoutes from "./routes/servicio.routes.js";
@@ -43,6 +43,15 @@ class Server {
     this.app.use("/api/categorias", categoriaRoutes);
     this.app.use("/api/municipios", municipioRoutes);
     this.app.use("/api/admin", adminRoutes);
+        this.app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
+      if (
+        err instanceof multer.MulterError ||
+        (err instanceof Error && err.message.startsWith("Solo se permiten"))
+      ) {
+        return res.status(400).json({ message: (err as Error).message });
+      }
+      next(err);
+    });
   }
 }
 

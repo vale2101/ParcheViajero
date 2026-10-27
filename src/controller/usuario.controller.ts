@@ -15,7 +15,11 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { subirImagen, borrarImagen } from "../utils/cloudinary.js";
 
-const secretKey = process.env.JWT_SECRET || "clave-secreta";
+const secretKey: string = process.env.JWT_SECRET ?? "";
+
+if (!secretKey) {
+  throw new Error("La variable JWT_SECRET no esta configurada");
+}
 
 // 🔹 LOGIN
 export async function loginUsuario(req: Request, res: Response): Promise<Response> {

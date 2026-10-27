@@ -29,6 +29,18 @@ function etapasEnriquecimiento(): Document[] {
     { $unwind: { path: "$categoria", preserveNullAndEmptyArrays: true } },
     { $lookup: { from: "municipios", localField: "municipio_id", foreignField: "_id", as: "municipio" } },
     { $unwind: { path: "$municipio", preserveNullAndEmptyArrays: true } },
+        {
+      $lookup: {
+        from: "imagenes_servicio",
+        let: { sid: "$_id" },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$servicio_id", "$$sid"] } } },
+          { $sort: { orden: 1 } },
+          { $project: { _id: 1, url_imagen: 1 } },
+        ],
+        as: "imagenes",
+      },
+    },
     { $addFields: { categoria_nombre: "$categoria.nombre", municipio_nombre: "$municipio.nombre" } },
     {
       $project: {

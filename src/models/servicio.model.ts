@@ -58,7 +58,7 @@ export async function getServicioById_get(id: string): Promise<IServicio | null>
 // POST: crear servicio como pendiente
 export async function createServicio_post(
   servicio: ICreateServicioInput,
-): Promise<boolean> {
+): Promise<string | null> {
   try {
     const db = mongoConnector.getDb();
 
@@ -141,7 +141,8 @@ export async function createServicio_post(
       .collection<IServicio>(COLLECTION)
       .insertOne(doc);
 
-    return response.acknowledged;
+    return response.acknowledged ? response.insertedId.toString() : null;
+
   } catch (error: unknown) {
     console.error("Error al crear servicio:", error);
     throw error;
@@ -454,8 +455,10 @@ export async function getServiciosByUsuarioId_get(
 
   const db = mongoConnector.getDb();
 
-  return db
-    .collection<IServicio>(COLLECTION)
-    .find({ usuario_id: new ObjectId(usuarioId) })
+  const docs = await db
+    .collection(COLLECTION)
+    .aggregate([{ $match: { usuario_id: new ObjectId(usuarioId) } }, LOOKUP_IMAGENES])
     .toArray();
+
+  return docs as unknown as IServicio[];
 }

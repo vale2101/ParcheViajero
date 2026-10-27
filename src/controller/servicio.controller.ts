@@ -91,7 +91,7 @@ export async function createServicio(
       precio,
     } = req.body;
 
-    const success = await createServicio_post({
+    const id = await createServicio_post({
       usuario_id: req.userId,
       categoria_id,
       municipio_id,
@@ -105,7 +105,7 @@ export async function createServicio(
       precio,
     });
 
-    if (!success) {
+    if (!id) {
       return res.status(HttpStatusCode.BadRequest).json({
         message: "No se pudo crear el servicio",
       });
@@ -113,7 +113,9 @@ export async function createServicio(
 
     return res.status(HttpStatusCode.Ok).json({
       message: "Servicio enviado a revisión",
+      data: { _id: id },
     });
+    
   } catch (error: unknown) {
     console.error(error);
 

@@ -43,6 +43,11 @@ class Server {
     this.app.use("/api/categorias", categoriaRoutes);
     this.app.use("/api/municipios", municipioRoutes);
     this.app.use("/api/admin", adminRoutes);
+    this.app.get("/", (_req: Request, res: Response) => {
+      res.status(200).json({
+        mensaje: "API de ParcheViajero funcionando correctamente"
+      });
+    });
         this.app.use((err: unknown, _req: Request, res: Response, next: NextFunction) => {
       if (
         err instanceof multer.MulterError ||
@@ -53,6 +58,7 @@ class Server {
       next(err);
     });
   }
+  
 }
 
 export default Server;

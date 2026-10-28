@@ -13,6 +13,7 @@ interface Props {
   categoria: Categoria | undefined;
   municipio: Municipio | undefined;
   gratuito: boolean;
+  imagenes: number;
   ubicacion: UbicacionConfirmada | null;
   onEditar: (paso: number) => void;
   errorEnvio: string | null;
@@ -62,6 +63,7 @@ export default function StepResumen({
   gratuito,
   ubicacion,
   onEditar,
+  imagenes,
   errorEnvio,
 }: Props) {
   const visual = getCategoriaVisual(categoria?.nombre);
@@ -106,7 +108,11 @@ export default function StepResumen({
       </Seccion>
 
       <Seccion titulo="Imágenes" paso={3} onEditar={onEditar}>
-        <Text style={styles.summaryValue}>No disponibles por ahora (falta soporte en el servidor).</Text>
+        <Text style={styles.summaryValue}>
+          {imagenes > 0
+            ? `${imagenes} ${imagenes === 1 ? 'foto seleccionada' : 'fotos seleccionadas'}`
+            : 'Sin fotos (opcional)'}
+        </Text>
       </Seccion>
 
       <View style={styles.notice}>

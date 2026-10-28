@@ -14,6 +14,7 @@ const ACCESOS: { ruta: Href; icono: keyof typeof Ionicons.glyphMap; titulo: stri
   { ruta: '/admin/solicitudes', icono: 'document-text-outline', titulo: 'Solicitudes de servicios', desc: 'Revisa y decide los servicios pendientes' },
   { ruta: '/admin/servicios', icono: 'time-outline', titulo: 'Historial de servicios', desc: 'Todos los servicios y sus decisiones' },
   { ruta: '/admin/usuarios', icono: 'people-outline', titulo: 'Usuarios registrados', desc: 'Consulta negocios y viajeros' },
+  { ruta: '/admin/resenas', icono: 'chatbubbles-outline', titulo: 'Reseñas', desc: 'Busca y elimina reseñas de los viajeros' },
 ];
 
 export default function AdminInicioScreen() {
@@ -47,9 +48,6 @@ export default function AdminInicioScreen() {
               <Text style={styles.roleText}>Administrador</Text>
             </View>
           </View>
-          <Pressable style={styles.iconBtn} onPress={() => router.push('/admin/perfil')} accessibilityRole="button" accessibilityLabel="Ir a mi perfil">
-            <Ionicons name="person-circle-outline" size={28} color="#0147B9" />
-          </Pressable>
           <Pressable style={styles.iconBtn} onPress={logout} accessibilityRole="button" accessibilityLabel="Cerrar sesión">
             <Ionicons name="log-out-outline" size={26} color="#B91C1C" />
           </Pressable>

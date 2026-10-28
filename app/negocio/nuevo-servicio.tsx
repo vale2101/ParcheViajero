@@ -1,5 +1,5 @@
-import ServicioWizardScreen from '../../src/screens/Negocio/ServicioWizardScreen';
+  import ServicioWizardScreen from '../../src/screens/Negocio/ServicioWizardScreen';
 
-export default function NuevoServicio() {
-  return <ServicioWizardScreen />;
-}
+  export default function NuevoServicio() {
+    return <ServicioWizardScreen />;
+  }

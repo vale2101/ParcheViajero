@@ -1,4 +1,5 @@
 import { Pressable, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import type { Servicio } from '../api/servicio';
 import { getCategoriaVisual } from '../utils/categoriaVisual';
@@ -44,16 +45,27 @@ export default function ServicioCard({
   onEliminar,
 }: Props) {
   const visual = getCategoriaVisual(categoria);
+  const foto = servicio.imagenes?.[0]?.url_imagen;
 
   return (
     <View style={styles.card}>
-      {}
-      <View
-        style={[styles.photo, { backgroundColor: `${visual.color}1A` }]}
-        accessibilityLabel="Imagen predeterminada del servicio">
-        <Text style={styles.photoEmoji}>{visual.emoji}</Text>
-        <Text style={styles.photoHint}>Sin fotografía</Text>
-      </View>
+      {foto ? (
+        <Image
+          source={{ uri: foto }}
+          style={[styles.photo, { width: '100%' }]}
+          contentFit="cover"
+          cachePolicy="disk"
+          transition={200}
+          accessibilityLabel={`Foto de ${servicio.nombre}`}
+        />
+      ) : (
+        <View
+          style={[styles.photo, { backgroundColor: `${visual.color}1A` }]}
+          accessibilityLabel="Imagen predeterminada del servicio">
+          <Text style={styles.photoEmoji}>{visual.emoji}</Text>
+          <Text style={styles.photoHint}>Sin fotografía</Text>
+        </View>
+      )}
 
       <View style={styles.body}>
         <Text style={styles.name} numberOfLines={2}>

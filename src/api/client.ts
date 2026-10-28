@@ -16,6 +16,33 @@ const TOKEN_KEY = 'parche_viajero_token';
 
 let token: string | null = null;
 
+export async function requestForm<T>(path: string, form: FormData): Promise<T> {
+  const savedToken = await getToken();
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      method: 'POST',
+      headers: savedToken ? { Authorization: `Bearer ${savedToken}` } : {},
+      body: form,
+    });
+  } catch {
+    throw new Error(`No se pudo conectar con ${API_URL}. ¿Está encendido el servidor?`);
+  }
+
+  const data = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+
+  if (!response.ok) {
+    throw new Error(
+      typeof data['message'] === 'string'
+        ? data['message']
+        : `Error ${response.status} al llamar ${path}`,
+    );
+  }
+
+  return data as T;
+}
+
 export async function setToken(value: string | null): Promise<void> {
   token = value;
 

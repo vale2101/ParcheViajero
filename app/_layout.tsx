@@ -54,11 +54,11 @@ function Navigator() {
       <Stack.Protected guard={!!user && !esNegocio && !esAdmin}>
         <Stack.Screen name="usuario" />
       </Stack.Protected>
-
+      
       <Stack.Protected guard={!!user && esNegocio}>
         <Stack.Screen name="negocio" />
       </Stack.Protected>
-
+      
       <Stack.Protected guard={!!user && esAdmin}>
         <Stack.Screen name="admin" />
       </Stack.Protected>
@@ -67,6 +67,8 @@ function Navigator() {
         <Stack.Screen name="login" />
         <Stack.Screen name="register" />
       </Stack.Protected>
+
+      
     </Stack>
   );
 }

@@ -35,6 +35,10 @@ async function getToken(): Promise<string | null> {
   return token;
 }
 
+export async function getStoredToken(): Promise<string | null> {
+  return getToken();
+}
+
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
 
 export async function request<T>(
@@ -87,7 +91,14 @@ export async function request<T>(
       message = (data['error'] as string[]).join('\n');
     }
 
-    logError(`Error ${response.status} en ${finalMethod} ${path}`, data);
+    const sinSesion =
+      response.status === 401 &&
+      typeof message === 'string' &&
+      /no autenticad/i.test(message);
+
+    if (!sinSesion) {
+      logError(`Error ${response.status} en ${finalMethod} ${path}`, data);
+    }
 
     if (response.status >= 500) {
       throw new Error(MENSAJE_ERROR_BASE);

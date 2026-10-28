@@ -12,7 +12,7 @@ View,
 } from 'react-native';
 import { getResenasByServicio, type Resena } from '../api/resena';
 import type { Servicio } from '../api/servicio';
-import { getUsuarioById } from '../api/usuario';
+import { useAuth } from '../context/AuthContext';
 import StarRating from './StarRating';
 
 // Paleta de colores de Parche Viajero
@@ -77,6 +77,7 @@ onDejarResena,
 resenasDemo,
 autorDemo,
 }: Props) {
+const { user } = useAuth();
 const [resenas, setResenas] = useState<Resena[]>([]);
 const [autor, setAutor] = useState('Viajero');
 
@@ -123,14 +124,14 @@ useEffect(() => {
 
         // Nombre de quien escribió la última reseña
         const ultima = data[data.length - 1];
-        if (ultima) {
-        getUsuarioById(ultima.usuario_id)
-            .then(({ data: u }) => setAutor(nombreCorto(u.nombre)))
-            .catch(() => setAutor('Viajero'));
+        if (ultima && user?._id === ultima.usuario_id && user.nombre) {
+          setAutor(nombreCorto(user.nombre));
+        } else {
+          setAutor('Viajero');
         }
     })
     .catch(() => setResenas([]));
-}, [visible, servicio, resenasDemo, autorDemo]);
+}, [visible, servicio, resenasDemo, autorDemo, user?._id, user?.nombre]);
 
 if (!lugar) return null;
 

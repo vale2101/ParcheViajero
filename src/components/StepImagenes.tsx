@@ -1,23 +1,29 @@
 import { Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import ImagenesPicker from './ImagenesPicker';
+import type { ImagenLocal } from '../api/servicio';
 import { styles } from '../styles/ServicioWizard.styles';
 
-export default function StepImagenes() {
+interface Props {
+  imagenes: ImagenLocal[];
+  aviso: string | null;
+  onAgregar: () => void;
+  onQuitar: (uri: string) => void;
+}
+
+export default function StepImagenes({ imagenes, aviso, onAgregar, onQuitar }: Props) {
   return (
     <View style={styles.stepBody}>
       <Text style={styles.stepTitle}>Imágenes del servicio</Text>
+      <Text style={styles.stepSubtitle}>
+        Opcional. Hasta 6 fotos (JPG, PNG o WEBP, máx. 5 MB c/u). La primera será la principal.
+      </Text>
 
-      <View style={styles.imgNotice}>
-        <Ionicons name="images-outline" size={44} color="#0147B9" />
-        <Text style={styles.imgTitle}>Las imágenes aún no están disponibles</Text>
-        <Text style={styles.imgText}>
-          El servidor todavía no tiene el endpoint ni el almacenamiento para fotos de servicios
-          (la colección imagenes_servicio existe, pero sin API). Por eso no se pueden subir ahora.
-        </Text>
-        <Text style={styles.imgText}>
-          Puedes continuar: tu servicio se enviará a revisión sin fotos.
-        </Text>
-      </View>
+      <ImagenesPicker
+        fotos={imagenes.map((i) => ({ key: i.uri, uri: i.uri }))}
+        aviso={aviso}
+        onAgregar={onAgregar}
+        onQuitar={onQuitar}
+      />
     </View>
   );
 }

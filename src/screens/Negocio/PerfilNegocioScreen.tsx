@@ -162,6 +162,8 @@ export default function PerfilNegocioScreen() {
           recargar();
           setAviso('Servicio actualizado correctamente');
         }}
+        onImagenesChange={recargar}
+
       />
 
       <ConfirmDialog

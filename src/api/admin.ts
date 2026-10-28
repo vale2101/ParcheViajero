@@ -106,3 +106,28 @@ export async function getUsuarioAdmin(
 ): Promise<{ data: UsuarioAdmin; servicios: ServicioAdmin[] }> {
   return request(`/admin/usuarios/${id}`);
 }
+
+export interface ResenaAdmin {
+  _id: string;
+  usuario_id: string;
+  servicio_id: string;
+  calificacion: number;
+  comentario?: string;
+  fecha?: string;
+  autor_nombre?: string;
+  autor_email?: string;
+  servicio_nombre?: string;
+}
+
+export async function getResenasAdmin(
+  q: string,
+  calificacion: number | null,
+): Promise<{ data: ResenaAdmin[] }> {
+  return request(
+    `/admin/resenas${query({ q: q.trim(), calificacion: calificacion ? String(calificacion) : null })}`,
+  );
+}
+
+export async function eliminarResenaAdmin(id: string): Promise<{ message: string }> {
+  return request(`/admin/resenas/${id}`, undefined, 'DELETE');
+}

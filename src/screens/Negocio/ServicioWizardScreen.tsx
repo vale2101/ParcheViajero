@@ -30,7 +30,6 @@ function Contenido() {
   const anim = useRef(new Animated.Value(1)).current;
   const [confirmandoSalida, setConfirmandoSalida] = useState(false);
 
-  // Transición suave al cambiar de paso
   useEffect(() => {
     anim.setValue(0);
     Animated.timing(anim, { toValue: 1, duration: 220, useNativeDriver: true }).start();
@@ -40,7 +39,11 @@ function Contenido() {
   const salir = () => router.replace('/negocio/servicios');
 
   const hayDatos =
-    w.form.formState.isDirty || !!w.categoriaId || !!w.municipioId || !!w.ubicacion.texto;
+    w.form.formState.isDirty ||
+    !!w.categoriaId ||
+    !!w.municipioId ||
+    !!w.ubicacion.texto ||
+    w.imagenes.length > 0;
 
   const intentarSalir = () => {
     if (hayDatos && !w.enviado) setConfirmandoSalida(true);
@@ -91,7 +94,14 @@ function Contenido() {
           />
         );
       case 3:
-        return <StepImagenes />;
+        return (
+          <StepImagenes
+            imagenes={w.imagenes}
+            aviso={w.avisoImagenes}
+            onAgregar={w.agregarImagenes}
+            onQuitar={w.quitarImagen}
+          />
+        );
       default:
         return (
           <StepResumen
@@ -100,6 +110,7 @@ function Contenido() {
             municipio={w.municipioSeleccionado}
             gratuito={w.gratuito}
             ubicacion={w.ubicacion.confirmada}
+            imagenes={w.imagenes.length}
             onEditar={w.irAPaso}
             errorEnvio={w.errorEnvio}
           />
@@ -146,6 +157,7 @@ function Contenido() {
             Tu servicio quedó como «Pendiente de aprobación». Todavía no está publicado: aparecerá
             en el mapa cuando un administrador lo apruebe.
           </Text>
+          {!!w.errorImagenes && <Text style={styles.errorText}>{w.errorImagenes}</Text>}
           <Button text="Ver mis servicios" onPress={salir} style={{ alignSelf: 'stretch' }} />
         </View>
       ) : (

@@ -1,6 +1,18 @@
-import { request } from './client';
+import { Platform } from 'react-native';
+import { request, requestForm } from './client';
 
 export type EstadoAprobacion = 'pendiente' | 'aprobado' | 'rechazado';
+
+export interface ImagenServicio {
+  _id: string;
+  url_imagen: string;
+}
+
+export interface ImagenLocal {
+  uri: string;
+  name: string;
+  type: string;
+}
 
 export interface Servicio {
   _id: string;
@@ -19,6 +31,7 @@ export interface Servicio {
   estado_aprobacion?: EstadoAprobacion;
   fecha_revision?: string;
   observacion_revision?: string;
+  imagenes?: ImagenServicio[];
 }
 
 export interface CreateServicioInput {
@@ -50,8 +63,8 @@ export async function getServicioById(id: string): Promise<{ data: Servicio }> {
 
 export async function createServicio(
   servicio: CreateServicioInput,
-): Promise<MessageResponse> {
-  return request<MessageResponse>('/servicios/createServicio', servicio, 'POST');
+): Promise<MessageResponse & { data?: { _id: string } }> {
+  return request('/servicios/createServicio', servicio, 'POST');
 }
 
 export async function updateServicio(
@@ -67,6 +80,31 @@ export async function deleteServicio(id: string): Promise<MessageResponse> {
 
 export async function getServiciosByUsuarioId_get(): Promise<{ data: Servicio[] }> {
   return request('/servicios/mis-servicios');
+}
+
+export async function subirImagenesServicio(
+  servicioId: string,
+  imagenes: ImagenLocal[],
+): Promise<{ message: string; data: ImagenServicio[] }> {
+  const form = new FormData();
+
+  for (const img of imagenes) {
+    if (Platform.OS === 'web') {
+      const blob = await (await fetch(img.uri)).blob();
+      form.append('imagenes', blob, img.name);
+    } else {
+      form.append(
+        'imagenes',
+        { uri: img.uri, name: img.name, type: img.type } as unknown as Blob,
+      );
+    }
+  }
+
+  return requestForm(`/servicios/${servicioId}/imagenes`, form);
+}
+
+export async function eliminarImagenServicio(imagenId: string): Promise<MessageResponse> {
+  return request<MessageResponse>(`/servicios/imagenes/${imagenId}`, undefined, 'DELETE');
 }
 
 export const getMisServicios = getServiciosByUsuarioId_get;

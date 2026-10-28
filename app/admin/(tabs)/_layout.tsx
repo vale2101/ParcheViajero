@@ -36,6 +36,7 @@ export default function AdminTabsLayout() {
       <Tabs.Screen name="servicios" options={{ title: 'Servicios', tabBarIcon: icono('storefront-outline') }} />
       <Tabs.Screen name="usuarios" options={{ title: 'Usuarios', tabBarIcon: icono('people-outline') }} />
       <Tabs.Screen name="perfil" options={{ title: 'Perfil', tabBarIcon: icono('person-outline') }} />
+      <Tabs.Screen name="resenas" options={{ title: 'Reseñas', tabBarIcon: icono('chatbubbles-outline') }} />
     </Tabs>
   );
 }

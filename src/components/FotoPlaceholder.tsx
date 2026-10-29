@@ -5,20 +5,21 @@ interface Props {
   categoria?: string | undefined;
   style?: StyleProp<ViewStyle>;
   grande?: boolean;
+  plano?: boolean;
 }
 
-export default function FotoPlaceholder({ categoria, style, grande }: Props) {
+export default function FotoPlaceholder({ categoria, style, grande, plano }: Props) {
   const v = getCategoriaVisual(categoria);
   return (
     <View
       style={[
         {
           backgroundColor: `${v.color}1A`,
-          borderWidth: 1,
-          borderColor: '#E8D4AE',
           alignItems: 'center',
           justifyContent: 'center',
-          borderRadius: 14,
+          ...(plano
+            ? { width: '100%' as const, height: '100%' as const }
+            : { borderWidth: 1, borderColor: '#E8D4AE', borderRadius: 14 }),
         },
         style,
       ]}

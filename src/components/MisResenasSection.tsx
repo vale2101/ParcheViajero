@@ -1,14 +1,18 @@
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from 'expo-image';
 import { useState } from 'react';
 import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 import Loader from './Loader';
+import FotoPlaceholder from './FotoPlaceholder';
+import MarcoPolaroid from './MarcoPolaroid';
 import StarRating from './StarRating';
 import { useMisResenas } from '../hooks/useMisResenas';
 import { validarCalificacion } from '../utils/validaciones';
+import { colors } from '../styles/theme';
 import { styles } from '../styles/MisResenasSection.styles';
 
-// Cuántas reseñas se ven antes de desplegar (la más reciente)
 const MAX_VISIBLES = 1;
+const FOTO = { ancho: 72, alto: 72 };
 
 export default function MisResenasSection() {
   const {
@@ -32,7 +36,6 @@ export default function MisResenasSection() {
 
   const [expandido, setExpandido] = useState(false);
 
-  // Las más recientes primero
   const ordenadas = [...resenas].sort(
     (a, b) => new Date(b.fecha ?? 0).getTime() - new Date(a.fecha ?? 0).getTime(),
   );
@@ -51,8 +54,15 @@ export default function MisResenasSection() {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>Mis reseñas</Text>
-        {resenas.length > 0 && <Text style={styles.count}>{resenas.length} reseñas</Text>}
+        <View style={styles.titleWrap}>
+          <Ionicons name="chatbubbles" size={18} color={colors.azul} />
+          <Text style={styles.sectionTitle}>Mis reseñas</Text>
+        </View>
+        {resenas.length > 0 && (
+          <Text style={styles.count}>
+            {resenas.length} {resenas.length === 1 ? 'reseña' : 'reseñas'}
+          </Text>
+        )}
       </View>
 
       {loading ? (
@@ -71,72 +81,107 @@ export default function MisResenasSection() {
             renderItem={({ item }) => {
               const servicio = servicios[item.servicio_id];
               const editando = editandoId === item._id;
+              const foto = servicio?.imagenes?.[0]?.url_imagen;
 
               return (
                 <View style={styles.card}>
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.servicioNombre}>
-                      {servicio?.nombre ?? 'Servicio eliminado'}
-                    </Text>
-                    {!editando && (
-                      <View style={styles.actionsRow}>
-                        <Pressable onPress={() => iniciarEdicion(item)} hitSlop={8}>
-                          <Text style={styles.editText}>Editar</Text>
-                        </Pressable>
-                        <Pressable
-                          onPress={() => eliminarResena(item._id)}
-                          disabled={borrandoId === item._id}
-                          hitSlop={8}>
-                          <Text style={styles.deleteText}>
-                            {borrandoId === item._id ? 'Borrando…' : 'Eliminar'}
-                          </Text>
-                        </Pressable>
+                  <View style={styles.polaroidWrap}>
+                    <MarcoPolaroid ancho={FOTO.ancho} alto={FOTO.alto} rotacion="-3deg">
+                      {foto ? (
+                        <Image
+                          source={{ uri: foto }}
+                          style={{ width: FOTO.ancho, height: FOTO.alto }}
+                          contentFit="cover"
+                          cachePolicy="disk"
+                          accessibilityLabel={`Foto de ${servicio?.nombre ?? 'el establecimiento'}`}
+                        />
+                      ) : (
+                        <FotoPlaceholder
+                          plano
+                          style={{ width: FOTO.ancho, height: FOTO.alto }}
+                        />
+                      )}
+                    </MarcoPolaroid>
+                  </View>
+
+                  <View style={styles.body}>
+                    <View style={styles.cardHeader}>
+                      <Text style={styles.servicioNombre} numberOfLines={2}>
+                        {servicio?.nombre ?? 'Servicio eliminado'}
+                      </Text>
+                      {!editando && (
+                        <View style={styles.actionsRow}>
+                          <Pressable
+                            onPress={() => iniciarEdicion(item)}
+                            hitSlop={8}
+                            style={styles.action}
+                            accessibilityLabel="Editar reseña">
+                            <Ionicons name="create-outline" size={15} color={colors.azul} />
+                            <Text style={styles.editText}>Editar</Text>
+                          </Pressable>
+                          <Pressable
+                            onPress={() => eliminarResena(item._id)}
+                            disabled={borrandoId === item._id}
+                            hitSlop={8}
+                            style={styles.action}
+                            accessibilityLabel="Eliminar reseña">
+                            <Ionicons name="trash-outline" size={15} color={colors.rojo} />
+                            <Text style={styles.deleteText}>
+                              {borrandoId === item._id ? 'Borrando…' : 'Eliminar'}
+                            </Text>
+                          </Pressable>
+                        </View>
+                      )}
+                    </View>
+
+                    {editando ? (
+                      <View style={styles.editBox}>
+                        <StarRating value={calificacionEdit} onChange={setCalificacionEdit} />
+
+                        <TextInput
+                          style={styles.textarea}
+                          value={comentarioEdit}
+                          onChangeText={setComentarioEdit}
+                          placeholder="¿Qué tal estuvo tu experiencia?"
+                          placeholderTextColor={colors.placeholder}
+                          multiline
+                          numberOfLines={3}
+                        />
+
+                        {!!errorEdit && <Text style={styles.errorTextInline}>{errorEdit}</Text>}
+
+                        <View style={styles.editActionsRow}>
+                          <Pressable onPress={cancelarEdicion} hitSlop={8} disabled={guardando}>
+                            <Text style={styles.cancelText}>Cancelar</Text>
+                          </Pressable>
+                          <Pressable
+                            onPress={() => handleGuardar(item._id)}
+                            hitSlop={8}
+                            disabled={guardando}>
+                            <Text style={styles.saveText}>
+                              {guardando ? 'Guardando…' : 'Guardar'}
+                            </Text>
+                          </Pressable>
+                        </View>
+                      </View>
+                    ) : (
+                      <>
+                        <StarRating value={item.calificacion} readonly size={16} />
+                        {!!item.comentario && (
+                          <Text style={styles.comentario}>{item.comentario}</Text>
+                        )}
+                      </>
+                    )}
+
+                    {!!item.fecha && (
+                      <View style={styles.fechaRow}>
+                        <Ionicons name="calendar-outline" size={13} color={colors.textoSec} />
+                        <Text style={styles.fecha}>
+                          {new Date(item.fecha).toLocaleDateString()}
+                        </Text>
                       </View>
                     )}
                   </View>
-
-                  {editando ? (
-                    <View style={styles.editBox}>
-                      <StarRating value={calificacionEdit} onChange={setCalificacionEdit} />
-
-                      <TextInput
-                        style={styles.textarea}
-                        value={comentarioEdit}
-                        onChangeText={setComentarioEdit}
-                        placeholder="¿Qué tal estuvo tu experiencia?"
-                        placeholderTextColor="#a3a3a3"
-                        multiline
-                        numberOfLines={3}
-                      />
-
-                      {!!errorEdit && <Text style={styles.errorTextInline}>{errorEdit}</Text>}
-
-                      <View style={styles.editActionsRow}>
-                        <Pressable onPress={cancelarEdicion} hitSlop={8} disabled={guardando}>
-                          <Text style={styles.cancelText}>Cancelar</Text>
-                        </Pressable>
-                        <Pressable
-                          onPress={() => handleGuardar(item._id)}
-                          hitSlop={8}
-                          disabled={guardando}>
-                          <Text style={styles.saveText}>
-                            {guardando ? 'Guardando…' : 'Guardar'}
-                          </Text>
-                        </Pressable>
-                      </View>
-                    </View>
-                  ) : (
-                    <>
-                      <StarRating value={item.calificacion} readonly size={16} />
-                      {!!item.comentario && (
-                        <Text style={styles.comentario}>{item.comentario}</Text>
-                      )}
-                    </>
-                  )}
-
-                  {!!item.fecha && (
-                    <Text style={styles.fecha}>{new Date(item.fecha).toLocaleDateString()}</Text>
-                  )}
                 </View>
               );
             }}
@@ -152,7 +197,7 @@ export default function MisResenasSection() {
               <Ionicons
                 name={expandido ? 'chevron-up' : 'chevron-down'}
                 size={18}
-                color="#0147B9"
+                color={colors.azul}
               />
             </Pressable>
           )}

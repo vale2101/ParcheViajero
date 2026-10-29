@@ -1,17 +1,15 @@
 import { useState } from 'react';
-import { Image, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, ScrollView, Text, View } from 'react-native';
 import AvatarEditable from '../../components/AvatarEditable';
+import DecoRutaCinta from '../../components/DecoRutaCinta';
 import FavoritosSection from '../../components/FavoritosSection';
 import InfoModal from '../../components/InfoModal';
 import MisResenasSection from '../../components/MisResenasSection';
+import MontanasDeco from '../../components/MontanasDeco';
 import PerfilDrawer from '../../components/PerfilDrawer';
-//import ResenasSection from '../../components/ResenasSection';
 import ScreenHeader from '../../components/ScreenHeader';
 import { useAuth } from '../../context/AuthContext';
 import { styles } from '../../styles/UsuarioPerfil.styles';
-
-// >>> AQUÍ cambias el logo de fondo: pon la ruta de tu imagen dentro de assets <<<
-const LOGO_FONDO = require('../../../assets/logo.jpeg');
 
 interface Info {
   titulo: string;
@@ -23,14 +21,11 @@ export default function PerfilScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [info, setInfo] = useState<Info | null>(null);
 
-  // Se espera a que el drawer termine de cerrarse antes de abrir la ventanita
-  // (dos modales al mismo tiempo dan problemas en iOS)
   function mostrarInfo(titulo: string, texto: string) {
     setTimeout(() => setInfo({ titulo, texto }), 300);
   }
 
   function handleEditar() {
-    // TODO: cuando exista la pantalla de editar perfil, navegar a ella
     mostrarInfo('Editar perfil', 'Esta opción estará disponible pronto.');
   }
 
@@ -52,19 +47,35 @@ export default function PerfilScreen() {
     <View style={styles.screen}>
       <ScreenHeader onPressMenu={() => setMenuVisible(true)} />
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.profileHeader}>
-          <AvatarEditable />
-          <Text style={styles.name}>{user?.nombre}</Text>
-          <Text style={styles.email}>{user?.email}</Text>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.hero}>
+          <View style={styles.papelMancha1} pointerEvents="none" />
+          <View style={styles.papelMancha2} pointerEvents="none" />
+          <View style={styles.decoTopLeft} pointerEvents="none">
+            <DecoRutaCinta />
+          </View>
+          <View style={styles.decoTopRight} pointerEvents="none">
+            <MontanasDeco />
+          </View>
+
+          <View style={styles.profileHeader}>
+            <AvatarEditable />
+            <Text style={styles.name}>{user?.nombre}</Text>
+            <Text style={styles.email}>{user?.email}</Text>
+          </View>
         </View>
 
         <FavoritosSection />
         <MisResenasSection />
-        
 
-        {/* Logo difuminado al final de la pantalla */}
-        <Image source={LOGO_FONDO} style={local.logo} resizeMode="contain" blurRadius={2} />
+        <View style={styles.pie} pointerEvents="none">
+          <Image
+            source={require('../../../assets/logo.png')}
+            style={styles.logoFondo}
+            resizeMode="contain"
+            accessibilityElementsHidden
+          />
+        </View>
       </ScrollView>
 
       <PerfilDrawer
@@ -85,9 +96,3 @@ export default function PerfilScreen() {
     </View>
   );
 }
-
-const local = StyleSheet.create({
-  // opacity: qué tan tenue se ve (0 = invisible, 1 = normal)
-  // height: tamaño del logo
-  logo: { width: '100%', height: 150, opacity: 0.12 },
-});

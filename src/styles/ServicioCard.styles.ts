@@ -1,33 +1,20 @@
 import { StyleSheet } from 'react-native';
+import { colors as c, sombra } from './theme';
 
 export const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
-    backgroundColor: '#FDFBF6',
+    borderRadius: 18,
+    backgroundColor: c.superficie,
     borderWidth: 1,
-    borderColor: '#E8D9B8',
-    padding: 10,
+    borderColor: c.borde,
+    padding: 14,
     gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    ...sombra,
   },
-
-  photo: {
-    height: 132,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  photoEmoji: { fontSize: 44 },
-  photoHint: { fontSize: 11, color: '#6b6b6b', marginTop: 4 },
-
-  body: { paddingHorizontal: 4, gap: 8 },
-  name: { fontSize: 18, fontWeight: '800', color: '#1E3A8A' },
-
+  top: { flexDirection: 'row', alignItems: 'flex-start', gap: 14 },
+  polaroidWrap: { paddingTop: 6 },
+  body: { flex: 1, minWidth: 0, gap: 8 },
+  name: { fontSize: 17, fontWeight: '800', color: c.azulOscuro },
   badge: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
@@ -38,12 +25,10 @@ export const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   badgeText: { fontSize: 12, fontWeight: '700' },
-
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  infoText: { flex: 1, fontSize: 13, color: '#171717' },
+  infoText: { flex: 1, fontSize: 13, color: c.texto },
   priceText: { flex: 1, fontSize: 14, fontWeight: '700', color: '#92400E' },
-
-  actions: { flexDirection: 'row', gap: 10, paddingHorizontal: 2 },
+  actions: { flexDirection: 'row', gap: 10 },
   btn: {
     flex: 1,
     flexDirection: 'row',
@@ -54,13 +39,13 @@ export const styles = StyleSheet.create({
     minHeight: 46,
     paddingHorizontal: 10,
   },
-  btnEdit: { backgroundColor: '#0147B9' },
-  btnEditText: { fontSize: 14, fontWeight: '600', color: '#FEBA03' },
+  btnEdit: { backgroundColor: c.azul },
+  btnEditText: { fontSize: 14, fontWeight: '700', color: c.dorado },
   btnDelete: {
-    backgroundColor: '#FDFBF6',
+    backgroundColor: c.superficie,
     borderWidth: 1.5,
     borderColor: '#f0b4b4',
   },
-  btnDeleteText: { fontSize: 14, fontWeight: '600', color: '#B91C1C' },
+  btnDeleteText: { fontSize: 14, fontWeight: '700', color: c.rojo },
   btnDisabled: { opacity: 0.5 },
 });

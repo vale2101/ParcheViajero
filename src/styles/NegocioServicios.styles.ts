@@ -1,22 +1,29 @@
 import { StyleSheet } from 'react-native';
+import { colors as c, sombra } from './theme';
 
 export const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#FDFBF6' },
-  list: { padding: 20, gap: 12, paddingBottom: 40 },
+  screen: { flex: 1, backgroundColor: c.crema },
+  list: { padding: 20, gap: 14, paddingBottom: 40 },
 
   headerBlock: { gap: 12, marginBottom: 8 },
-  title: { fontSize: 26, fontWeight: '700', color: '#1E3A8A' },
-  subtitle: { fontSize: 14, color: '#6b6b6b', marginTop: -6 },
+  titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { fontSize: 24, fontWeight: '800', color: c.azulOscuro },
+  subtitle: { fontSize: 14, color: c.textoSec, marginTop: -4 },
 
   card: {
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#E8D9B8',
-    backgroundColor: '#FAF4E4',
-    padding: 16,
-    gap: 10,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: c.borde,
+    backgroundColor: c.superficie,
+    padding: 14,
+    ...sombra,
   },
-  cardTitle: { fontSize: 17, fontWeight: '700', color: '#1E3A8A' },
+  polaroidWrap: { paddingTop: 6 },
+  cardBody: { flex: 1, minWidth: 0, gap: 8 },
+  cardTitle: { fontSize: 17, fontWeight: '800', color: c.azulOscuro },
 
   badge: {
     alignSelf: 'flex-start',
@@ -31,50 +38,60 @@ export const styles = StyleSheet.create({
   badgeText: { fontSize: 12, fontWeight: '700' },
 
   infoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  infoText: { flex: 1, fontSize: 14, color: '#171717' },
+  infoText: { flex: 1, fontSize: 14, color: c.texto },
 
   rejectBox: {
     flexDirection: 'row',
     gap: 8,
     borderRadius: 12,
     borderWidth: 1.5,
-    borderColor: '#ef4444',
-    backgroundColor: '#FDE8E8',
+    borderColor: c.rojoBorde,
+    backgroundColor: c.rojoSuave,
     padding: 10,
   },
-  rejectTitle: { fontSize: 12, fontWeight: '700', color: '#B91C1C' },
-  rejectText: { fontSize: 13, color: '#171717', marginTop: 2 },
-    detailHint: {
+  rejectTitle: { fontSize: 12, fontWeight: '700', color: c.rojo },
+  rejectText: { fontSize: 13, color: c.texto, marginTop: 2 },
+  detailHint: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
     gap: 2,
     marginTop: 2,
   },
-  detailHintText: { fontSize: 13, fontWeight: '700', color: '#0147B9' },
+  detailHintText: { fontSize: 13, fontWeight: '700', color: c.azul },
 
   centerBox: { alignItems: 'center', gap: 12, paddingVertical: 40 },
-  centerText: { fontSize: 14, color: '#6b6b6b', textAlign: 'center' },
+  centerText: { fontSize: 14, color: c.textoSec, textAlign: 'center' },
 
   errorCard: {
     alignItems: 'center',
     gap: 10,
     borderRadius: 16,
     borderWidth: 2,
-    borderColor: '#ef4444',
-    backgroundColor: '#FAF4E4',
+    borderColor: c.rojoBorde,
+    backgroundColor: c.superficie,
     padding: 16,
   },
-  errorText: { fontSize: 14, color: '#dc2626', textAlign: 'center' },
+  errorText: { fontSize: 14, color: c.rojo, textAlign: 'center' },
 
-  emptyBox: { alignItems: 'center', gap: 12, paddingVertical: 24 },
+  emptyBox: {
+    alignItems: 'center',
+    gap: 12,
+    paddingVertical: 24,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: c.borde,
+    backgroundColor: c.superficie,
+    paddingHorizontal: 16,
+    ...sombra,
+  },
   emptyIcon: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: '#E8F0FD',
+    backgroundColor: c.doradoSuave,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#1E3A8A' },
+  emptyTitle: { fontSize: 18, fontWeight: '800', color: c.azulOscuro },
 });

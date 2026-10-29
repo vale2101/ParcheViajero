@@ -1,9 +1,10 @@
 import { StyleSheet } from 'react-native';
+import { colors as c, sombra } from './theme';
 
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#FDFBF6',
+    backgroundColor: c.crema,
   },
 
   mapWrapper: {
@@ -20,7 +21,7 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#0147B9',
+    color: c.azul,
   },
 
   errorBanner: {
@@ -32,23 +33,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 12,
-    backgroundColor: '#FDFBF6',
-    borderWidth: 2,
-    borderColor: '#ef4444',
-    borderRadius: 12,
+    backgroundColor: c.superficie,
+    borderWidth: 1,
+    borderColor: c.rojoBorde,
+    borderRadius: 16,
     padding: 12,
+    ...sombra,
   },
 
   errorText: {
     flex: 1,
     fontSize: 13,
-    color: '#dc2626',
+    color: c.rojo,
   },
 
   retryText: {
     fontSize: 13,
     fontWeight: '700',
-    color: '#0147B9',
+    color: c.azul,
   },
 
   warningBanner: {
@@ -56,16 +58,17 @@ const styles = StyleSheet.create({
     top: 12,
     left: 16,
     right: 16,
-    backgroundColor: '#FAF4E4',
-    borderWidth: 2,
-    borderColor: '#FEBA03',
-    borderRadius: 12,
+    backgroundColor: c.doradoSuave,
+    borderWidth: 1,
+    borderColor: c.dorado,
+    borderRadius: 16,
     padding: 10,
+    ...sombra,
   },
 
   warningText: {
     fontSize: 12,
-    color: '#171717',
+    color: c.texto,
     textAlign: 'center',
   },
 
@@ -75,26 +78,24 @@ const styles = StyleSheet.create({
     right: 24,
     top: '30%',
     gap: 12,
-    backgroundColor: '#FDFBF6',
+    backgroundColor: c.superficie,
     borderRadius: 20,
+    borderWidth: 1,
+    borderColor: c.borde,
     padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 4,
+    ...sombra,
   },
 
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#0147B9',
+    fontWeight: '800',
+    color: c.azulOscuro,
     textAlign: 'center',
   },
 
   emptyText: {
     fontSize: 14,
-    color: '#a3a3a3',
+    color: c.textoSec,
     textAlign: 'center',
   },
 
@@ -104,25 +105,23 @@ const styles = StyleSheet.create({
     right: 16,
     bottom: 24,
     gap: 4,
-    backgroundColor: '#FDFBF6',
-    borderRadius: 16,
+    backgroundColor: c.superficie,
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: c.borde,
     padding: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 4,
+    ...sombra,
   },
 
   infoTitle: {
     fontSize: 16,
-    fontWeight: '700',
-    color: '#0147B9',
+    fontWeight: '800',
+    color: c.azulOscuro,
   },
 
   infoText: {
     fontSize: 13,
-    color: '#6b6b6b',
+    color: c.textoSec,
   },
 });
 

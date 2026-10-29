@@ -4,7 +4,10 @@ import { Ionicons } from '@expo/vector-icons';
 import type { Servicio } from '../api/servicio';
 import { getCategoriaVisual } from '../utils/categoriaVisual';
 import { formatearPrecioCOP } from '../utils/formatoServicio';
+import { colors } from '../styles/theme';
 import { styles } from '../styles/ServicioCard.styles';
+import FotoPlaceholder from './FotoPlaceholder';
+import MarcoPolaroid from './MarcoPolaroid';
 
 interface Props {
   servicio: Servicio;
@@ -15,10 +18,12 @@ interface Props {
   onEliminar: () => void;
 }
 
+const FOTO = { ancho: 86, alto: 86 };
+
 function Fila({
   icono,
   texto,
-  color = '#6b6b6b',
+  color = colors.textoSec,
   estilo = styles.infoText,
 }: {
   icono: keyof typeof Ionicons.glyphMap;
@@ -49,51 +54,53 @@ export default function ServicioCard({
 
   return (
     <View style={styles.card}>
-      {foto ? (
-        <Image
-          source={{ uri: foto }}
-          style={[styles.photo, { width: '100%' }]}
-          contentFit="cover"
-          cachePolicy="disk"
-          transition={200}
-          accessibilityLabel={`Foto de ${servicio.nombre}`}
-        />
-      ) : (
-        <View
-          style={[styles.photo, { backgroundColor: `${visual.color}1A` }]}
-          accessibilityLabel="Imagen predeterminada del servicio">
-          <Text style={styles.photoEmoji}>{visual.emoji}</Text>
-          <Text style={styles.photoHint}>Sin fotografía</Text>
+      <View style={styles.top}>
+        <View style={styles.polaroidWrap}>
+          <MarcoPolaroid ancho={FOTO.ancho} alto={FOTO.alto} rotacion="-4deg">
+            {foto ? (
+              <Image
+                source={{ uri: foto }}
+                style={{ width: FOTO.ancho, height: FOTO.alto }}
+                contentFit="cover"
+                cachePolicy="disk"
+                transition={200}
+                accessibilityLabel={`Foto de ${servicio.nombre}`}
+              />
+            ) : (
+              <FotoPlaceholder plano categoria={categoria} style={{ width: FOTO.ancho, height: FOTO.alto }} />
+            )}
+          </MarcoPolaroid>
         </View>
-      )}
 
-      <View style={styles.body}>
-        <Text style={styles.name} numberOfLines={2}>
-          {servicio.nombre}
-        </Text>
+        <View style={styles.body}>
+          <Text style={styles.name} numberOfLines={2}>
+            {servicio.nombre}
+          </Text>
 
-        {!!categoria && (
-          <View style={[styles.badge, { backgroundColor: `${visual.color}1A` }]}>
-            <Text style={[styles.badgeText, { color: visual.color }]}>
-              {visual.emoji} {categoria}
-            </Text>
-          </View>
-        )}
+          {!!categoria && (
+            <View style={[styles.badge, { backgroundColor: `${visual.color}1A` }]}>
+              <Text style={[styles.badgeText, { color: visual.color }]}>
+                {visual.emoji} {categoria}
+              </Text>
+            </View>
+          )}
 
-        {!!municipio && <Fila icono="location" texto={municipio} color="#0147B9" />}
-        {!!servicio.direccion && <Fila icono="home-outline" texto={servicio.direccion} />}
-        {!!servicio.horario_atencion && (
-          <Fila icono="time-outline" texto={servicio.horario_atencion} />
-        )}
-        <Fila
-          icono="cash-outline"
-          color="#B45309"
-          estilo={styles.priceText}
-          texto={
-            servicio.precio !== undefined ? formatearPrecioCOP(servicio.precio) : 'Consultar precio'
-          }
-        />
+          {!!municipio && <Fila icono="location" texto={municipio} color={colors.azul} />}
+          {!!servicio.direccion && <Fila icono="home-outline" texto={servicio.direccion} />}
+        </View>
       </View>
+
+      {!!servicio.horario_atencion && (
+        <Fila icono="time-outline" texto={servicio.horario_atencion} />
+      )}
+      <Fila
+        icono="cash-outline"
+        color="#B45309"
+        estilo={styles.priceText}
+        texto={
+          servicio.precio !== undefined ? formatearPrecioCOP(servicio.precio) : 'Consultar precio'
+        }
+      />
 
       <View style={styles.actions}>
         <Pressable
@@ -102,7 +109,7 @@ export default function ServicioCard({
           disabled={ocupado}
           accessibilityRole="button"
           accessibilityLabel={`Editar ${servicio.nombre}`}>
-          <Ionicons name="create-outline" size={18} color="#FEBA03" />
+          <Ionicons name="create-outline" size={18} color={colors.dorado} />
           <Text style={styles.btnEditText}>Editar</Text>
         </Pressable>
 
@@ -112,7 +119,7 @@ export default function ServicioCard({
           disabled={ocupado}
           accessibilityRole="button"
           accessibilityLabel={`Eliminar ${servicio.nombre}`}>
-          <Ionicons name="trash-outline" size={18} color="#B91C1C" />
+          <Ionicons name="trash-outline" size={18} color={colors.rojo} />
           <Text style={styles.btnDeleteText}>Eliminar</Text>
         </Pressable>
       </View>

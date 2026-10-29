@@ -16,7 +16,7 @@ import { formatearFecha, formatearFechaHora } from '../../utils/adminFormat';
 import { logError, mensajeErrorUsuario } from '../../utils/errorApp';
 import { getEstadoVisual } from '../../utils/estadoServicio';
 import { coordenadasValidas, formatearPrecioCOP } from '../../utils/formatoServicio';
-import { getCategoriaVisual } from '../../utils/categoriaVisual';
+import CategoriaSticker from '../../components/CategoriaSticker';
 import { colors } from '../../styles/theme';
 import { styles } from '../../styles/Admin.styles';
 
@@ -120,7 +120,6 @@ export default function AdminServicioDetalleScreen() {
   const municipio = servicio?.municipio_nombre?.trim();
   const municipioLineas = municipio ? municipio.split(',').map((parte) => parte.trim()).filter(Boolean) : [];
   const stickerFlotante = !!municipio && width >= 340;
-  const categoria = getCategoriaVisual(servicio?.categoria_nombre);
 
   return (
     <View style={styles.screen}>
@@ -175,10 +174,7 @@ export default function AdminServicioDetalleScreen() {
               </View>
             )}
 
-            <View style={styles.detailLine} accessibilityLabel={`Categoría: ${servicio.categoria_nombre || 'No especificada'}`}>
-              <Text style={{ fontSize: 16 }}>{categoria.emoji}</Text>
-              <Text style={styles.detailLineText}>{servicio.categoria_nombre || 'No especificada'}</Text>
-            </View>
+            <CategoriaSticker nombre={servicio.categoria_nombre} />
 
             <View style={[styles.detailBlock, !stickerFlotante && styles.detailBlockEstrecho]}>
               <InfoRow icono="location-outline" etiqueta="Municipio" valor={servicio.municipio_nombre} compacto />

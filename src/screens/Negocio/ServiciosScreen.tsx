@@ -4,6 +4,7 @@ import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import Button from '../../components/Button';
+import CategoriaSticker from '../../components/CategoriaSticker';
 import FotoPlaceholder from '../../components/FotoPlaceholder';
 import Loader from '../../components/Loader';
 import MarcoPolaroid from '../../components/MarcoPolaroid';
@@ -69,12 +70,7 @@ export default function ServiciosScreen() {
           <Text style={[styles.badgeText, { color: estado.fg }]}>{estado.texto}</Text>
         </View>
 
-        {!!categoria && (
-          <View style={styles.infoRow}>
-            <Ionicons name="pricetag-outline" size={16} color={colors.textoSec} />
-            <Text style={styles.infoText}>{categoria}</Text>
-          </View>
-        )}
+        <CategoriaSticker nombre={categoria} />
 
         {!!ubicacion && (
           <View style={styles.infoRow}>

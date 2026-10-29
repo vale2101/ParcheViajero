@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import Button from '../../components/Button';
 import AdminHeader from '../../components/AdminHeader';
+import DecoRutaCinta from '../../components/DecoRutaCinta';
 import MontanasDeco from '../../components/MontanasDeco';
 import StatCard from '../../components/StatCard';
 import { useAdmin } from '../../context/AdminContext';
@@ -75,19 +76,30 @@ export default function AdminInicioScreen() {
           <StatCard icono="airplane-outline" color={colors.verde} valor={resumen?.viajeros ?? null} etiqueta="Viajeros" />
         </View>
 
-        <Text style={styles.sectionTitle}>Accesos rápidos</Text>
-        {ACCESOS.map((a) => (
-          <Pressable key={a.titulo} style={styles.accessCard} onPress={() => router.push(a.ruta)} accessibilityRole="button">
-            <View style={styles.accessIcon}>
-              <Ionicons name={a.icono} size={22} color={colors.azul} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.accessTitle}>{a.titulo}</Text>
-              <Text style={styles.accessDesc}>{a.desc}</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.azul} />
-          </Pressable>
-        ))}
+        <View style={styles.accesosHeader}>
+          <Text style={[styles.sectionTitle, { flexShrink: 1 }]}>Accesos rápidos</Text>
+          <DecoRutaCinta />
+        </View>
+        {ACCESOS.map((a) => {
+          const pendientes = a.ruta === '/admin/solicitudes' ? resumen?.pendientes : undefined;
+          return (
+            <Pressable key={a.titulo} style={styles.accessCard} onPress={() => router.push(a.ruta)} accessibilityRole="button">
+              <View style={styles.accessIcon}>
+                <Ionicons name={a.icono} size={22} color={colors.azul} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.accessTitle}>{a.titulo}</Text>
+                <Text style={styles.accessDesc}>{a.desc}</Text>
+              </View>
+              {typeof pendientes === 'number' && pendientes > 0 && (
+                <View style={styles.accessBadge} accessibilityLabel={`${pendientes} solicitudes pendientes`}>
+                  <Text style={styles.accessBadgeText}>{pendientes > 99 ? '99+' : pendientes}</Text>
+                </View>
+              )}
+              <Ionicons name="chevron-forward" size={20} color={colors.azul} />
+            </Pressable>
+          );
+        })}
       </ScrollView>
     </View>
   );

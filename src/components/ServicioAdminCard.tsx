@@ -6,12 +6,13 @@ import { formatearFecha } from '../utils/adminFormat';
 import { colors } from '../styles/theme';
 import EstadoBadge from './EstadoBadge';
 import FotoPlaceholder from './FotoPlaceholder';
+import MarcoPolaroid from './MarcoPolaroid';
 import { styles } from '../styles/Admin.styles';
 
 function Linea({ icono, texto }: { icono: keyof typeof Ionicons.glyphMap; texto: string }) {
   return (
     <View style={styles.lineRow}>
-      <Ionicons name={icono} size={14} color={colors.textoSec} />
+      <Ionicons name={icono} size={14} color={colors.azul} />
       <Text style={styles.lineText} numberOfLines={1}>
         {texto}
       </Text>
@@ -26,23 +27,27 @@ export default function ServicioAdminCard({ servicio: s, onPress }: { servicio: 
 
   return (
     <Pressable style={styles.card} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Abrir ${s.nombre}`}>
-      {foto ? (
-        <Image
-          source={{ uri: foto }}
-          style={styles.cardPhoto}
-          contentFit="cover"
-          cachePolicy="disk"
-          transition={150}
-          accessibilityLabel={`Foto de ${s.nombre}`}
-        />
-      ) : (
-        <FotoPlaceholder categoria={s.categoria_nombre} style={styles.cardPhoto} />
-      )}
+      <MarcoPolaroid ancho={74} alto={74} rotacion="-5deg" style={{ marginLeft: 2 }}>
+        {foto ? (
+          <Image
+            source={{ uri: foto }}
+            style={styles.polaroidFoto}
+            contentFit="cover"
+            cachePolicy="disk"
+            transition={150}
+            accessibilityLabel={`Foto de ${s.nombre}`}
+          />
+        ) : (
+          <FotoPlaceholder categoria={s.categoria_nombre} plano />
+        )}
+      </MarcoPolaroid>
       <View style={styles.cardBody}>
-        <Text style={styles.cardName} numberOfLines={2}>
-          {s.nombre}
-        </Text>
-        <EstadoBadge estado={s.estado_aprobacion} />
+        <View style={styles.cardTop}>
+          <Text style={styles.cardName} numberOfLines={2}>
+            {s.nombre}
+          </Text>
+          <EstadoBadge estado={s.estado_aprobacion} corto />
+        </View>
         {!!s.categoria_nombre && <Linea icono="pricetag-outline" texto={s.categoria_nombre} />}
         <Linea icono="location-outline" texto={s.municipio_nombre ?? 'Municipio no disponible'} />
         <Linea icono="storefront-outline" texto={s.propietario?.nombre ?? 'Negocio no disponible'} />

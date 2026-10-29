@@ -1,12 +1,12 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import Loader from '../../components/Loader';
 import AdminSubHeader from '../../components/AdminSubHeader';
 import EstadoBadge from '../../components/EstadoBadge';
-import GaleriaServicio from '../../components/GaleriaServicio';
+import GaleriaServicio, { TiraImagenes } from '../../components/GaleriaServicio';
 import InfoRow from '../../components/InfoRow';
 import LocationPickerMap from '../../components/LocationPickerMap';
 import { getServicioAdmin, revisarServicio, type RevisionEvento, type ServicioAdmin } from '../../api/admin';
@@ -16,6 +16,7 @@ import { formatearFecha, formatearFechaHora } from '../../utils/adminFormat';
 import { logError, mensajeErrorUsuario } from '../../utils/errorApp';
 import { getEstadoVisual } from '../../utils/estadoServicio';
 import { coordenadasValidas, formatearPrecioCOP } from '../../utils/formatoServicio';
+import { getCategoriaVisual } from '../../utils/categoriaVisual';
 import { colors } from '../../styles/theme';
 import { styles } from '../../styles/Admin.styles';
 
@@ -37,7 +38,9 @@ export default function AdminServicioDetalleScreen() {
   const [enviando, setEnviando] = useState(false);
   const [errorAccion, setErrorAccion] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [indiceFoto, setIndiceFoto] = useState(0);
   const enviandoRef = useRef(false);
+  const { width } = useWindowDimensions();
 
   const cargar = useCallback(async () => {
     if (!id) return;
@@ -109,7 +112,15 @@ export default function AdminServicioDetalleScreen() {
     }
   }
 
+  useEffect(() => {
+    setIndiceFoto(0);
+  }, [servicio?._id]);
+
   const pendiente = servicio?.estado_aprobacion === 'pendiente';
+  const municipio = servicio?.municipio_nombre?.trim();
+  const municipioLineas = municipio ? municipio.split(',').map((parte) => parte.trim()).filter(Boolean) : [];
+  const stickerFlotante = !!municipio && width >= 340;
+  const categoria = getCategoriaVisual(servicio?.categoria_nombre);
 
   return (
     <View style={styles.screen}>
@@ -142,10 +153,17 @@ export default function AdminServicioDetalleScreen() {
 
         {!!servicio && (
           <>
-            <GaleriaServicio imagenes={servicio.imagenes ?? []} categoria={servicio.categoria_nombre} />
+            <GaleriaServicio
+              imagenes={servicio.imagenes ?? []}
+              categoria={servicio.categoria_nombre}
+              indice={indiceFoto}
+              onIndice={setIndiceFoto}
+            />
 
-            <Text style={styles.bigName}>{servicio.nombre}</Text>
-            <EstadoBadge estado={servicio.estado_aprobacion} />
+            <View style={styles.detailTitleRow}>
+              <Text style={[styles.bigName, { flex: 1 }]}>{servicio.nombre}</Text>
+              <EstadoBadge estado={servicio.estado_aprobacion} corto />
+            </View>
 
             {servicio.estado_aprobacion === 'rechazado' && !!servicio.observacion_revision && (
               <View style={styles.rejectBox}>
@@ -157,23 +175,95 @@ export default function AdminServicioDetalleScreen() {
               </View>
             )}
 
-            <View style={styles.sectionCard}>
-              <InfoRow icono="pricetag-outline" etiqueta="Categoría" valor={servicio.categoria_nombre} />
-              <InfoRow icono="document-text-outline" etiqueta="Descripción" valor={servicio.descripcion} />
-              <InfoRow icono="business-outline" etiqueta="Municipio" valor={servicio.municipio_nombre} />
-              <InfoRow icono="location-outline" etiqueta="Dirección" valor={servicio.direccion} />
-              <InfoRow icono="call-outline" etiqueta="Teléfono" valor={servicio.telefono} />
-              <InfoRow icono="time-outline" etiqueta="Horario de atención" valor={servicio.horario_atencion} />
+            <View style={styles.detailLine} accessibilityLabel={`Categoría: ${servicio.categoria_nombre || 'No especificada'}`}>
+              <Text style={{ fontSize: 16 }}>{categoria.emoji}</Text>
+              <Text style={styles.detailLineText}>{servicio.categoria_nombre || 'No especificada'}</Text>
+            </View>
+
+            <View style={[styles.detailBlock, !stickerFlotante && styles.detailBlockEstrecho]}>
+              <InfoRow icono="location-outline" etiqueta="Municipio" valor={servicio.municipio_nombre} compacto />
+              <InfoRow icono="navigate-outline" etiqueta="Dirección" valor={servicio.direccion} compacto />
+              <InfoRow icono="call-outline" etiqueta="Teléfono" valor={servicio.telefono} compacto />
+              <InfoRow icono="time-outline" etiqueta="Horario de atención" valor={servicio.horario_atencion} compacto />
               <InfoRow
                 icono="cash-outline"
                 etiqueta="Precio"
                 valor={servicio.precio !== undefined ? formatearPrecioCOP(servicio.precio) : undefined}
+                compacto
               />
-              <InfoRow icono="calendar-outline" etiqueta="Fecha de creación" valor={formatearFecha(servicio.fecha_creacion)} />
+              <InfoRow icono="calendar-outline" etiqueta="Fecha de creación" valor={formatearFecha(servicio.fecha_creacion)} compacto />
+              {!!municipio && (
+                <View
+                  style={[styles.sticker, !stickerFlotante && styles.stickerFlujo]}
+                  accessibilityElementsHidden
+                  importantForAccessibility="no-hide-descendants">
+                  <Ionicons name="location" size={16} color={colors.azul} />
+                  {municipioLineas.map((linea) => (
+                    <Text key={linea} style={styles.stickerText}>
+                      {linea}
+                    </Text>
+                  ))}
+                </View>
+              )}
             </View>
 
+            <View style={{ gap: 6 }}>
+              <Text style={styles.sectionTitle}>Descripción</Text>
+              <Text style={styles.bodyText}>{servicio.descripcion?.trim() || 'No especificado'}</Text>
+            </View>
+
+            {(servicio.imagenes?.length ?? 0) > 1 && (
+              <View style={{ gap: 10 }}>
+                <Text style={styles.sectionTitle}>Imágenes</Text>
+                <TiraImagenes imagenes={servicio.imagenes ?? []} indice={indiceFoto} onSelect={setIndiceFoto} />
+              </View>
+            )}
+
+            {pendiente && (
+              <View style={{ gap: 8 }}>
+                <Text style={styles.sectionTitle}>Observaciones (opcional)</Text>
+                <Text style={styles.infoLabel}>Obligatorias solo si rechazas el servicio.</Text>
+                <TextInput
+                  style={[styles.obsInput, !!errorObs && styles.obsInputError]}
+                  value={observacion}
+                  onChangeText={(t) => {
+                    setObservacion(t);
+                    if (errorObs) setErrorObs(null);
+                  }}
+                  placeholder="Escribe una observación para el negocio…"
+                  placeholderTextColor={colors.placeholder}
+                  multiline
+                  maxLength={500}
+                  editable={!enviando}
+                />
+                <Text style={styles.obsCounter}>{observacion.length}/500</Text>
+                {!!errorObs && <Text style={styles.fieldError}>{errorObs}</Text>}
+
+                <View style={styles.actionsRow}>
+                  <Pressable
+                    style={[styles.btnAction, styles.btnApprove, enviando && styles.btnDisabled]}
+                    onPress={() => pedirConfirmacion('aprobado')}
+                    disabled={enviando}
+                    accessibilityRole="button">
+                    <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
+                    <Text style={styles.btnApproveText}>Aprobar servicio</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[styles.btnAction, styles.btnReject, enviando && styles.btnDisabled]}
+                    onPress={() => pedirConfirmacion('rechazado')}
+                    disabled={enviando}
+                    accessibilityRole="button">
+                    <Ionicons name="close-circle-outline" size={20} color={colors.rojo} />
+                    <Text style={styles.btnRejectText}>Rechazar servicio</Text>
+                  </Pressable>
+                </View>
+              </View>
+            )}
+
             {coordenadasValidas(servicio.latitud, servicio.longitud) && (
-              <LocationPickerMap key={servicio._id} vista={vista} marcador={marcador} interactivo={false} height={220} />
+              <View style={styles.mapFrame}>
+                <LocationPickerMap key={servicio._id} vista={vista} marcador={marcador} interactivo={false} height={220} />
+              </View>
             )}
 
             <Text style={styles.sectionTitle}>Negocio propietario</Text>
@@ -217,48 +307,6 @@ export default function AdminServicioDetalleScreen() {
                 })
               )}
             </View>
-
-            {pendiente && (
-              <View style={styles.sectionCard}>
-                <Text style={styles.sectionTitle}>Revisión administrativa</Text>
-                <Text style={styles.infoLabel}>
-                  Observaciones (obligatorias para rechazar, opcionales para aprobar)
-                </Text>
-                <TextInput
-                  style={[styles.obsInput, !!errorObs && styles.obsInputError]}
-                  value={observacion}
-                  onChangeText={(t) => {
-                    setObservacion(t);
-                    if (errorObs) setErrorObs(null);
-                  }}
-                  placeholder="Escribe el motivo o tus comentarios…"
-                  placeholderTextColor={colors.placeholder}
-                  multiline
-                  editable={!enviando}
-                />
-                <Text style={styles.obsCounter}>{observacion.length} caracteres</Text>
-                {!!errorObs && <Text style={styles.fieldError}>{errorObs}</Text>}
-
-                <View style={styles.actionsRow}>
-                  <Pressable
-                    style={[styles.btnAction, styles.btnApprove, enviando && styles.btnDisabled]}
-                    onPress={() => pedirConfirmacion('aprobado')}
-                    disabled={enviando}
-                    accessibilityRole="button">
-                    <Ionicons name="checkmark-circle-outline" size={20} color="#fff" />
-                    <Text style={styles.btnApproveText}>Aprobar servicio</Text>
-                  </Pressable>
-                  <Pressable
-                    style={[styles.btnAction, styles.btnReject, enviando && styles.btnDisabled]}
-                    onPress={() => pedirConfirmacion('rechazado')}
-                    disabled={enviando}
-                    accessibilityRole="button">
-                    <Ionicons name="close-circle-outline" size={20} color={colors.rojo} />
-                    <Text style={styles.btnRejectText}>Rechazar servicio</Text>
-                  </Pressable>
-                </View>
-              </View>
-            )}
           </>
         )}
       </ScrollView>

@@ -14,7 +14,7 @@ export default function Index() {
   }
 
   if (user.tipo_usuario === 'negocio') {
-    return <Redirect href="/negocio/mapa" />;
+    return <Redirect href="/negocio/tabs/mapa" />;
   }
 
   return <Redirect href="/usuario/inicio" />;

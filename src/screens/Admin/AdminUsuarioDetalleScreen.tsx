@@ -8,6 +8,7 @@ import InfoRow from '../../components/InfoRow';
 import ServicioAdminCard from '../../components/ServicioAdminCard';
 import { getUsuarioAdmin, type ServicioAdmin, type UsuarioAdmin } from '../../api/admin';
 import { ETIQUETA_TIPO, formatearFecha, iniciales } from '../../utils/adminFormat';
+import { colors } from '../../styles/theme';
 import { styles } from '../../styles/Admin.styles';
 
 export default function AdminUsuarioDetalleScreen() {
@@ -46,7 +47,7 @@ export default function AdminUsuarioDetalleScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {cargando && !usuario && (
           <View style={styles.centerBox}>
-            <ActivityIndicator size="large" color="#0147B9" />
+            <ActivityIndicator size="large" color={colors.azul} />
           </View>
         )}
 
@@ -85,7 +86,7 @@ export default function AdminUsuarioDetalleScreen() {
                 <Text style={styles.sectionTitle}>Servicios del negocio ({servicios.length})</Text>
                 {servicios.length === 0 ? (
                   <View style={styles.emptyBox}>
-                    <Ionicons name="storefront-outline" size={36} color="#0147B9" />
+                    <Ionicons name="storefront-outline" size={36} color={colors.azul} />
                     <Text style={styles.emptyTitle}>Este negocio aún no tiene servicios</Text>
                   </View>
                 ) : (

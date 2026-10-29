@@ -3,14 +3,16 @@ import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Button from '../components/Button';
-import ScreenHeader from '../components/ScreenHeader';
+import AdminHeader from '../components/AdminHeader';
 import type { EstadoFiltro } from '../api/admin';
+import { useAdmin } from '../context/AdminContext';
 import { useAdminServicios } from '../hooks/useAdminServicios';
 import { useCatalogosAdmin } from '../hooks/useCatalogosAdmin';
 import FiltrosPanel from './FiltrosPanel';
 import Segmented from './Segmented';
 import SearchBar from './SearchBar';
 import ServicioAdminCard from './ServicioAdminCard';
+import { colors } from '../styles/theme';
 import { styles } from '../styles/Admin.styles';
 
 interface Props {
@@ -29,7 +31,9 @@ export default function ServiciosAdminLista({ titulo, subtitulo, tabs, vacios }:
   const [dias, setDias] = useState<number | null>(null);
   const [verFiltros, setVerFiltros] = useState(false);
 
+  const { resumen } = useAdmin();
   const { categorias, municipios } = useCatalogosAdmin();
+
   const { servicios, cargando, cargado, error, recargar } = useAdminServicios({
     estado,
     q,
@@ -42,20 +46,46 @@ export default function ServiciosAdminLista({ titulo, subtitulo, tabs, vacios }:
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader />
+      <AdminHeader />
 
       <View style={[styles.wrap, styles.headerBox]}>
         <Text style={styles.title}>{titulo}</Text>
         <Text style={styles.subtitle}>{subtitulo}</Text>
+
+        {tabs[0]?.valor === 'pendiente' && resumen ? (
+          <View
+            style={[
+              styles.badge,
+              {
+                backgroundColor: colors.doradoSuave,
+                borderColor: colors.dorado,
+              },
+            ]}
+          >
+            <Text style={[styles.badgeText, { color: colors.doradoTexto }]}>
+              {resumen.pendientes} pendientes
+            </Text>
+          </View>
+        ) : null}
+
         <Segmented valor={estado} opciones={tabs} onChange={setEstado} />
-        <SearchBar value={q} onChange={setQ} placeholder="Buscar por servicio, negocio o municipio" />
+
+        <SearchBar
+          value={q}
+          onChange={setQ}
+          placeholder="Buscar por servicio, negocio o municipio"
+        />
+
         <Pressable
           style={styles.filterToggle}
           onPress={() => setVerFiltros((v) => !v)}
           accessibilityRole="button"
-          accessibilityState={{ expanded: verFiltros }}>
-          <Ionicons name="options-outline" size={20} color="#0147B9" />
-          <Text style={styles.filterToggleText}>{verFiltros ? 'Ocultar filtros' : 'Filtros'}</Text>
+          accessibilityState={{ expanded: verFiltros }}
+        >
+          <Ionicons name="options-outline" size={20} color={colors.azul} />
+          <Text style={styles.filterToggleText}>
+            {verFiltros ? 'Ocultar filtros' : 'Filtros'}
+          </Text>
         </Pressable>
       </View>
 
@@ -79,11 +109,20 @@ export default function ServiciosAdminLista({ titulo, subtitulo, tabs, vacios }:
                 onDias={setDias}
               />
             )}
+
             {!!error && (
               <View style={styles.errorCard}>
-                <Ionicons name="cloud-offline-outline" size={22} color="#dc2626" />
+                <Ionicons
+                  name="cloud-offline-outline"
+                  size={22}
+                  color={colors.rojo}
+                />
                 <Text style={styles.errorText}>{error}</Text>
-                <Button text="Volver a intentar" onPress={recargar} secondary />
+                <Button
+                  text="Volver a intentar"
+                  onPress={recargar}
+                  secondary
+                />
               </View>
             )}
           </View>
@@ -91,22 +130,32 @@ export default function ServiciosAdminLista({ titulo, subtitulo, tabs, vacios }:
         ListEmptyComponent={
           cargando ? (
             <View style={styles.centerBox}>
-              <ActivityIndicator size="large" color="#0147B9" />
+              <ActivityIndicator size="large" color={colors.azul} />
               <Text style={styles.centerText}>Cargando…</Text>
             </View>
           ) : !error ? (
             <View style={styles.emptyBox}>
               <View style={styles.emptyIcon}>
-                <Ionicons name="checkmark-done-outline" size={40} color="#0147B9" />
+                <Ionicons
+                  name="checkmark-done-outline"
+                  size={40}
+                  color={colors.azul}
+                />
               </View>
+
               <Text style={styles.emptyTitle}>
-                {hayFiltros ? 'No hay resultados con esos filtros' : (vacios[estado] ?? 'No hay servicios')}
+                {hayFiltros
+                  ? 'No hay resultados con esos filtros'
+                  : (vacios[estado] ?? 'No hay servicios')}
               </Text>
             </View>
-          ) : null
+          ) : undefined
         }
         renderItem={({ item }) => (
-          <ServicioAdminCard servicio={item} onPress={() => router.push(`/admin/servicio/${item._id}`)} />
+          <ServicioAdminCard
+            servicio={item}
+            onPress={() => router.push(`/admin/servicio/${item._id}`)}
+          />
         )}
       />
     </View>

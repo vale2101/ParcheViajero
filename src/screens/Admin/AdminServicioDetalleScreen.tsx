@@ -5,7 +5,7 @@ import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import AdminSubHeader from '../../components/AdminSubHeader';
 import EstadoBadge from '../../components/EstadoBadge';
-import FotoPlaceholder from '../../components/FotoPlaceholder';
+import GaleriaServicio from '../../components/GaleriaServicio';
 import InfoRow from '../../components/InfoRow';
 import LocationPickerMap from '../../components/LocationPickerMap';
 import ConfirmDialog from '../../components/ConfirmDialog';
@@ -14,6 +14,7 @@ import { useAdmin } from '../../context/AdminContext';
 import { formatearFecha, formatearFechaHora } from '../../utils/adminFormat';
 import { getEstadoVisual } from '../../utils/estadoServicio';
 import { coordenadasValidas, formatearPrecioCOP } from '../../utils/formatoServicio';
+import { colors } from '../../styles/theme';
 import { styles } from '../../styles/Admin.styles';
 
 type Decision = 'aprobado' | 'rechazado';
@@ -105,7 +106,7 @@ export default function AdminServicioDetalleScreen() {
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {cargando && !servicio && (
           <View style={styles.centerBox}>
-            <ActivityIndicator size="large" color="#0147B9" />
+            <ActivityIndicator size="large" color={colors.azul} />
             <Text style={styles.centerText}>Cargando…</Text>
           </View>
         )}
@@ -119,7 +120,7 @@ export default function AdminServicioDetalleScreen() {
 
         {!!aviso && (
           <View style={styles.okBox} accessibilityLiveRegion="polite">
-            <Ionicons name="checkmark-circle" size={20} color="#059669" />
+            <Ionicons name="checkmark-circle" size={20} color={colors.verde} />
             <Text style={styles.okText}>{aviso}</Text>
           </View>
         )}
@@ -132,14 +133,14 @@ export default function AdminServicioDetalleScreen() {
 
         {!!servicio && (
           <>
-            <FotoPlaceholder categoria={servicio.categoria_nombre} style={styles.detailPhoto} grande />
+            <GaleriaServicio imagenes={servicio.imagenes ?? []} categoria={servicio.categoria_nombre} />
 
             <Text style={styles.bigName}>{servicio.nombre}</Text>
             <EstadoBadge estado={servicio.estado_aprobacion} />
 
             {servicio.estado_aprobacion === 'rechazado' && !!servicio.observacion_revision && (
               <View style={styles.rejectBox}>
-                <Ionicons name="alert-circle-outline" size={18} color="#B91C1C" />
+                <Ionicons name="alert-circle-outline" size={18} color={colors.rojo} />
                 <View style={{ flex: 1 }}>
                   <Text style={styles.rejectTitle}>Observación del rechazo vigente</Text>
                   <Text style={styles.rejectText}>{servicio.observacion_revision}</Text>
@@ -222,10 +223,11 @@ export default function AdminServicioDetalleScreen() {
                     if (errorObs) setErrorObs(null);
                   }}
                   placeholder="Escribe el motivo o tus comentarios…"
-                  placeholderTextColor="#a3a3a3"
+                  placeholderTextColor={colors.placeholder}
                   multiline
                   editable={!enviando}
                 />
+                <Text style={styles.obsCounter}>{observacion.length} caracteres</Text>
                 {!!errorObs && <Text style={styles.fieldError}>{errorObs}</Text>}
 
                 <View style={styles.actionsRow}>
@@ -242,7 +244,7 @@ export default function AdminServicioDetalleScreen() {
                     onPress={() => pedirConfirmacion('rechazado')}
                     disabled={enviando}
                     accessibilityRole="button">
-                    <Ionicons name="close-circle-outline" size={20} color="#B91C1C" />
+                    <Ionicons name="close-circle-outline" size={20} color={colors.rojo} />
                     <Text style={styles.btnRejectText}>Rechazar servicio</Text>
                   </Pressable>
                 </View>

@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type { ServicioAdmin } from '../api/admin';
 import { formatearFecha } from '../utils/adminFormat';
 import { colors } from '../styles/theme';
+import CategoriaSticker from './CategoriaSticker';
 import EstadoBadge from './EstadoBadge';
 import FotoPlaceholder from './FotoPlaceholder';
 import MarcoPolaroid from './MarcoPolaroid';
@@ -48,7 +49,7 @@ export default function ServicioAdminCard({ servicio: s, onPress }: { servicio: 
           </Text>
           <EstadoBadge estado={s.estado_aprobacion} corto />
         </View>
-        {!!s.categoria_nombre && <Linea icono="pricetag-outline" texto={s.categoria_nombre} />}
+        <CategoriaSticker nombre={s.categoria_nombre} />
         <Linea icono="location-outline" texto={s.municipio_nombre ?? 'Municipio no disponible'} />
         <Linea icono="storefront-outline" texto={s.propietario?.nombre ?? 'Negocio no disponible'} />
         <Linea icono="calendar-outline" texto={`${pendiente ? 'Enviado' : 'Revisado'}: ${formatearFecha(fecha)}`} />

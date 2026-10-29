@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import Button from './Button';
+import CategoriaSticker from './CategoriaSticker';
 import StarRating from './StarRating';
 import { useServicioResenas } from '../hooks/useServicioResenas';
 import { validarCalificacion } from '../utils/validaciones';
@@ -16,10 +17,11 @@ import { styles } from '../styles/ServicioReviewModal.styles';
 interface Props {
   visible: boolean;
   servicio: Servicio | null;
+  categoria?: string | undefined;
   onClose: () => void;
 }
 
-export default function ServicioReviewModal({ visible, servicio, onClose }: Props) {
+export default function ServicioReviewModal({ visible, servicio, categoria, onClose }: Props) {
   const {
     usuarioId,
     resenas,
@@ -58,6 +60,7 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
           </View>
 
           <View style={styles.infoBox}>
+            <CategoriaSticker nombre={categoria} />
             {!!servicio.direccion && (
               <Text style={styles.infoText}>📍 {servicio.direccion}</Text>
             )}

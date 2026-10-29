@@ -2,6 +2,7 @@ import { Pressable, Text, View } from 'react-native';
 import { Image } from 'expo-image';
 import { Ionicons } from '@expo/vector-icons';
 import type { Servicio } from '../api/servicio';
+import CategoriaSticker from './CategoriaSticker';
 import { getCategoriaVisual } from '../utils/categoriaVisual';
 import { formatearPrecioCOP } from '../utils/formatoServicio';
 import { styles } from '../styles/ServicioCard.styles';
@@ -72,13 +73,7 @@ export default function ServicioCard({
           {servicio.nombre}
         </Text>
 
-        {!!categoria && (
-          <View style={[styles.badge, { backgroundColor: `${visual.color}1A` }]}>
-            <Text style={[styles.badgeText, { color: visual.color }]}>
-              {visual.emoji} {categoria}
-            </Text>
-          </View>
-        )}
+        <CategoriaSticker nombre={categoria} />
 
         {!!municipio && <Fila icono="location" texto={municipio} color="#0147B9" />}
         {!!servicio.direccion && <Fila icono="home-outline" texto={servicio.direccion} />}

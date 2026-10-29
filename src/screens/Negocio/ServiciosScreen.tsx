@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import Button from '../../components/Button';
+import CategoriaSticker from '../../components/CategoriaSticker';
 import ScreenHeader from '../../components/ScreenHeader';
 import ServicioDetalleModal from '../../components/ServicioDetalleModal';
 import { useMisServicios } from '../../hooks/useMisServicios';
@@ -45,12 +46,7 @@ export default function ServiciosScreen() {
           <Text style={[styles.badgeText, { color: estado.fg }]}>{estado.texto}</Text>
         </View>
 
-        {!!categoria && (
-          <View style={styles.infoRow}>
-            <Ionicons name="pricetag-outline" size={16} color="#6b6b6b" />
-            <Text style={styles.infoText}>{categoria}</Text>
-          </View>
-        )}
+        <CategoriaSticker nombre={categoria} />
 
         {!!ubicacion && (
           <View style={styles.infoRow}>

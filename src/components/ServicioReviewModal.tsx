@@ -13,6 +13,7 @@ import { useServicioResenas } from '../hooks/useServicioResenas';
 import { validarCalificacion } from '../utils/validaciones';
 import type { Servicio } from '../api/servicio';
 import { styles } from '../styles/ServicioReviewModal.styles';
+import { idUsuarioResena } from '../utils/resenaAutor';
 
 interface Props {
   visible: boolean;
@@ -88,7 +89,7 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
                     {new Date(item.fecha).toLocaleDateString()}
                   </Text>
                 )}
-                {item.usuario_id === usuarioId && (
+                {idUsuarioResena(item) === usuarioId && (
                   <Text style={styles.miEtiqueta}>Tu reseña</Text>
                 )}
               </View>

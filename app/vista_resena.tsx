@@ -33,6 +33,7 @@ servicio_id: '1',
 calificacion,
 comentario: 'Excelente sabor y buena atención, volveré pronto.',
 fecha: new Date(Date.now() - (6 - i) * 86400000).toISOString(),
+autor_nombre: 'Laura Gómez',
 }));
 
 export default function PruebaFicha() {
@@ -50,7 +51,6 @@ return (
     onClose={() => setFicha(false)}
     onDejarResena={() => setResenando(true)}
     resenasDemo={resenasFalsas}
-    autorDemo="Laura G."
     />
 
     {/* Y desde "Dejar reseña" se abre este */}

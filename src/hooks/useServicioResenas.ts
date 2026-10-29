@@ -4,6 +4,7 @@ import { createResena, updateResena, getResenasByServicio, type Resena } from '.
 import type { Servicio } from '../api/servicio';
 import { logError } from '../utils/errorApp';
 import { useAlert } from '../context/AlertContext';
+import { idUsuarioResena } from '../utils/resenaAutor';
 
 export function useServicioResenas(servicio: Servicio | null, visible: boolean) {
   const { user } = useAuth();
@@ -23,7 +24,7 @@ export function useServicioResenas(servicio: Servicio | null, visible: boolean) 
       const { data } = await getResenasByServicio(servicio._id);
       setResenas(data);
 
-      const propia = data.find((r) => r.usuario_id === user?._id) ?? null;
+      const propia = data.find((r) => idUsuarioResena(r) === user?._id) ?? null;
       setMiResena(propia);
       setCalificacion(propia?.calificacion ?? 0);
       setComentario(propia?.comentario ?? '');

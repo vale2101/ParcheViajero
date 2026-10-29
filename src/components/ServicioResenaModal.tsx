@@ -1,361 +1,288 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useEffect, useRef, useState } from 'react';
-import {
-Animated,
-Linking,
-Modal,
-Pressable,
-ScrollView,
-StyleSheet,
-Text,
-View,
-} from 'react-native';
+import { Image } from 'expo-image';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, Linking, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import type { Categoria } from '../api/categoria';
+import type { Municipio } from '../api/municipio';
 import { getResenasByServicio, type Resena } from '../api/resena';
 import type { Servicio } from '../api/servicio';
 import { useAuth } from '../context/AuthContext';
+import { getCategoriaVisual } from '../utils/categoriaVisual';
+import { nombreAutorResena } from '../utils/resenaAutor';
+import { colors } from '../styles/theme';
+import { styles } from '../styles/ServicioResenaModal.styles';
 import StarRating from './StarRating';
 
-// Paleta de colores de Parche Viajero
-const colors = {
-brand: {
-    blueDark: '#1E3A8A',
-    blue: '#0147B9',
-    yellow: '#F5B700',
-    gold: '#FEBA03',
-},
-bg: {
-    screen: '#FDFBF6',
-    surface: '#FAF4E4',
-    overlayModal: 'rgba(0,0,0,0.4)',
-    overlayPicker: 'rgba(0,0,0,0.35)',
-},
-border: {
-    soft: '#E8D9B8',
-    neutral: '#e5e5e5',
-},
-text: {
-    muted: '#a3a3a3',
-    body: '#171717',
-},
-state: {
-    errorBorder: '#ef4444',
-    errorText: '#dc2626',
-},
-};
-
 interface Props {
-visible: boolean;
-servicio: Servicio | null;
-onClose: () => void;
-onDejarResena: () => void; // abre el ServicioReviewModal
-// Solo para pruebas sin backend (opcionales)
-resenasDemo?: Resena[];
-autorDemo?: string;
+  visible: boolean;
+  servicio: Servicio | null;
+  onClose: () => void;
+  onDejarResena: () => void;
+  categorias?: Categoria[];
+  municipios?: Municipio[];
+  resenasDemo?: Resena[];
 }
 
-// "Laura Gómez" -> "Laura G."
-function nombreCorto(nombre: string) {
-const partes = nombre.trim().split(' ');
-if (partes.length < 2) return nombre;
-return `${partes[0]} ${partes[1].charAt(0).toUpperCase()}.`;
+function pareceId(valor?: string) {
+  return !!valor && /^[a-f0-9]{24}$/i.test(valor);
 }
 
-// Convierte una fecha en "hace 2 días"
 function haceCuanto(fecha?: string) {
-if (!fecha) return '';
-const dias = Math.floor((Date.now() - new Date(fecha).getTime()) / 86400000);
-if (dias <= 0) return 'hoy';
-if (dias === 1) return 'hace 1 día';
-return `hace ${dias} días`;
+  if (!fecha) return '';
+  const dias = Math.floor((Date.now() - new Date(fecha).getTime()) / 86400000);
+  if (Number.isNaN(dias) || dias <= 0) return 'hoy';
+  if (dias === 1) return 'hace 1 día';
+  return `hace ${dias} días`;
+}
+
+function FilaDato({
+  icono,
+  etiqueta,
+  valor,
+}: {
+  icono: keyof typeof Ionicons.glyphMap;
+  etiqueta: string;
+  valor?: string;
+}) {
+  if (!valor) return null;
+  return (
+    <View style={styles.infoRow}>
+      <Ionicons name={icono} size={18} color={colors.azul} style={{ marginTop: 2 }} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.infoLabel}>{etiqueta}</Text>
+        <Text style={styles.infoValue}>{valor}</Text>
+      </View>
+    </View>
+  );
+}
+
+function TarjetaResena({ resena, autor }: { resena: Resena; autor: string }) {
+  return (
+    <View style={styles.reviewCard}>
+      <View style={styles.reviewTop}>
+        <Text style={styles.reviewAutor} numberOfLines={1}>
+          {autor}
+        </Text>
+        {!!resena.fecha && <Text style={styles.reviewFecha}>{haceCuanto(resena.fecha)}</Text>}
+      </View>
+      <StarRating value={resena.calificacion} readonly size={14} />
+      {!!resena.comentario && <Text style={styles.reviewText}>{resena.comentario}</Text>}
+    </View>
+  );
 }
 
 export default function ServicioFichaModal({
-visible,
-servicio,
-onClose,
-onDejarResena,
-resenasDemo,
-autorDemo,
+  visible,
+  servicio,
+  onClose,
+  onDejarResena,
+  categorias = [],
+  municipios = [],
+  resenasDemo,
 }: Props) {
-const { user } = useAuth();
-const [resenas, setResenas] = useState<Resena[]>([]);
-const [autor, setAutor] = useState('Viajero');
+  const { user } = useAuth();
+  const [resenas, setResenas] = useState<Resena[]>([]);
+  const [expandido, setExpandido] = useState(false);
+  const [mostrar, setMostrar] = useState(visible);
+  const opacidad = useRef(new Animated.Value(0)).current;
+  const subida = useRef(new Animated.Value(40)).current;
 
-// --- Animación ---
-// "mostrar" mantiene el modal abierto mientras se reproduce la animación de salida
-const [mostrar, setMostrar] = useState(visible);
-const opacidad = useRef(new Animated.Value(0)).current;
-const subida = useRef(new Animated.Value(40)).current;
+  const ultimoServicio = useRef<Servicio | null>(null);
+  if (servicio) ultimoServicio.current = servicio;
+  const lugar = servicio ?? ultimoServicio.current;
 
-useEffect(() => {
+  useEffect(() => {
     if (visible) {
-    setMostrar(true);
-    Animated.parallel([
+      setMostrar(true);
+      Animated.parallel([
         Animated.timing(opacidad, { toValue: 1, duration: 250, useNativeDriver: true }),
         Animated.spring(subida, { toValue: 0, friction: 8, useNativeDriver: true }),
-    ]).start();
+      ]).start();
     } else {
-    Animated.parallel([
+      setExpandido(false);
+      Animated.parallel([
         Animated.timing(opacidad, { toValue: 0, duration: 180, useNativeDriver: true }),
         Animated.timing(subida, { toValue: 40, duration: 180, useNativeDriver: true }),
-    ]).start(() => setMostrar(false));
+      ]).start(() => setMostrar(false));
     }
-}, [visible, opacidad, subida]);
+  }, [visible, opacidad, subida]);
 
-// Guardamos el último servicio para que la ficha no desaparezca de golpe al cerrar
-const ultimoServicio = useRef<Servicio | null>(null);
-if (servicio) ultimoServicio.current = servicio;
-const lugar = servicio ?? ultimoServicio.current;
-
-// --- Reseñas ---
-useEffect(() => {
+  useEffect(() => {
     if (!visible || !servicio) return;
+    setExpandido(false);
 
-    // Modo prueba: datos falsos, sin llamar al backend
     if (resenasDemo) {
-    setResenas(resenasDemo);
-    setAutor(autorDemo ?? 'Viajero');
-    return;
+      setResenas(resenasDemo);
+      return;
     }
 
     getResenasByServicio(servicio._id)
-    .then(({ data }) => {
-        setResenas(data);
+      .then(({ data }) => setResenas(data))
+      .catch(() => setResenas([]));
+  }, [visible, servicio, resenasDemo]);
 
-        // Nombre de quien escribió la última reseña
-        const ultima = data[data.length - 1];
-        if (ultima && user?._id === ultima.usuario_id && user.nombre) {
-          setAutor(nombreCorto(user.nombre));
-        } else {
-          setAutor('Viajero');
-        }
-    })
-    .catch(() => setResenas([]));
-}, [visible, servicio, resenasDemo, autorDemo, user?._id, user?.nombre]);
+  const categoriaNombre = useMemo(() => {
+    const porId = categorias.find((c) => c._id === lugar?.categoria_id)?.nombre;
+    if (porId) return porId;
+    const raw = lugar?.categoria_id;
+    return raw && !pareceId(raw) ? raw : undefined;
+  }, [categorias, lugar?.categoria_id]);
 
-if (!lugar) return null;
+  const municipioNombre = useMemo(() => {
+    const porId = municipios.find((m) => m._id === lugar?.municipio_id)?.nombre;
+    if (porId) return porId;
+    const raw = lugar?.municipio_id;
+    return raw && !pareceId(raw) ? raw : undefined;
+  }, [municipios, lugar?.municipio_id]);
 
-const promedio =
-    resenas.length > 0
-    ? resenas.reduce((suma, r) => suma + r.calificacion, 0) / resenas.length
-    : 0;
+  const ordenadas = useMemo(
+    () =>
+      [...resenas].sort(
+        (a, b) => new Date(b.fecha ?? 0).getTime() - new Date(a.fecha ?? 0).getTime(),
+      ),
+    [resenas],
+  );
 
-const ultimaResena = resenas.length > 0 ? resenas[resenas.length - 1] : null;
+  const promedio =
+    ordenadas.length > 0
+      ? ordenadas.reduce((suma, r) => suma + r.calificacion, 0) / ordenadas.length
+      : 0;
 
-// Abre Google Maps con la ruta hacia el lugar
-function comoLlegar() {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${lugar!.latitud},${lugar!.longitud}`;
+  const visibles = expandido ? ordenadas : ordenadas.slice(0, 1);
+  const visual = getCategoriaVisual(categoriaNombre);
+  const foto = lugar?.imagenes?.[0]?.url_imagen;
+
+  function comoLlegar() {
+    if (!lugar) return;
+    const url = `https://www.google.com/maps/dir/?api=1&destination=${lugar.latitud},${lugar.longitud}`;
     Linking.openURL(url);
-}
+  }
 
-return (
+  if (!lugar) return null;
+
+  return (
     <Modal visible={mostrar} animationType="none" transparent onRequestClose={onClose}>
-    <Animated.View style={[styles.backdrop, { opacity: opacidad }]}>
+      <Animated.View style={[styles.backdrop, { opacity: opacidad }]}>
         <Animated.View style={[styles.card, { transform: [{ translateY: subida }] }]}>
-        <ScrollView contentContainerStyle={styles.body}>
-            {/* Título y cerrar */}
-            <View style={styles.header}>
-            <Text style={styles.title}>{lugar.nombre}</Text>
-            <Pressable onPress={onClose} hitSlop={8}>
-                <Ionicons name="close" size={22} color={colors.text.muted} />
-            </Pressable>
-            </View>
-
-            {/* Categoría y municipio (por ahora son ids) */}
-            <View style={styles.tagsRow}>
-            <Text style={styles.categoria}>{lugar.categoria_id}</Text>
-            <Text style={styles.municipio}>{lugar.municipio_id}</Text>
-            </View>
-
-            {/* Promedio con estrellas */}
-            {resenas.length > 0 && (
-            <View style={styles.ratingRow}>
-                <StarRating value={Math.round(promedio)} readonly size={16} />
-                <Text style={styles.ratingText}>
-                <Text style={styles.ratingNumero}>{promedio.toFixed(1)}</Text> · {resenas.length}{' '}
-                reseñas
-                </Text>
-            </View>
-            )}
-
-            {/* Datos de contacto con iconos de línea */}
-            {!!lugar.direccion && (
-            <View style={styles.infoRow}>
-                <Ionicons name="location-outline" size={18} color={colors.brand.blue} />
-                <Text style={styles.info}>{lugar.direccion}</Text>
-            </View>
-            )}
-            {!!lugar.horario_atencion && (
-            <View style={styles.infoRow}>
-                <Ionicons name="time-outline" size={18} color={colors.brand.blue} />
-                <Text style={styles.info}>{lugar.horario_atencion}</Text>
-            </View>
-            )}
-            {!!lugar.telefono && (
-            <View style={styles.infoRow}>
-                <Ionicons name="call-outline" size={18} color={colors.brand.blue} />
-                <Text style={styles.info}>{lugar.telefono}</Text>
-            </View>
-            )}
-
-            {!!lugar.descripcion && <Text style={styles.descripcion}>{lugar.descripcion}</Text>}
-
-            {/* Chips de servicios 
-            {!!lugar.servicios && lugar.servicios.length > 0 && (
-            <View style={styles.bloque}>
-                <Text style={styles.sectionTitle}>Servicios</Text>
-                <View style={styles.chipsRow}>
-                {lugar.servicios.map((s) => (
-                    <View key={s} style={styles.chip}>
-                    <Text style={styles.chipText}>{s}</Text>
-                    </View>
-                ))}
+              <ScrollView
+                style={styles.scroll}
+                contentContainerStyle={styles.body}
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="handled">
+                <View style={styles.header}>
+                  <Text style={styles.title}>{lugar.nombre}</Text>
+                  <Pressable
+                    onPress={onClose}
+                    hitSlop={8}
+                    style={styles.closeBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel="Cerrar">
+                    <Ionicons name="close" size={20} color={colors.textoSec} />
+                  </Pressable>
                 </View>
-            </View>
-            )}
-                */}
-                
-            {/* Reseñas */}
-            <View style={styles.bloque}>
-            <View style={styles.resenasHeader}>
-                <Text style={styles.sectionTitle}>Reseñas</Text>
-                <Pressable
-                onPress={onDejarResena}
-                hitSlop={8}
-                style={({ pressed }) => pressed && styles.presionado}>
-                <Text style={styles.verTodas}>Ver todas</Text>
-                </Pressable>
-            </View>
 
-            {ultimaResena ? (
-                <View style={styles.reviewCard}>
-                <View style={styles.reviewTop}>
-                    <Text style={styles.reviewAutor}>{autor}</Text>
-                    <Text style={styles.reviewFecha}>{haceCuanto(ultimaResena.fecha)}</Text>
-                </View>
-                <StarRating value={ultimaResena.calificacion} readonly size={14} />
-                {!!ultimaResena.comentario && (
-                    <Text style={styles.reviewText}>{ultimaResena.comentario}</Text>
+                {!!foto && (
+                  <Image
+                    source={{ uri: foto }}
+                    style={styles.photo}
+                    contentFit="cover"
+                    accessibilityLabel={`Foto de ${lugar.nombre}`}
+                  />
                 )}
+
+                {(categoriaNombre || municipioNombre) && (
+                  <View style={styles.tagsRow}>
+                    {!!categoriaNombre && (
+                      <View style={[styles.chip, { backgroundColor: `${visual.color}1A`, borderColor: visual.color }]}>
+                        <Text style={[styles.chipText, { color: visual.color }]}>
+                          {visual.emoji} {categoriaNombre}
+                        </Text>
+                      </View>
+                    )}
+                    {!!municipioNombre && (
+                      <View style={[styles.chip, { backgroundColor: colors.doradoSuave, borderColor: colors.dorado }]}>
+                        <Text style={[styles.chipText, { color: colors.doradoTexto }]}>
+                          {municipioNombre}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+
+                {ordenadas.length > 0 && (
+                  <View style={styles.ratingRow}>
+                    <StarRating value={Math.round(promedio)} readonly size={16} />
+                    <Text style={styles.ratingNumero}>{promedio.toFixed(1)}</Text>
+                    <Text style={styles.ratingMeta}>
+                      · {ordenadas.length} {ordenadas.length === 1 ? 'reseña' : 'reseñas'}
+                    </Text>
+                  </View>
+                )}
+
+                {(lugar.direccion || lugar.horario_atencion || lugar.telefono) && (
+                  <View style={styles.sectionCard}>
+                    <FilaDato icono="location-outline" etiqueta="Dirección" valor={lugar.direccion} />
+                    <FilaDato icono="time-outline" etiqueta="Horario" valor={lugar.horario_atencion} />
+                    <FilaDato icono="call-outline" etiqueta="Teléfono" valor={lugar.telefono} />
+                  </View>
+                )}
+
+                {!!lugar.descripcion && (
+                  <View style={styles.sectionCard}>
+                    <Text style={styles.sectionTitle}>Sobre este lugar</Text>
+                    <Text style={styles.descripcion}>{lugar.descripcion}</Text>
+                  </View>
+                )}
+
+                <View style={styles.bloque}>
+                  <View style={styles.resenasHeader}>
+                    <Text style={styles.sectionTitle}>Reseñas</Text>
+                    {ordenadas.length > 1 && (
+                      <Pressable
+                        onPress={() => setExpandido((v) => !v)}
+                        hitSlop={8}
+                        style={({ pressed }) => pressed && styles.presionado}>
+                        <Text style={styles.verTodas}>{expandido ? 'Ver menos' : 'Ver todas'}</Text>
+                      </Pressable>
+                    )}
+                  </View>
+
+                  {visibles.length > 0 ? (
+                    visibles.map((r) => (
+                      <TarjetaResena
+                        key={r._id}
+                        resena={r}
+                        autor={nombreAutorResena(r, user)}
+                      />
+                    ))
+                  ) : (
+                    <Text style={styles.placeholder}>Aún no hay reseñas para este lugar</Text>
+                  )}
                 </View>
-            ) : (
-                <Text style={styles.placeholder}>Aún no hay reseñas para este lugar</Text>
-            )}
-            </View>
-        </ScrollView>
+              </ScrollView>
 
-        {/* Botones fijos abajo */}
-        <View style={styles.footer}>
-            <Pressable
-            onPress={onDejarResena}
-            style={({ pressed }) => [
-                styles.footerButton,
-                styles.botonSecundario,
-                pressed && styles.presionado,
-            ]}>
-            <Text style={styles.textoSecundario}>Dejar reseña</Text>
-            </Pressable>
-            <Pressable
-            onPress={comoLlegar}
-            style={({ pressed }) => [
-                styles.footerButton,
-                styles.botonPrimario,
-                pressed && styles.presionado,
-            ]}>
-            <Text style={styles.textoPrimario}>Cómo llegar</Text>
-            </Pressable>
-        </View>
+              <View style={styles.footer}>
+                <Pressable
+                  onPress={onDejarResena}
+                  style={({ pressed }) => [
+                    styles.footerButton,
+                    styles.botonSecundario,
+                    pressed && styles.presionado,
+                  ]}>
+                  <Text style={styles.textoSecundario}>Dejar reseña</Text>
+                </Pressable>
+                <Pressable
+                  onPress={comoLlegar}
+                  style={({ pressed }) => [
+                    styles.footerButton,
+                    styles.botonPrimario,
+                    pressed && styles.presionado,
+                  ]}>
+                  <Text style={styles.textoPrimario}>Cómo llegar</Text>
+                </Pressable>
+              </View>
         </Animated.View>
-    </Animated.View>
+      </Animated.View>
     </Modal>
-);
+  );
 }
-
-const styles = StyleSheet.create({
-backdrop: {
-    flex: 1,
-    backgroundColor: colors.bg.overlayModal,
-    justifyContent: 'center',
-    padding: 20,
-},
-card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: 28,
-    borderWidth: 2,
-    borderColor: colors.border.soft,
-    maxHeight: '88%',
-    overflow: 'hidden',
-},
-body: { padding: 20, gap: 10 },
-header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-},
-title: { fontSize: 22, fontWeight: '800', color: colors.brand.blueDark, flexShrink: 1 },
-tagsRow: { flexDirection: 'row', gap: 10 },
-categoria: { fontSize: 13, fontWeight: '700', color: colors.brand.blue },
-municipio: { fontSize: 13, color: colors.text.muted },
-ratingRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-ratingText: { fontSize: 14, color: colors.text.body },
-ratingNumero: { fontWeight: '700', color: colors.brand.blueDark },
-infoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-info: { fontSize: 14, color: colors.text.body, flexShrink: 1 },
-descripcion: { fontSize: 14, color: colors.text.body, marginTop: 6, lineHeight: 21 },
-bloque: { marginTop: 10, gap: 8 },
-sectionTitle: { fontSize: 15, fontWeight: '800', color: colors.brand.blueDark },
-chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-chip: {
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: colors.brand.yellow,
-    backgroundColor: colors.bg.screen,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-},
-chipText: { fontSize: 13, color: colors.brand.blueDark, fontWeight: '500' },
-resenasHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-},
-verTodas: { fontSize: 13, fontWeight: '700', color: colors.brand.blue },
-reviewCard: {
-    borderRadius: 14,
-    borderWidth: 1.5,
-    borderColor: colors.border.soft,
-    backgroundColor: colors.bg.screen,
-    padding: 12,
-    gap: 6,
-},
-reviewTop: { flexDirection: 'row', justifyContent: 'space-between' },
-reviewAutor: { fontSize: 14, fontWeight: '700', color: colors.brand.blueDark },
-reviewFecha: { fontSize: 12, color: colors.text.muted },
-reviewText: { fontSize: 14, color: colors.text.body },
-placeholder: { color: colors.text.muted, fontSize: 14 },
-footer: {
-    flexDirection: 'row',
-    gap: 10,
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.soft,
-},
-footerButton: {
-    flex: 1,
-    alignItems: 'center',
-    borderRadius: 16,
-    paddingVertical: 14,
-},
-// Dejar reseña: fondo crema, borde amarillo, texto azul
-botonSecundario: {
-    backgroundColor: colors.bg.screen,
-    borderWidth: 2,
-    borderColor: colors.brand.yellow,
-},
-textoSecundario: { fontSize: 15, fontWeight: '600', color: colors.brand.blueDark },
-// Cómo llegar: fondo azul, texto amarillo
-botonPrimario: { backgroundColor: colors.brand.blueDark },
-textoPrimario: { fontSize: 15, fontWeight: '600', color: colors.brand.yellow },
-// Efecto al presionar un botón
-presionado: { opacity: 0.7, transform: [{ scale: 0.97 }] },
-});

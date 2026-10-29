@@ -120,4 +120,11 @@ export const styles = StyleSheet.create({
 
   /* Perfil */
   profileBox: { alignItems: 'center', gap: 8, paddingVertical: 24 },
+    /* Reseñas */
+  reviewCard: { borderRadius: 18, backgroundColor: CREMA, borderWidth: 1, borderColor: BORDE, padding: 14, gap: 8, ...sombra },
+  reviewHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
+  reviewComment: { fontSize: 14, color: TEXTO },
+  reviewEmpty: { fontSize: 13, color: SEC, fontStyle: 'italic' },
+  btnDeleteSmall: { alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 14, borderWidth: 1.5, borderColor: '#f0b4b4', backgroundColor: CREMA, minHeight: 44, paddingHorizontal: 14 },
+  btnDeleteSmallText: { fontSize: 14, fontWeight: '600', color: '#B91C1C' },
 });

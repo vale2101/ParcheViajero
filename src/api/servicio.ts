@@ -1,7 +1,19 @@
-import { request } from './client';
+import { Platform } from 'react-native';
+import { request, requestForm } from './client';
 import { notificarServiciosCambiados } from '../utils/serviciosSync';
 
 export type EstadoAprobacion = 'pendiente' | 'aprobado' | 'rechazado';
+
+export interface ImagenServicio {
+  _id: string;
+  url_imagen: string;
+}
+
+export interface ImagenLocal {
+  uri: string;
+  name: string;
+  type: string;
+}
 
 export interface Servicio {
   _id: string;
@@ -20,6 +32,7 @@ export interface Servicio {
   estado_aprobacion?: EstadoAprobacion;
   fecha_revision?: string;
   observacion_revision?: string;
+  imagenes?: ImagenServicio[];
 }
 
 export interface CreateServicioInput {
@@ -51,8 +64,12 @@ export async function getServicioById(id: string): Promise<{ data: Servicio }> {
 
 export async function createServicio(
   servicio: CreateServicioInput,
-): Promise<MessageResponse> {
-  const resultado = await request<MessageResponse>('/servicios/createServicio', servicio, 'POST');
+): Promise<MessageResponse & { data?: { _id: string } }> {
+  const resultado = await request<MessageResponse & { data?: { _id: string } }>(
+    '/servicios/createServicio',
+    servicio,
+    'POST',
+  );
   notificarServiciosCambiados();
   return resultado;
 }
@@ -76,5 +93,40 @@ export async function getServiciosByUsuarioId_get(): Promise<{ data: Servicio[] 
   return request('/servicios/mis-servicios');
 }
 
-// Alias para no romper imports anteriores
+export async function subirImagenesServicio(
+  servicioId: string,
+  imagenes: ImagenLocal[],
+): Promise<{ message: string; data: ImagenServicio[] }> {
+  const form = new FormData();
+
+  for (const img of imagenes) {
+    if (Platform.OS === 'web') {
+      const blob = await (await fetch(img.uri)).blob();
+      form.append('imagenes', blob, img.name);
+    } else {
+      form.append(
+        'imagenes',
+        { uri: img.uri, name: img.name, type: img.type } as unknown as Blob,
+      );
+    }
+  }
+
+  const resultado = await requestForm<{ message: string; data: ImagenServicio[] }>(
+    `/servicios/${servicioId}/imagenes`,
+    form,
+  );
+  notificarServiciosCambiados();
+  return resultado;
+}
+
+export async function eliminarImagenServicio(imagenId: string): Promise<MessageResponse> {
+  const resultado = await request<MessageResponse>(
+    `/servicios/imagenes/${imagenId}`,
+    undefined,
+    'DELETE',
+  );
+  notificarServiciosCambiados();
+  return resultado;
+}
+
 export const getMisServicios = getServiciosByUsuarioId_get;

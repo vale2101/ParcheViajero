@@ -7,6 +7,7 @@ import {
   ScrollView,
   Text,
   View,
+  type ScrollViewInstance,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useForm } from 'react-hook-form';
@@ -14,12 +15,21 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../components/Button';
 import Field from '../components/Field';
 import PickerField from '../components/PickerField';
+import ImagenesPicker from '../components/ImagenesPicker';
 import StepUbicacion from '../components/StepUbicacion';
-import { updateServicio, type Servicio, type UpdateServicioInput } from '../api/servicio';
+import {
+  eliminarImagenServicio,
+  subirImagenesServicio,
+  updateServicio,
+  type ImagenServicio,
+  type Servicio,
+  type UpdateServicioInput,
+} from '../api/servicio';
 import type { Categoria } from '../api/categoria';
 import type { Municipio } from '../api/municipio';
 import { useAlert } from '../context/AlertContext';
 import { useUbicacionServicio } from '../hooks/useUbicacionServicio';
+import { MAX_IMAGENES, elegirImagenes } from '../utils/seleccionarImagenes';
 import { reglaNombre } from '../utils/validaciones';
 import { reglaPrecio, reglaTelefonoServicio } from '../utils/validacionesServicio';
 import { styles } from '../styles/PerfilNegocio.styles';
@@ -40,6 +50,7 @@ interface Props {
   municipioActual?: string | undefined;
   onClose: () => void;
   onSaved: () => void;
+  onImagenesChange?: () => void;
 }
 
 const sinAncla = () => () => {};
@@ -52,10 +63,11 @@ export default function ServicioEditarModal({
   municipioActual,
   onClose,
   onSaved,
+  onImagenesChange,
 }: Props) {
   const { errorVital } = useAlert();
   const insets = useSafeAreaInsets();
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const guardandoRef = useRef(false);
 
   const form = useForm<EditForm>({
@@ -70,6 +82,10 @@ export default function ServicioEditarModal({
   const [errorMunicipio, setErrorMunicipio] = useState<string | undefined>();
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
+
+  const [fotos, setFotos] = useState<ImagenServicio[]>([]);
+  const [ocupadoFotos, setOcupadoFotos] = useState(false);
+  const [avisoFotos, setAvisoFotos] = useState<string | null>(null);
 
   const ubicacion = useUbicacionServicio();
   const { confirmada, reiniciar } = ubicacion;
@@ -90,6 +106,8 @@ export default function ServicioEditarModal({
     setErrorUbicacion(undefined);
     setErrorMunicipio(undefined);
     setErrorEnvio(null);
+    setFotos(servicio.imagenes ?? []);
+    setAvisoFotos(null);
     reiniciar(null);
   }, [visible, servicio?._id]);
 
@@ -123,8 +141,40 @@ export default function ServicioEditarModal({
     reiniciar(nombreMunicipio(id));
   }
 
+  async function agregarFotos() {
+    if (ocupadoFotos) return;
+    const { imagenes, rechazadas } = await elegirImagenes(MAX_IMAGENES - fotos.length);
+    setAvisoFotos(rechazadas.length ? rechazadas.join(' ') : null);
+    if (imagenes.length === 0) return;
+
+    setOcupadoFotos(true);
+    try {
+      const r = await subirImagenesServicio(servicio!._id, imagenes);
+      setFotos((prev) => [...prev, ...r.data.map((d) => ({ _id: d._id, url_imagen: d.url_imagen }))]);
+      onImagenesChange?.();
+    } catch (e) {
+      setAvisoFotos((e as Error).message);
+    } finally {
+      setOcupadoFotos(false);
+    }
+  }
+
+  async function quitarFoto(id: string) {
+    if (ocupadoFotos) return;
+    setOcupadoFotos(true);
+    try {
+      await eliminarImagenServicio(id);
+      setFotos((prev) => prev.filter((f) => f._id !== id));
+      onImagenesChange?.();
+    } catch (e) {
+      setAvisoFotos((e as Error).message);
+    } finally {
+      setOcupadoFotos(false);
+    }
+  }
+
   function cerrar() {
-    if (guardandoRef.current) return;
+    if (guardandoRef.current || ocupadoFotos) return;
     onClose();
   }
 
@@ -143,7 +193,7 @@ export default function ServicioEditarModal({
           return;
         }
         if (!confirmada) {
-          setErrorUbicacion('Busca la dirección en el mapa y confirma la ubicación para guardar');
+          setErrorUbicacion('Escribe la dirección y marca el punto en el mapa para guardar');
           return;
         }
       }
@@ -272,6 +322,15 @@ export default function ServicioEditarModal({
                 <Text style={styles.fieldHelp}>Pesos colombianos (COP), solo números.</Text>
               </View>
 
+              <Text style={styles.sectionTitle}>Fotografías</Text>
+              <ImagenesPicker
+                fotos={fotos.map((f) => ({ key: f._id, uri: f.url_imagen }))}
+                ocupado={ocupadoFotos}
+                aviso={avisoFotos}
+                onAgregar={agregarFotos}
+                onQuitar={quitarFoto}
+              />
+
               <Text style={styles.sectionTitle}>Ubicación</Text>
 
               {!cambiandoUbicacion ? (
@@ -317,13 +376,13 @@ export default function ServicioEditarModal({
                 text="Cancelar"
                 onPress={cerrar}
                 secondary
-                disabled={guardando}
+                disabled={guardando || ocupadoFotos}
                 style={styles.footerBtn}
               />
               <Button
                 text={guardando ? 'Guardando…' : 'Guardar cambios'}
                 onPress={guardar}
-                disabled={guardando}
+                disabled={guardando || ocupadoFotos}
                 style={styles.footerBtn}
               />
             </View>

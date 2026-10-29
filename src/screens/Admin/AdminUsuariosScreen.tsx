@@ -4,12 +4,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import Loader from '../../components/Loader';
-import ScreenHeader from '../../components/ScreenHeader';
+import AdminHeader from '../../components/AdminHeader';
 import SearchBar from '../../components/SearchBar';
 import Segmented from '../../components/Segmented';
 import UsuarioCard from '../../components/UsuarioCard';
 import type { Orden, TipoCuenta } from '../../api/admin';
 import { useAdminUsuarios } from '../../hooks/useAdminUsuarios';
+import { colors } from '../../styles/theme';
 import { styles } from '../../styles/Admin.styles';
 
 export default function AdminUsuariosScreen() {
@@ -19,7 +20,11 @@ export default function AdminUsuariosScreen() {
   const [orden, setOrden] = useState<Orden>('desc');
   const [soloConServicios, setSoloConServicios] = useState(false);
 
-  const { usuarios, cargando, cargado, error, recargar } = useAdminUsuarios(tipo, q, orden);
+  const { usuarios, cargando, cargado, error, recargar } = useAdminUsuarios(
+    tipo,
+    q,
+    orden,
+  );
 
   const visibles = useMemo(
     () =>
@@ -31,10 +36,11 @@ export default function AdminUsuariosScreen() {
 
   return (
     <View style={styles.screen}>
-      <ScreenHeader />
+      <AdminHeader />
 
       <View style={[styles.wrap, styles.headerBox]}>
         <Text style={styles.title}>Usuarios</Text>
+
         <Segmented
           valor={tipo}
           opciones={[
@@ -43,24 +49,41 @@ export default function AdminUsuariosScreen() {
           ]}
           onChange={setTipo}
         />
-        <SearchBar value={q} onChange={setQ} placeholder="Buscar por nombre o correo" />
+
+        <SearchBar
+          value={q}
+          onChange={setQ}
+          placeholder="Buscar por nombre o correo"
+        />
 
         <View style={styles.chipsRow}>
           <Pressable
             style={[styles.chip, styles.chipActive]}
-            onPress={() => setOrden((o) => (o === 'desc' ? 'asc' : 'desc'))}
-            accessibilityRole="button">
+            onPress={() =>
+              setOrden((o) => (o === 'desc' ? 'asc' : 'desc'))
+            }
+            accessibilityRole="button"
+          >
             <Text style={[styles.chipText, styles.chipTextActive]}>
               {orden === 'desc' ? 'Más recientes' : 'Más antiguos'}
             </Text>
           </Pressable>
+
           {tipo === 'negocio' && (
             <Pressable
               style={[styles.chip, soloConServicios && styles.chipActive]}
               onPress={() => setSoloConServicios((v) => !v)}
               accessibilityRole="button"
-              accessibilityState={{ selected: soloConServicios }}>
-              <Text style={[styles.chipText, soloConServicios && styles.chipTextActive]}>Con servicios</Text>
+              accessibilityState={{ selected: soloConServicios }}
+            >
+              <Text
+                style={[
+                  styles.chipText,
+                  soloConServicios && styles.chipTextActive,
+                ]}
+              >
+                Con servicios
+              </Text>
             </Pressable>
           )}
         </View>
@@ -75,11 +98,19 @@ export default function AdminUsuariosScreen() {
         ListHeaderComponent={
           error ? (
             <View style={styles.errorCard}>
-              <Ionicons name="cloud-offline-outline" size={22} color="#dc2626" />
+              <Ionicons
+                name="cloud-offline-outline"
+                size={22}
+                color={colors.rojo}
+              />
               <Text style={styles.errorText}>{error}</Text>
-              <Button text="Volver a intentar" onPress={recargar} secondary />
+              <Button
+                text="Volver a intentar"
+                onPress={recargar}
+                secondary
+              />
             </View>
-          ) : null
+          ) : undefined
         }
         ListEmptyComponent={
           cargando ? (
@@ -87,8 +118,13 @@ export default function AdminUsuariosScreen() {
           ) : !error ? (
             <View style={styles.emptyBox}>
               <View style={styles.emptyIcon}>
-                <Ionicons name="people-outline" size={40} color="#0147B9" />
+                <Ionicons
+                  name="people-outline"
+                  size={40}
+                  color={colors.azul}
+                />
               </View>
+
               <Text style={styles.emptyTitle}>
                 {q.trim() || soloConServicios
                   ? 'No hay usuarios con esos filtros'
@@ -97,10 +133,13 @@ export default function AdminUsuariosScreen() {
                     : 'Aún no hay viajeros registrados'}
               </Text>
             </View>
-          ) : null
+          ) : undefined
         }
         renderItem={({ item }) => (
-          <UsuarioCard usuario={item} onPress={() => router.push(`/admin/persona/${item._id}`)} />
+          <UsuarioCard
+            usuario={item}
+            onPress={() => router.push(`/admin/persona/${item._id}`)}
+          />
         )}
       />
     </View>

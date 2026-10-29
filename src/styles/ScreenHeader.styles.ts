@@ -2,16 +2,14 @@ import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
   header: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingBottom: 8,
+    backgroundColor: '#FDFBF6',
     borderBottomWidth: 1,
     borderBottomColor: '#E8D9B8',
-    paddingVertical: 16,
-    alignItems: 'center',
   },
-  title: {
-    fontSize: 20,
-    color: '#0147B9',
-    fontFamily: 'Fredoka_700Bold',
-  },
+  logo: { height: 48, aspectRatio: 1.8 },
   menuButton: {
     position: 'absolute',
     right: 16,

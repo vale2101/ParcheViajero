@@ -4,6 +4,7 @@ import { deleteResena, getResenas, updateResena, type Resena } from '../api/rese
 import { getServicios, type Servicio } from '../api/servicio';
 import { logError } from '../utils/errorApp';
 import { useAlert } from '../context/AlertContext';
+import { idUsuarioResena } from '../utils/resenaAutor';
 
 export function useMisResenas() {
   const { user } = useAuth();
@@ -28,7 +29,7 @@ export function useMisResenas() {
         getServicios(),
       ]);
 
-      const mias = todasResenas.filter((r) => r.usuario_id === user._id);
+      const mias = todasResenas.filter((r) => idUsuarioResena(r) === user._id);
       const mapaServicios = Object.fromEntries(todosServicios.map((s) => [s._id, s]));
 
       setResenas(mias);

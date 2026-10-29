@@ -8,6 +8,7 @@ import SearchBar from '../../components/SearchBar';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { eliminarResenaAdmin, type ResenaAdmin } from '../../api/admin';
 import { useAdminResenas } from '../../hooks/useAdminResenas';
+import { colors } from '../../styles/theme';
 import { styles } from '../../styles/Admin.styles';
 
 const FILTROS: { valor: number | null; etiqueta: string }[] = [
@@ -89,13 +90,13 @@ export default function AdminResenasScreen() {
           <View style={{ gap: 12 }}>
             {!!aviso && (
               <View style={styles.okBox} accessibilityLiveRegion="polite">
-                <Ionicons name="checkmark-circle" size={20} color="#059669" />
+                <Ionicons name="checkmark-circle" size={20} color={colors.verde} />
                 <Text style={styles.okText}>{aviso}</Text>
               </View>
             )}
             {!!error && (
               <View style={styles.errorCard}>
-                <Ionicons name="cloud-offline-outline" size={22} color="#dc2626" />
+                <Ionicons name="cloud-offline-outline" size={22} color={colors.rojo} />
                 <Text style={styles.errorText}>{error}</Text>
                 <Button text="Volver a intentar" onPress={recargar} secondary />
               </View>
@@ -105,13 +106,13 @@ export default function AdminResenasScreen() {
         ListEmptyComponent={
           cargando && !cargado ? (
             <View style={styles.centerBox}>
-              <ActivityIndicator size="large" color="#0147B9" />
+              <ActivityIndicator size="large" color={colors.azul} />
               <Text style={styles.centerText}>Cargando reseñas…</Text>
             </View>
           ) : !error ? (
             <View style={styles.emptyBox}>
               <View style={styles.emptyIcon}>
-                <Ionicons name="chatbubbles-outline" size={40} color="#0147B9" />
+                <Ionicons name="chatbubbles-outline" size={40} color={colors.azul} />
               </View>
               <Text style={styles.emptyTitle}>
                 {hayFiltros ? 'No hay reseñas con esos filtros' : 'Aún no hay reseñas'}

@@ -1,6 +1,7 @@
 import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Button from './Button';
+import CategoriaSticker from './CategoriaSticker';
 import type { Servicio } from '../api/servicio';
 import { getEstadoVisual } from '../utils/estadoServicio';
 import { styles } from '../styles/ServicioDetalleModal.styles';
@@ -87,7 +88,7 @@ export default function ServicioDetalleModal({
               </View>
             )}
 
-            <Fila icono="pricetag-outline" etiqueta="Categoría" valor={categoria} />
+            <CategoriaSticker nombre={categoria} />
             <Fila icono="document-text-outline" etiqueta="Descripción" valor={servicio.descripcion} />
             <Fila icono="business-outline" etiqueta="Municipio" valor={municipio} />
             <Fila icono="location-outline" etiqueta="Dirección" valor={servicio.direccion} />

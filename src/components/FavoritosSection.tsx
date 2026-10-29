@@ -55,8 +55,15 @@ export default function FavoritosSection() {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>Mis favoritos</Text>
-        {favoritos.length > 0 && <Text style={styles.count}>{favoritos.length} lugares</Text>}
+        <View style={styles.titleWrap}>
+          <Ionicons name="star" size={18} color="#E9B85B" />
+          <Text style={styles.sectionTitle}>Mis favoritos</Text>
+        </View>
+        {favoritos.length > 0 && (
+          <Text style={styles.count}>
+            {favoritos.length} {favoritos.length === 1 ? 'lugar' : 'lugares'}
+          </Text>
+        )}
       </View>
 
       {error ? (
@@ -65,6 +72,9 @@ export default function FavoritosSection() {
         </View>
       ) : favoritos.length === 0 ? (
         <View style={styles.emptyBox}>
+          <View style={styles.emptyIcon}>
+            <Ionicons name="map-outline" size={26} color="#8A5A00" />
+          </View>
           <Text style={styles.placeholder}>Aún no tienes favoritos guardados</Text>
         </View>
       ) : (

@@ -85,6 +85,8 @@ export default function MapaScreen() {
       <ServicioResenaModal
         visible={!!seleccionado && !resenando}
         servicio={seleccionado}
+        categorias={categorias}
+        municipios={municipios}
         onClose={() => setSeleccionado(null)}
         onDejarResena={() => setResenando(true)}
       />
@@ -92,6 +94,7 @@ export default function MapaScreen() {
       <ServicioReviewModal
         visible={resenando}
         servicio={seleccionado}
+        categoria={categorias.find((c) => c._id === seleccionado?.categoria_id)?.nombre}
         onClose={() => setResenando(false)}
       />
     </View>

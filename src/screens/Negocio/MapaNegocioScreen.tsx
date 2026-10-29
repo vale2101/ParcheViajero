@@ -7,6 +7,7 @@ import {
 import { useFocusEffect, useRouter } from 'expo-router';
 
 import Button from '../../components/Button';
+import CategoriaSticker from '../../components/CategoriaSticker';
 import ScreenHeader from '../../components/ScreenHeader';
 import Loader from '../../components/Loader';
 import ServiciosMap from '../../components/ServiciosMap';
@@ -165,6 +166,10 @@ export default function MapaNegocioScreen() {
             <Text style={styles.infoTitle}>
               {seleccionado.nombre}
             </Text>
+
+            <CategoriaSticker
+              nombre={categorias.find((c) => c._id === seleccionado.categoria_id)?.nombre}
+            />
 
             {!!seleccionado.direccion && (
               <Text style={styles.infoText}>

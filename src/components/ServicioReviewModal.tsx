@@ -7,20 +7,23 @@ import {
   View,
 } from 'react-native';
 import Button from './Button';
+import CategoriaSticker from './CategoriaSticker';
 import Loader from './Loader';
 import StarRating from './StarRating';
 import { useServicioResenas } from '../hooks/useServicioResenas';
 import { validarCalificacion } from '../utils/validaciones';
 import type { Servicio } from '../api/servicio';
 import { styles } from '../styles/ServicioReviewModal.styles';
+import { idUsuarioResena } from '../utils/resenaAutor';
 
 interface Props {
   visible: boolean;
   servicio: Servicio | null;
+  categoria?: string | undefined;
   onClose: () => void;
 }
 
-export default function ServicioReviewModal({ visible, servicio, onClose }: Props) {
+export default function ServicioReviewModal({ visible, servicio, categoria, onClose }: Props) {
   const {
     usuarioId,
     resenas,
@@ -59,6 +62,7 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
           </View>
 
           <View style={styles.infoBox}>
+            <CategoriaSticker nombre={categoria} />
             {!!servicio.direccion && (
               <Text style={styles.infoText}>📍 {servicio.direccion}</Text>
             )}
@@ -88,7 +92,7 @@ export default function ServicioReviewModal({ visible, servicio, onClose }: Prop
                     {new Date(item.fecha).toLocaleDateString()}
                   </Text>
                 )}
-                {item.usuario_id === usuarioId && (
+                {idUsuarioResena(item) === usuarioId && (
                   <Text style={styles.miEtiqueta}>Tu reseña</Text>
                 )}
               </View>

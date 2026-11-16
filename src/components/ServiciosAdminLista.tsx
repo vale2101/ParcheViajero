@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import Button from './Button';
 import Loader from './Loader';
 import AdminHeader from './AdminHeader';
-import type { EstadoFiltro } from '../api/admin';
+import ConfirmDialog from './ConfirmDialog';
+import { eliminarServicioAdmin, type EstadoFiltro, type ServicioAdmin } from '../api/admin';
 import { useAdmin } from '../context/AdminContext';
 import { useAdminServicios } from '../hooks/useAdminServicios';
 import { useCatalogosAdmin } from '../hooks/useCatalogosAdmin';
+import { useEliminacionConfirmada } from '../hooks/useEliminacionConfirmada';
 import FiltrosPanel from './FiltrosPanel';
 import Segmented from './Segmented';
 import SearchBar from './SearchBar';
@@ -25,17 +27,21 @@ interface Props {
 
 export default function ServiciosAdminLista({ titulo, subtitulo, tabs, vacios }: Props) {
   const router = useRouter();
+  const { estado: estadoParam, destino } = useLocalSearchParams<{ estado?: string; destino?: string }>();
+  const destinoAplicado = useRef<string | undefined>(undefined);
   const [estado, setEstado] = useState<EstadoFiltro>(tabs[0]?.valor ?? 'todos');
   const [q, setQ] = useState('');
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
   const [municipioId, setMunicipioId] = useState<string | null>(null);
   const [dias, setDias] = useState<number | null>(null);
   const [verFiltros, setVerFiltros] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const borrado = useEliminacionConfirmada<ServicioAdmin>();
 
-  const { resumen } = useAdmin();
+  const { resumen, refrescar } = useAdmin();
   const { categorias, municipios } = useCatalogosAdmin();
 
-  const { servicios, cargando, cargado, error, recargar } = useAdminServicios({
+  const { servicios, cargando, cargado, error, recargar, quitar } = useAdminServicios({
     estado,
     q,
     categoriaId,
@@ -44,6 +50,27 @@ export default function ServiciosAdminLista({ titulo, subtitulo, tabs, vacios }:
   });
 
   const hayFiltros = !!q.trim() || !!categoriaId || !!municipioId || !!dias;
+
+  useEffect(() => {
+    if (!aviso) return;
+    const t = setTimeout(() => setAviso(null), 3500);
+    return () => clearTimeout(t);
+  }, [aviso]);
+
+  const estadosDisponibles = tabs.map((t) => t.valor).join(',');
+
+  useEffect(() => {
+    const marca = primerParam(destino);
+    const pedido = primerParam(estadoParam);
+    if (!marca || destinoAplicado.current === marca) return;
+    if (!pedido || !estadosDisponibles.split(',').includes(pedido)) return;
+    destinoAplicado.current = marca;
+    setEstado(pedido as EstadoFiltro);
+    setQ('');
+    setCategoriaId(null);
+    setMunicipioId(null);
+    setDias(null);
+  }, [destino, estadoParam, estadosDisponibles]);
 
   return (
     <View style={styles.screen}>
@@ -98,6 +125,12 @@ export default function ServiciosAdminLista({ titulo, subtitulo, tabs, vacios }:
         onRefresh={recargar}
         ListHeaderComponent={
           <View style={{ gap: 12 }}>
+            {!!aviso && (
+              <View style={styles.okBox} accessibilityLiveRegion="polite">
+                <Ionicons name="checkmark-circle" size={20} color={colors.verde} />
+                <Text style={styles.okText}>{aviso}</Text>
+              </View>
+            )}
             {verFiltros && (
               <FiltrosPanel
                 categorias={categorias}
@@ -152,10 +185,34 @@ export default function ServiciosAdminLista({ titulo, subtitulo, tabs, vacios }:
         renderItem={({ item }) => (
           <ServicioAdminCard
             servicio={item}
+            ocupado={borrado.borrando}
             onPress={() => router.push(`/admin/servicio/${item._id}`)}
+            onEliminar={() => borrado.pedir(item)}
           />
         )}
       />
+
+      <ConfirmDialog
+        visible={!!borrado.objetivo}
+        titulo="Eliminar servicio"
+        mensaje={`¿Estás seguro de que deseas eliminar «${borrado.objetivo?.nombre ?? 'este establecimiento'}»? Esta acción no se puede deshacer.`}
+        confirmarTexto="Eliminar"
+        cargando={borrado.borrando}
+        error={borrado.error}
+        onCancel={borrado.cancelar}
+        onConfirm={() =>
+          void borrado.confirmar(async (servicio) => {
+            await eliminarServicioAdmin(servicio._id);
+            quitar(servicio._id);
+            setAviso('Servicio eliminado correctamente');
+            void refrescar();
+          })
+        }
+      />
     </View>
   );
+}
+
+function primerParam(valor: string | string[] | undefined): string | undefined {
+  return Array.isArray(valor) ? valor[0] : valor;
 }

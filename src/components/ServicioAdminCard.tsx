@@ -21,13 +21,24 @@ function Linea({ icono, texto }: { icono: keyof typeof Ionicons.glyphMap; texto:
   );
 }
 
-export default function ServicioAdminCard({ servicio: s, onPress }: { servicio: ServicioAdmin; onPress: () => void }) {
+export default function ServicioAdminCard({
+  servicio: s,
+  onPress,
+  onEliminar,
+  ocupado = false,
+}: {
+  servicio: ServicioAdmin;
+  onPress: () => void;
+  onEliminar?: () => void;
+  ocupado?: boolean;
+}) {
   const pendiente = (s.estado_aprobacion ?? 'pendiente') === 'pendiente';
   const fecha = pendiente ? s.fecha_creacion : (s.fecha_revision ?? s.fecha_creacion);
   const foto = s.imagenes?.[0]?.url_imagen;
 
   return (
-    <Pressable style={styles.card} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Abrir ${s.nombre}`}>
+    <View style={styles.card}>
+      <Pressable style={styles.cardMain} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Abrir ${s.nombre}`}>
       <MarcoPolaroid ancho={74} alto={74} rotacion="-5deg" style={{ marginLeft: 2 }}>
         {foto ? (
           <Image
@@ -55,6 +66,17 @@ export default function ServicioAdminCard({ servicio: s, onPress }: { servicio: 
         <Linea icono="calendar-outline" texto={`${pendiente ? 'Enviado' : 'Revisado'}: ${formatearFecha(fecha)}`} />
       </View>
       <Ionicons name="chevron-forward" size={20} color={colors.azul} />
-    </Pressable>
+      </Pressable>
+      {onEliminar ? (
+        <Pressable
+          style={[styles.iconDanger, ocupado && styles.btnDisabled]}
+          onPress={onEliminar}
+          disabled={ocupado}
+          accessibilityRole="button"
+          accessibilityLabel={`Eliminar ${s.nombre}`}>
+          <Ionicons name="trash-outline" size={18} color={colors.rojo} />
+        </Pressable>
+      ) : null}
+    </View>
   );
 }

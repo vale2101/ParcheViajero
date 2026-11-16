@@ -107,6 +107,14 @@ export async function getUsuarioAdmin(
   return request(`/admin/usuarios/${id}`);
 }
 
+export async function eliminarUsuarioAdmin(id: string): Promise<{ message: string }> {
+  return request(`/admin/usuarios/${id}`, undefined, 'DELETE');
+}
+
+export async function eliminarServicioAdmin(id: string): Promise<{ message: string }> {
+  return request(`/admin/servicios/${id}`, undefined, 'DELETE');
+}
+
 export interface ResenaAdmin {
   _id: string;
   usuario_id: string;

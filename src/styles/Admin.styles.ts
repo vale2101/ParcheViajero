@@ -39,6 +39,8 @@ export const styles = StyleSheet.create({
   /* Indicadores */
   statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   statCard: { flexBasis: '45%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, backgroundColor: c.superficie, borderWidth: 1, borderColor: c.borde, padding: 14, ...sombra },
+  statCardHover: { borderColor: c.dorado },
+  statCardPressed: { opacity: 0.9, transform: [{ scale: 0.985 }] },
   statIcon: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   statValue: { fontSize: 26, fontWeight: '800', color: c.azulOscuro },
   statLabel: { fontSize: 12, color: c.textoSec },
@@ -97,6 +99,8 @@ export const styles = StyleSheet.create({
 
   /* Tarjetas de lista */
   card: { flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, backgroundColor: c.superficie, borderWidth: 1, borderColor: c.borde, paddingVertical: 12, paddingHorizontal: 12, overflow: 'visible', ...sombra },
+  cardMain: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  iconDanger: { width: 44, height: 44, borderRadius: 14, borderWidth: 1.5, borderColor: '#f0b4b4', backgroundColor: c.superficie, alignItems: 'center', justifyContent: 'center' },
   polaroidFoto: { width: '100%', height: '100%' },
   cardBody: { flex: 1, gap: 4 },
   cardTop: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
@@ -206,4 +210,5 @@ export const styles = StyleSheet.create({
   reviewEmpty: { fontSize: 13, color: c.textoSec, fontStyle: 'italic' },
   btnDeleteSmall: { alignSelf: 'flex-end', flexDirection: 'row', alignItems: 'center', gap: 6, borderRadius: 14, borderWidth: 1.5, borderColor: '#f0b4b4', backgroundColor: c.superficie, minHeight: 44, paddingHorizontal: 14 },
   btnDeleteSmallText: { fontSize: 14, fontWeight: '600', color: c.rojo },
+  btnDeleteWide: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, borderRadius: 14, borderWidth: 1.5, borderColor: '#f0b4b4', backgroundColor: c.superficie, minHeight: 52, paddingHorizontal: 14 },
 });

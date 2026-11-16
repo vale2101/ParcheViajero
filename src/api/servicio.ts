@@ -1,3 +1,4 @@
+import { File, Paths } from 'expo-file-system';
 import { Platform } from 'react-native';
 import { request, requestForm } from './client';
 import { notificarServiciosCambiados } from '../utils/serviciosSync';
@@ -93,6 +94,25 @@ export async function getServiciosByUsuarioId_get(): Promise<{ data: Servicio[] 
   return request('/servicios/mis-servicios');
 }
 
+async function archivoNativo(img: ImagenLocal): Promise<File> {
+  const origen = new File(img.uri);
+  if (origen.exists && img.uri.startsWith('file:')) return origen;
+
+  const destino = new File(Paths.cache, img.name);
+  if (destino.exists) destino.delete();
+
+  try {
+    await origen.copy(destino);
+    if (destino.exists) return destino;
+  } catch {
+    // La galería de Android entrega content://. Si no se puede copiar, se lee y se guarda en caché.
+  }
+
+  if (!destino.exists) destino.create();
+  await destino.write(await origen.bytes());
+  return destino;
+}
+
 export async function subirImagenesServicio(
   servicioId: string,
   imagenes: ImagenLocal[],
@@ -104,10 +124,7 @@ export async function subirImagenesServicio(
       const blob = await (await fetch(img.uri)).blob();
       form.append('imagenes', blob, img.name);
     } else {
-      form.append(
-        'imagenes',
-        { uri: img.uri, name: img.name, type: img.type } as unknown as Blob,
-      );
+      form.append('imagenes', await archivoNativo(img), img.name);
     }
   }
 

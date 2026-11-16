@@ -1,30 +1,58 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import Loader from '../../components/Loader';
 import AdminHeader from '../../components/AdminHeader';
 import SearchBar from '../../components/SearchBar';
 import Segmented from '../../components/Segmented';
 import UsuarioCard from '../../components/UsuarioCard';
-import type { Orden, TipoCuenta } from '../../api/admin';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import { eliminarUsuarioAdmin, type Orden, type TipoCuenta, type UsuarioAdmin } from '../../api/admin';
+import { useAdmin } from '../../context/AdminContext';
+import { useAuth } from '../../context/AuthContext';
 import { useAdminUsuarios } from '../../hooks/useAdminUsuarios';
+import { useEliminacionConfirmada } from '../../hooks/useEliminacionConfirmada';
+import { ETIQUETA_TIPO } from '../../utils/adminFormat';
 import { colors } from '../../styles/theme';
 import { styles } from '../../styles/Admin.styles';
 
 export default function AdminUsuariosScreen() {
   const router = useRouter();
+  const { tipo: tipoParam, destino } = useLocalSearchParams<{ tipo?: string; destino?: string }>();
+  const destinoAplicado = useRef<string | undefined>(undefined);
+  const { user } = useAuth();
+  const { refrescar } = useAdmin();
   const [tipo, setTipo] = useState<TipoCuenta>('negocio');
   const [q, setQ] = useState('');
   const [orden, setOrden] = useState<Orden>('desc');
   const [soloConServicios, setSoloConServicios] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const borrado = useEliminacionConfirmada<UsuarioAdmin>();
 
-  const { usuarios, cargando, cargado, error, recargar } = useAdminUsuarios(
+  const { usuarios, cargando, cargado, error, recargar, quitar } = useAdminUsuarios(
     tipo,
     q,
     orden,
   );
+
+  useEffect(() => {
+    if (!aviso) return;
+    const t = setTimeout(() => setAviso(null), 3500);
+    return () => clearTimeout(t);
+  }, [aviso]);
+
+  useEffect(() => {
+    const marca = primerParam(destino);
+    const pedido = primerParam(tipoParam);
+    if (!marca || destinoAplicado.current === marca) return;
+    if (pedido !== 'negocio' && pedido !== 'registrado') return;
+    destinoAplicado.current = marca;
+    setTipo(pedido);
+    setQ('');
+    setSoloConServicios(false);
+  }, [destino, tipoParam]);
 
   const visibles = useMemo(
     () =>
@@ -96,21 +124,21 @@ export default function AdminUsuariosScreen() {
         refreshing={cargando && cargado}
         onRefresh={recargar}
         ListHeaderComponent={
-          error ? (
-            <View style={styles.errorCard}>
-              <Ionicons
-                name="cloud-offline-outline"
-                size={22}
-                color={colors.rojo}
-              />
-              <Text style={styles.errorText}>{error}</Text>
-              <Button
-                text="Volver a intentar"
-                onPress={recargar}
-                secondary
-              />
-            </View>
-          ) : undefined
+          <View style={{ gap: 12 }}>
+            {!!aviso && (
+              <View style={styles.okBox} accessibilityLiveRegion="polite">
+                <Ionicons name="checkmark-circle" size={20} color={colors.verde} />
+                <Text style={styles.okText}>{aviso}</Text>
+              </View>
+            )}
+            {!!error && (
+              <View style={styles.errorCard}>
+                <Ionicons name="cloud-offline-outline" size={22} color={colors.rojo} />
+                <Text style={styles.errorText}>{error}</Text>
+                <Button text="Volver a intentar" onPress={recargar} secondary />
+              </View>
+            )}
+          </View>
         }
         ListEmptyComponent={
           cargando ? (
@@ -138,10 +166,45 @@ export default function AdminUsuariosScreen() {
         renderItem={({ item }) => (
           <UsuarioCard
             usuario={item}
+            ocupado={borrado.borrando}
             onPress={() => router.push(`/admin/persona/${item._id}`)}
+            onEliminar={user?._id === item._id ? undefined : () => borrado.pedir(item)}
           />
         )}
       />
+
+      <ConfirmDialog
+        visible={!!borrado.objetivo}
+        titulo="Eliminar usuario"
+        mensaje={mensajeEliminarUsuario(borrado.objetivo)}
+        confirmarTexto="Eliminar"
+        cargando={borrado.borrando}
+        error={borrado.error}
+        onCancel={borrado.cancelar}
+        onConfirm={() =>
+          void borrado.confirmar(async (usuario) => {
+            await eliminarUsuarioAdmin(usuario._id);
+            quitar(usuario._id);
+            setAviso('Usuario eliminado correctamente');
+            void refrescar();
+          })
+        }
+      />
     </View>
   );
+}
+
+function primerParam(valor: string | string[] | undefined): string | undefined {
+  return Array.isArray(valor) ? valor[0] : valor;
+}
+
+function mensajeEliminarUsuario(usuario: UsuarioAdmin | null): string {
+  const identidad = usuario
+    ? `${usuario.nombre}\n${usuario.email}\n${ETIQUETA_TIPO[usuario.tipo_usuario] ?? usuario.tipo_usuario}${
+        usuario.tipo_usuario === 'negocio'
+          ? `\n\nTambién se eliminarán sus ${usuario.total_servicios ?? 0} servicios. Las reseñas se conservan.`
+          : ''
+      }\n\n`
+    : '';
+  return `${identidad}¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.`;
 }

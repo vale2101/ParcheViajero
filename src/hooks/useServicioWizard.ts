@@ -269,6 +269,7 @@ export function useServicioWizard() {
         precio: gratuito || !v.precio ? undefined : Number(v.precio),
       });
 
+      setEnviado(true);
 
       const servicioId = creado.data?._id;
       if (imagenes.length > 0 && servicioId) {
@@ -280,7 +281,6 @@ export function useServicioWizard() {
           );
         }
       }
-      setEnviado(true);
     } catch (e) {
       setErrorEnvio((e as Error).message || 'No se pudo enviar el servicio. Inténtalo de nuevo.');
     } finally {

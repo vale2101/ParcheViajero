@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Animated,
@@ -10,7 +10,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
 import StepBasica from '../../components/StepBasica';
@@ -36,7 +36,7 @@ function Contenido() {
     w.scrollRef.current?.scrollTo({ y: 0, animated: false });
   }, [w.paso, anim, w.scrollRef]);
 
-  const salir = () => router.replace('/negocio/servicios');
+  const salir = () => router.replace('/negocio/tabs/servicios');
 
   const hayDatos =
     w.form.formState.isDirty ||
@@ -226,14 +226,5 @@ function Contenido() {
 }
 
 export default function ServicioWizardScreen() {
-  const [activa, setActiva] = useState(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      setActiva(true);
-      return () => setActiva(false);
-    }, []),
-  );
-
-  return activa ? <Contenido /> : null;
+  return <Contenido />;
 }

@@ -77,7 +77,7 @@ export default function ServicioReviewModal({ visible, servicio, categoria, onCl
             ListEmptyComponent={
               !loading ? (
                 <Text style={styles.placeholder}>Aún no hay reseñas para este lugar</Text>
-              ) : null
+              ) : undefined
             }
             renderItem={({ item }) => (
               <View style={styles.reviewCard}>

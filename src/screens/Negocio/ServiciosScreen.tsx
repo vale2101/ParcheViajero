@@ -116,7 +116,7 @@ export default function ServiciosScreen() {
               </Text>
               <Button text="Registrar mi primer servicio" onPress={irANuevo} />
             </View>
-          ) : null
+          ) : undefined
         }
         renderItem={({ item }) => renderTarjeta(item)}
       />

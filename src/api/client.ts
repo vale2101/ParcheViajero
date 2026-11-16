@@ -1,9 +1,18 @@
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { fetch as expoFetch } from 'expo/fetch';
+import { Platform } from 'react-native';
+import {
+  esMensajeTecnico,
+  logError,
+  MENSAJE_ERROR_ACCION,
+  MENSAJE_ERROR_BASE,
+  MENSAJE_ERROR_CONEXION,
+  MENSAJE_ERROR_SESION,
+} from '../utils/errorApp';
 
 const API_URL =
   process.env.EXPO_PUBLIC_API_URL ??
-  'http://192.168.0.102:3000/api';
+  'https://parcheviajero.onrender.com/api';
 
 const TOKEN_KEY = 'parche_viajero_token';
 
@@ -13,23 +22,25 @@ export async function requestForm<T>(path: string, form: FormData): Promise<T> {
   const savedToken = await getToken();
 
   let response: Response;
+  const enviar = Platform.OS === 'web' ? fetch : expoFetch;
   try {
-    response = await fetch(`${API_URL}${path}`, {
+    response = await enviar(`${API_URL}${path}`, {
       method: 'POST',
       headers: savedToken ? { Authorization: `Bearer ${savedToken}` } : {},
       body: form,
     });
-  } catch {
-    throw new Error(`No se pudo conectar con ${API_URL}. ¿Está encendido el servidor?`);
+  } catch (err) {
+    logError(`No se pudo subir archivos a ${API_URL}${path}`, err);
+    throw new Error(MENSAJE_ERROR_CONEXION);
   }
 
   const data = (await response.json().catch(() => ({}))) as Record<string, unknown>;
 
   if (!response.ok) {
+    const message = typeof data['message'] === 'string' ? data['message'] : null;
+    logError(`Error ${response.status} al subir archivos ${path}`, data);
     throw new Error(
-      typeof data['message'] === 'string'
-        ? data['message']
-        : `Error ${response.status} al llamar ${path}`,
+      message && !esMensajeTecnico(message) ? message : MENSAJE_ERROR_ACCION,
     );
   }
 
@@ -53,6 +64,10 @@ async function getToken(): Promise<string | null> {
 
   token = await AsyncStorage.getItem(TOKEN_KEY);
   return token;
+}
+
+export async function getStoredToken(): Promise<string | null> {
+  return getToken();
 }
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -83,10 +98,9 @@ export async function request<T>(
       },
       body: serializedBody,
     });
-  } catch {
-    throw new Error(
-      `No se pudo conectar con ${API_URL}. ¿Está encendido el servidor?`,
-    );
+  } catch (err) {
+    logError(`No se pudo conectar con ${API_URL}${path}`, err);
+    throw new Error(MENSAJE_ERROR_CONEXION);
   }
 
   const data = (await response.json().catch(() => ({}))) as Record<
@@ -108,8 +122,35 @@ export async function request<T>(
       message = (data['error'] as string[]).join('\n');
     }
 
+    const sinSesion =
+      response.status === 401 &&
+      typeof message === 'string' &&
+      /no autenticad/i.test(message);
+
+    if (!sinSesion) {
+      logError(`Error ${response.status} en ${finalMethod} ${path}`, data);
+    }
+
+    if (response.status >= 500) {
+      throw new Error(MENSAJE_ERROR_BASE);
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      if (message && !esMensajeTecnico(message)) {
+        throw new Error(message);
+      }
+
+      throw new Error(
+        savedToken
+          ? MENSAJE_ERROR_SESION
+          : 'No se pudo iniciar sesión. Verifica tus datos e inténtalo de nuevo.',
+      );
+    }
+
     throw new Error(
-      message ?? `Error ${response.status} al llamar ${path}`,
+      message && !esMensajeTecnico(message)
+        ? message
+        : MENSAJE_ERROR_ACCION,
     );
   }
 

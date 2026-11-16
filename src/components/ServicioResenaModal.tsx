@@ -13,7 +13,7 @@ import { nombreAutorResena } from '../utils/resenaAutor';
 import { colors } from '../styles/theme';
 import { styles } from '../styles/ServicioResenaModal.styles';
 import Button from './Button';
-import Loader from './Loader';
+import { SkeletonListItem } from './Skeleton';
 import ReviewItem from './ReviewItem';
 import StarRating from './StarRating';
 
@@ -254,7 +254,12 @@ export default function ServicioFichaModal({
           <Text style={styles.sectionTitle}>Reseñas</Text>
         </View>
 
-        {cargando && <Loader tipo="bloque" texto="Cargando reseñas…" />}
+        {cargando && (
+          <View style={{ gap: 12, paddingVertical: 8 }}>
+            <SkeletonListItem />
+            <SkeletonListItem />
+          </View>
+        )}
 
         {!!error && !cargando && (
           <View style={styles.errorBox}>

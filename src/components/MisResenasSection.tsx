@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { useState } from 'react';
 import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
-import Loader from './Loader';
+import { SkeletonListItem } from './Skeleton';
 import FotoPlaceholder from './FotoPlaceholder';
 import MarcoPolaroid from './MarcoPolaroid';
 import StarRating from './StarRating';
@@ -66,7 +66,10 @@ export default function MisResenasSection() {
       </View>
 
       {loading ? (
-        <Loader tipo="bloque" texto="Cargando tus reseñas…" />
+        <View style={{ gap: 12 }}>
+          <SkeletonListItem />
+          <SkeletonListItem />
+        </View>
       ) : resenas.length === 0 ? (
         <View style={styles.emptyBox}>
           <Text style={styles.placeholder}>Aún no has escrito ninguna reseña</Text>

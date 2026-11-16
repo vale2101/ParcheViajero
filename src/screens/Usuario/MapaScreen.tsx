@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
+import EntradaPantalla from '../../components/EntradaPantalla';
 import ScreenHeader from '../../components/ScreenHeader';
 import ServiciosMap, { type ServiciosMapHandle } from '../../components/ServiciosMap';
 import MapFilters, { type MapFiltersValue } from '../../components/MapFilters';
@@ -61,6 +62,7 @@ export default function MapaScreen() {
 
   return (
     <View style={styles.screen}>
+      <EntradaPantalla>
       <ScreenHeader />
 
       <View style={styles.mapWrapper}>
@@ -97,6 +99,7 @@ export default function MapaScreen() {
         categoria={categorias.find((c) => c._id === seleccionado?.categoria_id)?.nombre}
         onClose={() => setResenando(false)}
       />
+      </EntradaPantalla>
     </View>
   );
 }

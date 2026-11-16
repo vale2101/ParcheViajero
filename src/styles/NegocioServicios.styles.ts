@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { colors as c, sombra } from './theme';
 
 export const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: c.crema },
+  screen: { flex: 1, backgroundColor: c.fondo },
   list: { padding: 20, gap: 14, paddingBottom: 40 },
 
   headerBlock: { gap: 12, marginBottom: 8 },

@@ -26,6 +26,7 @@ export const styles = StyleSheet.create({
     borderTopRightRadius: 24,
     padding: 20,
     maxHeight: '60%',
+    zIndex: 1,
   },
   sheetTitle: {
     fontSize: 16,

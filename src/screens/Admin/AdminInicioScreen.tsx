@@ -25,6 +25,10 @@ export default function AdminInicioScreen() {
   const router = useRouter();
   const { resumen, cargando, error, refrescar } = useAdmin();
 
+  function irA(ruta: '/admin/solicitudes' | '/admin/servicios' | '/admin/usuarios', params: Record<string, string>) {
+    router.push({ pathname: ruta, params: { ...params, destino: String(Date.now()) } });
+  }
+
   useFocusEffect(
     useCallback(() => {
       void refrescar();
@@ -70,10 +74,34 @@ export default function AdminInicioScreen() {
         )}
 
         <View style={styles.statGrid}>
-          <StatCard icono="time-outline" color={colors.doradoTexto} valor={resumen?.pendientes ?? null} etiqueta="Solicitudes pendientes" />
-          <StatCard icono="storefront-outline" color={colors.azul} valor={resumen?.totalServicios ?? null} etiqueta="Servicios registrados" />
-          <StatCard icono="briefcase-outline" color={colors.azulOscuro} valor={resumen?.negocios ?? null} etiqueta="Negocios" />
-          <StatCard icono="airplane-outline" color={colors.verde} valor={resumen?.viajeros ?? null} etiqueta="Viajeros" />
+          <StatCard
+            icono="time-outline"
+            color={colors.doradoTexto}
+            valor={resumen?.pendientes ?? null}
+            etiqueta="Solicitudes pendientes"
+            onPress={() => irA('/admin/solicitudes', { estado: 'pendiente' })}
+          />
+          <StatCard
+            icono="storefront-outline"
+            color={colors.azul}
+            valor={resumen?.totalServicios ?? null}
+            etiqueta="Servicios registrados"
+            onPress={() => irA('/admin/servicios', { estado: 'todos' })}
+          />
+          <StatCard
+            icono="briefcase-outline"
+            color={colors.azulOscuro}
+            valor={resumen?.negocios ?? null}
+            etiqueta="Negocios"
+            onPress={() => irA('/admin/usuarios', { tipo: 'negocio' })}
+          />
+          <StatCard
+            icono="airplane-outline"
+            color={colors.verde}
+            valor={resumen?.viajeros ?? null}
+            etiqueta="Viajeros"
+            onPress={() => irA('/admin/usuarios', { tipo: 'registrado' })}
+          />
         </View>
 
         <View style={styles.accesosHeader}>

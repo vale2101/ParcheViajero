@@ -42,5 +42,11 @@ export function useAdminServicios({ estado, q, categoriaId, municipioId, dias }:
 
   const servicios = resultado?.estado === estado ? resultado.lista : [];
 
-  return { servicios, cargando, cargado: resultado !== null, error, recargar: cargar };
+  const quitar = useCallback((id: string) => {
+    setResultado((prev) =>
+      prev ? { ...prev, lista: prev.lista.filter((s) => s._id !== id) } : prev,
+    );
+  }, []);
+
+  return { servicios, cargando, cargado: resultado !== null, error, recargar: cargar, quitar };
 }

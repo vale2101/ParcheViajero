@@ -33,5 +33,11 @@ export function useAdminUsuarios(tipo: TipoCuenta, q: string, orden: Orden) {
 
   const usuarios = resultado?.tipo === tipo ? resultado.lista : [];
 
-  return { usuarios, cargando, cargado: resultado !== null, error, recargar: cargar };
+  const quitar = useCallback((id: string) => {
+    setResultado((prev) =>
+      prev ? { ...prev, lista: prev.lista.filter((u) => u._id !== id) } : prev,
+    );
+  }, []);
+
+  return { usuarios, cargando, cargado: resultado !== null, error, recargar: cargar, quitar };
 }

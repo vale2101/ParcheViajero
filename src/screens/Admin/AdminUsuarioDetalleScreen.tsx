@@ -1,12 +1,22 @@
-import { useCallback, useState } from 'react';
-import { ActivityIndicator, Image, ScrollView, Text, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import AdminSubHeader from '../../components/AdminSubHeader';
+import ConfirmDialog from '../../components/ConfirmDialog';
 import InfoRow from '../../components/InfoRow';
 import ServicioAdminCard from '../../components/ServicioAdminCard';
-import { getUsuarioAdmin, type ServicioAdmin, type UsuarioAdmin } from '../../api/admin';
+import {
+  eliminarServicioAdmin,
+  eliminarUsuarioAdmin,
+  getUsuarioAdmin,
+  type ServicioAdmin,
+  type UsuarioAdmin,
+} from '../../api/admin';
+import { useAdmin } from '../../context/AdminContext';
+import { useAuth } from '../../context/AuthContext';
+import { useEliminacionConfirmada } from '../../hooks/useEliminacionConfirmada';
 import { ETIQUETA_TIPO, formatearFecha, iniciales } from '../../utils/adminFormat';
 import { colors } from '../../styles/theme';
 import { styles } from '../../styles/Admin.styles';
@@ -14,10 +24,16 @@ import { styles } from '../../styles/Admin.styles';
 export default function AdminUsuarioDetalleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { user } = useAuth();
+  const { refrescar } = useAdmin();
   const [usuario, setUsuario] = useState<UsuarioAdmin | null>(null);
   const [servicios, setServicios] = useState<ServicioAdmin[]>([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const borrarUsuario = useEliminacionConfirmada<UsuarioAdmin>();
+  const borrarServicio = useEliminacionConfirmada<ServicioAdmin>();
+  const puedeEliminar = !!usuario && usuario._id !== user?._id;
 
   const cargar = useCallback(async () => {
     if (!id) return;
@@ -40,6 +56,12 @@ export default function AdminUsuarioDetalleScreen() {
     }, [cargar]),
   );
 
+  useEffect(() => {
+    if (!aviso) return;
+    const t = setTimeout(() => setAviso(null), 3500);
+    return () => clearTimeout(t);
+  }, [aviso]);
+
   return (
     <View style={styles.screen}>
       <AdminSubHeader titulo="Detalle del usuario" volverA="/admin/usuarios" />
@@ -55,6 +77,13 @@ export default function AdminUsuarioDetalleScreen() {
           <View style={styles.errorCard}>
             <Text style={styles.errorText}>{error}</Text>
             <Button text="Volver a intentar" onPress={cargar} secondary />
+          </View>
+        )}
+
+        {!!aviso && (
+          <View style={styles.okBox} accessibilityLiveRegion="polite">
+            <Ionicons name="checkmark-circle" size={20} color={colors.verde} />
+            <Text style={styles.okText}>{aviso}</Text>
           </View>
         )}
 
@@ -81,6 +110,18 @@ export default function AdminUsuarioDetalleScreen() {
               <InfoRow icono="person-outline" etiqueta="Tipo de cuenta" valor={ETIQUETA_TIPO[usuario.tipo_usuario]} />
             </View>
 
+            {puedeEliminar && (
+              <Pressable
+                style={[styles.btnDeleteWide, (borrarUsuario.borrando || borrarServicio.borrando) && styles.btnDisabled]}
+                onPress={() => borrarUsuario.pedir(usuario)}
+                disabled={borrarUsuario.borrando || borrarServicio.borrando}
+                accessibilityRole="button"
+                accessibilityLabel={`Eliminar a ${usuario.nombre}`}>
+                <Ionicons name="trash-outline" size={20} color={colors.rojo} />
+                <Text style={styles.btnDeleteSmallText}>Eliminar usuario</Text>
+              </Pressable>
+            )}
+
             {usuario.tipo_usuario === 'negocio' && (
               <>
                 <Text style={styles.sectionTitle}>Servicios del negocio ({servicios.length})</Text>
@@ -91,7 +132,13 @@ export default function AdminUsuarioDetalleScreen() {
                   </View>
                 ) : (
                   servicios.map((s) => (
-                    <ServicioAdminCard key={s._id} servicio={s} onPress={() => router.push(`/admin/servicio/${s._id}`)} />
+                    <ServicioAdminCard
+                      key={s._id}
+                      servicio={s}
+                      ocupado={borrarServicio.borrando || borrarUsuario.borrando}
+                      onPress={() => router.push(`/admin/servicio/${s._id}`)}
+                      onEliminar={() => borrarServicio.pedir(s)}
+                    />
                   ))
                 )}
               </>
@@ -99,6 +146,53 @@ export default function AdminUsuarioDetalleScreen() {
           </>
         )}
       </ScrollView>
+
+      <ConfirmDialog
+        visible={!!borrarUsuario.objetivo}
+        titulo="Eliminar usuario"
+        mensaje={
+          borrarUsuario.objetivo
+            ? `${borrarUsuario.objetivo.nombre}\n${borrarUsuario.objetivo.email}\n${ETIQUETA_TIPO[borrarUsuario.objetivo.tipo_usuario] ?? borrarUsuario.objetivo.tipo_usuario}${
+                borrarUsuario.objetivo.tipo_usuario === 'negocio'
+                  ? `\n\nTambién se eliminarán sus ${servicios.length} servicios. Las reseñas se conservan.`
+                  : ''
+              }\n\n¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.`
+            : '¿Estás seguro de que deseas eliminar este usuario? Esta acción no se puede deshacer.'
+        }
+        confirmarTexto="Eliminar"
+        cargando={borrarUsuario.borrando}
+        error={borrarUsuario.error}
+        onCancel={borrarUsuario.cancelar}
+        onConfirm={() =>
+          void borrarUsuario.confirmar(async (cuenta) => {
+            await eliminarUsuarioAdmin(cuenta._id);
+            setAviso('Usuario eliminado correctamente');
+            void refrescar();
+            setTimeout(() => router.back(), 700);
+          })
+        }
+      />
+
+      <ConfirmDialog
+        visible={!!borrarServicio.objetivo}
+        titulo="Eliminar servicio"
+        mensaje={`¿Estás seguro de que deseas eliminar «${borrarServicio.objetivo?.nombre ?? 'este establecimiento'}»? Esta acción no se puede deshacer.`}
+        confirmarTexto="Eliminar"
+        cargando={borrarServicio.borrando}
+        error={borrarServicio.error}
+        onCancel={borrarServicio.cancelar}
+        onConfirm={() =>
+          void borrarServicio.confirmar(async (servicio) => {
+            await eliminarServicioAdmin(servicio._id);
+            setServicios((prev) => prev.filter((s) => s._id !== servicio._id));
+            setUsuario((prev) =>
+              prev ? { ...prev, total_servicios: Math.max(0, (prev.total_servicios ?? servicios.length) - 1) } : prev,
+            );
+            setAviso('Servicio eliminado correctamente');
+            void refrescar();
+          })
+        }
+      />
     </View>
   );
 }

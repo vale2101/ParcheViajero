@@ -5,9 +5,20 @@ import { ETIQUETA_TIPO, formatearFecha, iniciales } from '../utils/adminFormat';
 import { colors } from '../styles/theme';
 import { styles } from '../styles/Admin.styles';
 
-export default function UsuarioCard({ usuario: u, onPress }: { usuario: UsuarioAdmin; onPress: () => void }) {
+export default function UsuarioCard({
+  usuario: u,
+  onPress,
+  onEliminar,
+  ocupado = false,
+}: {
+  usuario: UsuarioAdmin;
+  onPress: () => void;
+  onEliminar?: () => void;
+  ocupado?: boolean;
+}) {
   return (
-    <Pressable style={styles.card} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Abrir ${u.nombre}`}>
+    <View style={styles.card}>
+      <Pressable style={styles.cardMain} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Abrir ${u.nombre}`}>
       <View style={styles.userAvatar}>
         {u.foto_perfil ? (
           <Image source={{ uri: u.foto_perfil }} style={{ width: 56, height: 56 }} resizeMode="cover" />
@@ -39,6 +50,17 @@ export default function UsuarioCard({ usuario: u, onPress }: { usuario: UsuarioA
         </View>
       </View>
       <Ionicons name="chevron-forward" size={20} color={colors.azul} />
-    </Pressable>
+      </Pressable>
+      {onEliminar ? (
+        <Pressable
+          style={[styles.iconDanger, ocupado && styles.btnDisabled]}
+          onPress={onEliminar}
+          disabled={ocupado}
+          accessibilityRole="button"
+          accessibilityLabel={`Eliminar a ${u.nombre}`}>
+          <Ionicons name="trash-outline" size={18} color={colors.rojo} />
+        </Pressable>
+      ) : null}
+    </View>
   );
 }

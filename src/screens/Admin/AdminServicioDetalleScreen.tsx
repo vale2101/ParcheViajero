@@ -9,8 +9,9 @@ import GaleriaServicio, { TiraImagenes } from '../../components/GaleriaServicio'
 import InfoRow from '../../components/InfoRow';
 import LocationPickerMap from '../../components/LocationPickerMap';
 import ConfirmDialog from '../../components/ConfirmDialog';
-import { getServicioAdmin, revisarServicio, type RevisionEvento, type ServicioAdmin } from '../../api/admin';
+import { eliminarServicioAdmin, getServicioAdmin, revisarServicio, type RevisionEvento, type ServicioAdmin } from '../../api/admin';
 import { useAdmin } from '../../context/AdminContext';
+import { useEliminacionConfirmada } from '../../hooks/useEliminacionConfirmada';
 import { formatearFecha, formatearFechaHora } from '../../utils/adminFormat';
 import { getEstadoVisual } from '../../utils/estadoServicio';
 import { coordenadasValidas, formatearPrecioCOP } from '../../utils/formatoServicio';
@@ -39,6 +40,7 @@ export default function AdminServicioDetalleScreen() {
   const [indiceFoto, setIndiceFoto] = useState(0);
   const enviandoRef = useRef(false);
   const { width } = useWindowDimensions();
+  const borrado = useEliminacionConfirmada<ServicioAdmin>();
 
   const cargar = useCallback(async () => {
     if (!id) return;
@@ -294,6 +296,16 @@ export default function AdminServicioDetalleScreen() {
                 })
               )}
             </View>
+
+            <Pressable
+              style={[styles.btnDeleteWide, (enviando || borrado.borrando) && styles.btnDisabled]}
+              onPress={() => borrado.pedir(servicio)}
+              disabled={enviando || borrado.borrando}
+              accessibilityRole="button"
+              accessibilityLabel={`Eliminar ${servicio.nombre}`}>
+              <Ionicons name="trash-outline" size={20} color={colors.rojo} />
+              <Text style={styles.btnDeleteSmallText}>Eliminar servicio</Text>
+            </Pressable>
           </>
         )}
       </ScrollView>
@@ -312,6 +324,24 @@ export default function AdminServicioDetalleScreen() {
         error={null}
         onCancel={() => setDecision(null)}
         onConfirm={confirmar}
+      />
+
+      <ConfirmDialog
+        visible={!!borrado.objetivo}
+        titulo="Eliminar servicio"
+        mensaje={`¿Estás seguro de que deseas eliminar «${borrado.objetivo?.nombre ?? servicio?.nombre ?? 'este establecimiento'}»? Esta acción no se puede deshacer.`}
+        confirmarTexto="Eliminar"
+        cargando={borrado.borrando}
+        error={borrado.error}
+        onCancel={borrado.cancelar}
+        onConfirm={() =>
+          void borrado.confirmar(async (actual) => {
+            await eliminarServicioAdmin(actual._id);
+            setAviso('Servicio eliminado correctamente');
+            void refrescarResumen();
+            setTimeout(() => router.back(), 700);
+          })
+        }
       />
     </View>
   );

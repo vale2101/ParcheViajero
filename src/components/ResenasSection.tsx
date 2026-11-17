@@ -1,13 +1,25 @@
-import { useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import ServicioFichaModal from './ServicioResenaModal';
 import ServicioReviewModal from './ServicioReviewModal';
-import { useBuscarServicios } from '../hooks/useBuscarServicios';
-import type { Servicio } from '../api/servicio';
-import { styles } from '../styles/ResenasSection.styles';
+import { getServicios, type Servicio } from '../api/servicio';
 
 export default function ResenasSection() {
-  const { query, setQuery, busquedaActiva, resultados } = useBuscarServicios();
+  const [servicios, setServicios] = useState<Servicio[]>([]);
+  const [query, setQuery] = useState('');
   const [seleccionado, setSeleccionado] = useState<Servicio | null>(null);
+  const [resenando, setResenando] = useState(false);
+
+  useEffect(() => {
+    getServicios()
+      .then(({ data }) => setServicios(data))
+      .catch(() => setServicios([]));
+  }, []);
+
+  const resultados =
+    query.trim().length === 0
+      ? []
+      : servicios.filter((s) => s.nombre.toLowerCase().includes(query.trim().toLowerCase()));
 
   return (
     <View style={styles.container}>
@@ -21,37 +33,63 @@ export default function ResenasSection() {
         placeholderTextColor="#a3a3a3"
       />
 
-      {busquedaActiva && (
-        <View style={styles.resultsList}>
-          {resultados.length === 0 ? (
-            <Text style={styles.placeholder}>
-              No se encontraron lugares con ese nombre
-            </Text>
-          ) : (
-            resultados.map((item) => (
-              <Pressable
-                key={item._id}
-                style={styles.resultCard}
-                onPress={() => setSeleccionado(item)}
-              >
-                <Text style={styles.resultName}>{item.nombre}</Text>
-
-                {!!item.direccion && (
-                  <Text style={styles.resultSubtitle}>
-                    {item.direccion}
-                  </Text>
-                )}
-              </Pressable>
-            ))
+      {query.trim().length > 0 && (
+        <FlatList
+          data={resultados}
+          keyExtractor={(item) => item._id}
+          style={styles.resultsList}
+          ListEmptyComponent={
+            <Text style={styles.placeholder}>No se encontraron lugares con ese nombre</Text>
+          }
+          renderItem={({ item }) => (
+            <Pressable style={styles.resultCard} onPress={() => setSeleccionado(item)}>
+              <Text style={styles.resultName}>{item.nombre}</Text>
+              {!!item.direccion && <Text style={styles.resultSubtitle}>{item.direccion}</Text>}
+            </Pressable>
           )}
-        </View>
+        />
       )}
 
-      <ServicioReviewModal
-        visible={!!seleccionado}
+      {/* Primero se abre la ficha del lugar */}
+      <ServicioFichaModal
+        visible={!!seleccionado && !resenando}
         servicio={seleccionado}
         onClose={() => setSeleccionado(null)}
+        onDejarResena={() => setResenando(true)}
+      />
+
+      {/* Desde "Dejar reseña" se abre el modal para escribir la reseña */}
+      <ServicioReviewModal
+        visible={resenando}
+        servicio={seleccionado}
+        onClose={() => setResenando(false)}
       />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { gap: 10 },
+  sectionTitle: { fontSize: 16, fontWeight: '700', color: '#1E3A8A' },
+  input: {
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e5e5e5',
+    backgroundColor: '#FDFBF6',
+    padding: 14,
+    fontSize: 15,
+    color: '#171717',
+  },
+  resultsList: { maxHeight: 240 },
+  placeholder: { color: '#a3a3a3', fontSize: 13, textAlign: 'center', marginVertical: 12 },
+  resultCard: {
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#e5e5e5',
+    backgroundColor: '#FDFBF6',
+    padding: 12,
+    marginBottom: 8,
+  },
+  resultName: { fontSize: 15, fontWeight: '600', color: '#1E3A8A' },
+  resultSubtitle: { fontSize: 12, color: '#a3a3a3', marginTop: 2 },
+});

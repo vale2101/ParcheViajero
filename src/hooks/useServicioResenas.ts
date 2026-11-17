@@ -2,9 +2,13 @@ import { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { createResena, updateResena, getResenasByServicio, type Resena } from '../api/resena';
 import type { Servicio } from '../api/servicio';
+import { logError } from '../utils/errorApp';
+import { useAlert } from '../context/AlertContext';
+import { idUsuarioResena } from '../utils/resenaAutor';
 
 export function useServicioResenas(servicio: Servicio | null, visible: boolean) {
   const { user } = useAuth();
+  const { errorVital } = useAlert();
   const [resenas, setResenas] = useState<Resena[]>([]);
   const [loading, setLoading] = useState(false);
   const [calificacion, setCalificacion] = useState(0);
@@ -20,11 +24,12 @@ export function useServicioResenas(servicio: Servicio | null, visible: boolean) 
       const { data } = await getResenasByServicio(servicio._id);
       setResenas(data);
 
-      const propia = data.find((r) => r.usuario_id === user?._id) ?? null;
+      const propia = data.find((r) => idUsuarioResena(r) === user?._id) ?? null;
       setMiResena(propia);
       setCalificacion(propia?.calificacion ?? 0);
       setComentario(propia?.comentario ?? '');
-    } catch {
+    } catch (err) {
+      logError('No se pudieron cargar las reseñas del servicio', err);
       setResenas([]);
     } finally {
       setLoading(false);
@@ -61,7 +66,14 @@ export function useServicioResenas(servicio: Servicio | null, visible: boolean) 
 
       await cargarResenas();
     } catch (err) {
-      setError((err as Error).message);
+      setError(
+        errorVital(
+          'No se pudo guardar la reseña',
+          err,
+          'Error en la base de datos. Inténtalo más tarde.',
+          'No se pudo guardar',
+        ),
+      );
     } finally {
       setSubmitting(false);
     }

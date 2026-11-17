@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, Text, TextInput, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '../../components/Button';
+import Loader from '../../components/Loader';
 import AdminSubHeader from '../../components/AdminSubHeader';
 import EstadoBadge from '../../components/EstadoBadge';
 import GaleriaServicio, { TiraImagenes } from '../../components/GaleriaServicio';
@@ -11,8 +12,10 @@ import LocationPickerMap from '../../components/LocationPickerMap';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import { eliminarServicioAdmin, getServicioAdmin, revisarServicio, type RevisionEvento, type ServicioAdmin } from '../../api/admin';
 import { useAdmin } from '../../context/AdminContext';
+import { useAlert } from '../../context/AlertContext';
 import { useEliminacionConfirmada } from '../../hooks/useEliminacionConfirmada';
 import { formatearFecha, formatearFechaHora } from '../../utils/adminFormat';
+import { logError, mensajeErrorUsuario } from '../../utils/errorApp';
 import { getEstadoVisual } from '../../utils/estadoServicio';
 import { coordenadasValidas, formatearPrecioCOP } from '../../utils/formatoServicio';
 import CategoriaSticker from '../../components/CategoriaSticker';
@@ -25,6 +28,7 @@ export default function AdminServicioDetalleScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { refrescar: refrescarResumen } = useAdmin();
+  const { confirmar, errorVital } = useAlert();
 
   const [servicio, setServicio] = useState<ServicioAdmin | null>(null);
   const [historial, setHistorial] = useState<RevisionEvento[]>([]);
@@ -33,7 +37,6 @@ export default function AdminServicioDetalleScreen() {
 
   const [observacion, setObservacion] = useState('');
   const [errorObs, setErrorObs] = useState<string | null>(null);
-  const [decision, setDecision] = useState<Decision | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [errorAccion, setErrorAccion] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
@@ -51,7 +54,8 @@ export default function AdminServicioDetalleScreen() {
       setServicio(r.data);
       setHistorial(r.historial);
     } catch (e) {
-      setError((e as Error).message || 'No se pudo cargar el servicio');
+      logError('No se pudo cargar el servicio', e);
+      setError(mensajeErrorUsuario(e, 'No hemos podido obtener los datos'));
     } finally {
       setCargando(false);
     }
@@ -68,7 +72,7 @@ export default function AdminServicioDetalleScreen() {
   const vista = useMemo(() => (lat !== undefined && lng !== undefined ? { lat, lng, zoom: 16, token: 1 } : null), [lat, lng]);
   const marcador = useMemo(() => (lat !== undefined && lng !== undefined ? { lat, lng } : null), [lat, lng]);
 
-  function pedirConfirmacion(d: Decision) {
+  async function pedirConfirmacion(d: Decision) {
     if (d === 'rechazado' && !observacion.trim()) {
       setErrorObs('Escribe el motivo del rechazo para poder rechazar el servicio');
       return;
@@ -76,27 +80,36 @@ export default function AdminServicioDetalleScreen() {
     setErrorObs(null);
     setErrorAccion(null);
     setAviso(null);
-    setDecision(d);
-  }
 
-  async function confirmar() {
-    if (!decision || !id || enviandoRef.current) return;
+    const ok = await confirmar({
+      titulo: d === 'aprobado' ? 'Aprobar servicio' : 'Rechazar servicio',
+      mensaje:
+        d === 'aprobado'
+          ? `¿Aprobar «${servicio?.nombre ?? ''}»? Quedará publicado en el mapa de los viajeros.`
+          : `¿Rechazar «${servicio?.nombre ?? ''}»? El negocio podrá ver tu observación.`,
+      confirmarTexto: d === 'aprobado' ? 'Aprobar' : 'Rechazar',
+      tono: d === 'aprobado' ? 'exito' : 'peligro',
+    });
+    if (!ok || !id || enviandoRef.current) return;
+
     enviandoRef.current = true;
     setEnviando(true);
-
-    const tomada = decision;
     try {
-      await revisarServicio(id, tomada, observacion.trim() || undefined);
-      setDecision(null);
+      await revisarServicio(id, d, observacion.trim() || undefined);
       setObservacion('');
-      setAviso(tomada === 'aprobado' ? 'Servicio aprobado correctamente' : 'Servicio rechazado correctamente');
+      setAviso(d === 'aprobado' ? 'Servicio aprobado correctamente' : 'Servicio rechazado correctamente');
     } catch (e) {
-      setDecision(null);
-      setErrorAccion((e as Error).message || 'No se pudo registrar la decisión');
+      setErrorAccion(
+        errorVital(
+          'No se pudo registrar la decisión',
+          e,
+          'Error en la base de datos. Inténtalo más tarde.',
+          'No se pudo completar',
+        ),
+      );
     } finally {
       enviandoRef.current = false;
       setEnviando(false);
-      // En éxito o en conflicto (otra sesión ya decidió) se refrescan datos e indicadores
       await cargar();
       void refrescarResumen();
     }
@@ -117,10 +130,7 @@ export default function AdminServicioDetalleScreen() {
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         {cargando && !servicio && (
-          <View style={styles.centerBox}>
-            <ActivityIndicator size="large" color={colors.azul} />
-            <Text style={styles.centerText}>Cargando…</Text>
-          </View>
+          <Loader tipo="bloque" texto="Cargando servicio…" />
         )}
 
         {!!error && (
@@ -309,22 +319,6 @@ export default function AdminServicioDetalleScreen() {
           </>
         )}
       </ScrollView>
-
-      <ConfirmDialog
-        visible={!!decision}
-        titulo={decision === 'aprobado' ? 'Aprobar servicio' : 'Rechazar servicio'}
-        mensaje={
-          decision === 'aprobado'
-            ? `¿Aprobar «${servicio?.nombre ?? ''}»? Quedará publicado en el mapa de los viajeros.`
-            : `¿Rechazar «${servicio?.nombre ?? ''}»? El negocio podrá ver tu observación.`
-        }
-        confirmarTexto={decision === 'aprobado' ? 'Aprobar' : 'Rechazar'}
-        tono={decision === 'aprobado' ? 'exito' : 'peligro'}
-        cargando={enviando}
-        error={null}
-        onCancel={() => setDecision(null)}
-        onConfirm={confirmar}
-      />
 
       <ConfirmDialog
         visible={!!borrado.objetivo}

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 import { colors } from '../styles/theme';
+import CintaAdhesiva from './CintaAdhesiva';
 
 const sombraPolaroid = {
   shadowColor: '#5B4A1F',
@@ -32,10 +33,12 @@ export default function MarcoPolaroid({ children, ancho, alto, rotacion = '-7deg
           borderWidth: activo ? 2 : 0,
           borderColor: colors.dorado,
           transform: [{ rotate: rotacion }],
+          overflow: 'visible',
           ...sombraPolaroid,
         },
         style,
       ]}>
+      <CintaAdhesiva ancho={Math.max(36, Math.round(ancho * 0.55))} />
       <View style={{ width: ancho, height: alto, borderRadius: 2, overflow: 'hidden', backgroundColor: colors.beige }}>
         {children}
       </View>

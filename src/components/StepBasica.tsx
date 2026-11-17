@@ -1,7 +1,8 @@
 import type { Control } from 'react-hook-form';
-import { ActivityIndicator, Pressable, Text, View, type LayoutChangeEvent } from 'react-native';
+import { Pressable, Text, View, type LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Button from '../components/Button';
+import Loader from '../components/Loader';
 import Field from '../components/Field';
 import type { Categoria } from '../api/categoria';
 import type { WizardForm } from '../hooks/useServicioWizard';
@@ -67,10 +68,7 @@ export default function StepBasica({
         <Text style={styles.label}>Categoría</Text>
 
         {cargando ? (
-          <View style={styles.loadingRow}>
-            <ActivityIndicator color="#0147B9" />
-            <Text style={styles.loadingText}>Cargando categorías…</Text>
-          </View>
+          <Loader tipo="compacto" texto="Cargando categorías…" />
         ) : error ? (
           <View style={styles.retryBox}>
             <Text style={styles.retryText}>{error}</Text>

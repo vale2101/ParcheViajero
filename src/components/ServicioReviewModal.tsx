@@ -8,11 +8,13 @@ import {
 } from 'react-native';
 import Button from './Button';
 import CategoriaSticker from './CategoriaSticker';
+import Loader from './Loader';
 import StarRating from './StarRating';
 import { useServicioResenas } from '../hooks/useServicioResenas';
 import { validarCalificacion } from '../utils/validaciones';
 import type { Servicio } from '../api/servicio';
 import { styles } from '../styles/ServicioReviewModal.styles';
+import { idUsuarioResena } from '../utils/resenaAutor';
 
 interface Props {
   visible: boolean;
@@ -50,8 +52,8 @@ export default function ServicioReviewModal({ visible, servicio, categoria, onCl
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <View style={styles.backdrop}>
-        <View style={styles.sheet}>
+      <Pressable style={styles.backdrop} onPress={onClose}>
+        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
           <View style={styles.header}>
             <Text style={styles.title}>{servicio.nombre}</Text>
             <Pressable onPress={onClose} hitSlop={8}>
@@ -75,9 +77,11 @@ export default function ServicioReviewModal({ visible, servicio, categoria, onCl
             style={styles.list}
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
-              !loading ? (
+              loading ? (
+                <Loader tipo="bloque" texto="Cargando reseñas…" />
+              ) : (
                 <Text style={styles.placeholder}>Aún no hay reseñas para este lugar</Text>
-              ) : undefined
+              )
             }
             renderItem={({ item }) => (
               <View style={styles.reviewCard}>
@@ -88,7 +92,7 @@ export default function ServicioReviewModal({ visible, servicio, categoria, onCl
                     {new Date(item.fecha).toLocaleDateString()}
                   </Text>
                 )}
-                {item.usuario_id === usuarioId && (
+                {idUsuarioResena(item) === usuarioId && (
                   <Text style={styles.miEtiqueta}>Tu reseña</Text>
                 )}
               </View>
@@ -126,8 +130,8 @@ export default function ServicioReviewModal({ visible, servicio, categoria, onCl
               </View>
             }
           />
-        </View>
-      </View>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }

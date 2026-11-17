@@ -16,7 +16,7 @@ import {
   type Usuario,
 } from '../api/usuario';
 
-import { setToken } from '../api/client';
+import { getStoredToken, setToken } from '../api/client';
 
 interface AuthUser extends Usuario {
   tipo_usuario: TipoUsuario;
@@ -49,12 +49,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function restoreSession() {
       try {
+        const savedToken = await getStoredToken();
+
+        if (!savedToken) {
+          if (active) {
+            setUser(null);
+          }
+          return;
+        }
+
         const { data } = await getCurrentUsuario();
 
         if (active) {
           setUser(data);
         }
       } catch {
+        await setToken(null);
         if (active) {
           setUser(null);
         }

@@ -1,33 +1,76 @@
 import { StyleSheet } from 'react-native';
+import { colors as c } from './theme';
 
-const AZUL = '#0147B9';
-const AZUL_OSC = '#1E3A8A';
+const AZUL = c.azul;
+const AZUL_OSC = c.azulOscuro;
 const ORO = '#FEBA03';
-const CREMA = '#FDFBF6';
-const SUPERFICIE = '#FAF4E4';
-const BORDE = '#E8D9B8';
-const TEXTO = '#171717';
-const SECUNDARIO = '#6b6b6b';
-const ROJO = '#dc2626';
+const CREMA = c.crema;
+const SUPERFICIE = c.superficie;
+const BORDE = c.borde;
+const TEXTO = c.texto;
+const SECUNDARIO = c.textoSec;
+const ROJO = c.rojo;
 
 export const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: CREMA },
-  content: { padding: 24, gap: 20, paddingBottom: 40 },
+  content: { paddingHorizontal: 20, paddingBottom: 28, gap: 18 },
 
-  profileHeader: { alignItems: 'center', gap: 6 },
-  avatar: {
-    width: 72,
-    height: 72,
+  hero: {
+    alignItems: 'center',
+    paddingTop: 20,
+    paddingBottom: 24,
+    overflow: 'hidden',
+    minHeight: 236,
+  },
+  papelMancha1: {
+    position: 'absolute',
+    top: -40,
+    left: -50,
+    width: 180,
+    height: 180,
+    borderRadius: 90,
+    backgroundColor: c.beige,
+    opacity: 0.55,
+  },
+  papelMancha2: {
+    position: 'absolute',
+    top: 20,
+    right: -60,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: '#F3E4C4',
+    opacity: 0.45,
+  },
+  decoTopLeft: { position: 'absolute', top: 8, left: 4, opacity: 0.9 },
+  decoTopRight: { position: 'absolute', right: 0, top: 8, width: 150, height: 110, opacity: 0.85 },
+  profileHeader: { alignItems: 'center', gap: 8, zIndex: 1 },
+  anillo: {
+    width: 124,
+    height: 124,
+    borderRadius: 62,
+    borderWidth: 3,
+    borderColor: c.dorado,
+    padding: 5,
+    backgroundColor: CREMA,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 36,
-    backgroundColor: AZUL_OSC,
-    marginBottom: 6,
+    marginBottom: 4,
   },
-  avatarText: { fontSize: 28, fontWeight: '700', color: '#F5B700' },
-  name: { fontSize: 18, fontWeight: '600', color: AZUL_OSC },
-  email: { color: '#a3a3a3' },
+  avatar: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 56,
+    backgroundColor: AZUL_OSC,
+  },
+  avatarText: { fontSize: 44, fontWeight: '800', color: c.dorado },
+  name: { fontSize: 26, fontWeight: '800', color: AZUL_OSC, textAlign: 'center' },
+  email: { fontSize: 14, color: SECUNDARIO, textAlign: 'center' },
   phone: { color: SECUNDARIO, fontSize: 13 },
+  pie: { alignItems: 'center', minHeight: 80, marginTop: 8 },
+  logoFondo: { width: '78%', height: 88, opacity: 0.14 },
 
   aviso: {
     flexDirection: 'row',

@@ -4,6 +4,7 @@ import ScreenHeader from '../../components/ScreenHeader';
 import ServiciosMap, { type ServiciosMapHandle } from '../../components/ServiciosMap';
 import MapFilters, { type MapFiltersValue } from '../../components/MapFilters';
 import ServicioReviewModal from '../../components/ServicioReviewModal';
+import ServicioResenaModal from '../../components/ServicioResenaModal';
 import LocateButton from '../../components/LocateButton';
 import { useUserLocation, type UserLocation } from '../../hooks/useUserLocation';
 import { useMapaData } from '../../hooks/useMapaData';
@@ -20,6 +21,7 @@ export default function MapaScreen() {
   const { servicios, categorias, municipios, resenas } = useMapaData();
 
   const [seleccionado, setSeleccionado] = useState<Servicio | null>(null);
+  const [resenando, setResenando] = useState(false);
   const [ubicacionUsuario, setUbicacionUsuario] = useState<UserLocation | null>(null);
   const [filtros, setFiltros] = useState<MapFiltersValue>({
     categoriaId: null,
@@ -80,12 +82,20 @@ export default function MapaScreen() {
 
         <LocateButton onPress={handleLocate} loading={cargandoUbicacion} />
       </View>
+      <ServicioResenaModal
+        visible={!!seleccionado && !resenando}
+        servicio={seleccionado}
+        categorias={categorias}
+        municipios={municipios}
+        onClose={() => setSeleccionado(null)}
+        onDejarResena={() => setResenando(true)}
+      />
 
       <ServicioReviewModal
-        visible={!!seleccionado}
+        visible={resenando}
         servicio={seleccionado}
         categoria={categorias.find((c) => c._id === seleccionado?.categoria_id)?.nombre}
-        onClose={() => setSeleccionado(null)}
+        onClose={() => setResenando(false)}
       />
     </View>
   );

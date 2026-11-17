@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Loader from './Loader';
 import { loadGoogleMapsScript } from '../utils/googleMapsLoader';
 import { buildPinIcon } from '../utils/mapMarkerIcon';
 import type { LocationPickerMapProps } from './LocationPickerMap.types';
+import { logError } from '../utils/errorApp';
 
 const DEFAULT_LAT = 5.0703;
 const DEFAULT_LNG = -75.5138;
@@ -54,7 +56,10 @@ export default function LocationPickerMap({
         setReady(true);
       })
       .catch((e: Error) => {
-        if (!cancelled) setLoadError(e.message);
+        logError('No se pudo cargar Google Maps', e);
+        if (!cancelled) {
+          setLoadError('No hemos podido cargar el mapa. Inténtalo de nuevo.');
+        }
       });
 
     return () => {
@@ -108,7 +113,12 @@ export default function LocationPickerMap({
     <View style={[styles.container, { height }]}>
       {/* @ts-expect-error - ref de DOM, válido en react-native-web */}
       <View ref={mapDivRef} style={styles.map} />
-      {!ready && <Text style={styles.loading}>{loadError ?? 'Cargando mapa…'}</Text>}
+      {!ready &&
+        (loadError ? (
+          <Text style={styles.loading}>{loadError}</Text>
+        ) : (
+          <Loader tipo="compacto" texto="Cargando mapa…" />
+        ))}
     </View>
   );
 }

@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { FlatList, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import Button from '../components/Button';
-import AdminHeader from '../components/AdminHeader';
-import ConfirmDialog from '../components/ConfirmDialog';
+import Button from './Button';
+import Loader from './Loader';
+import AdminHeader from './AdminHeader';
+import ConfirmDialog from './ConfirmDialog';
 import { eliminarServicioAdmin, type EstadoFiltro, type ServicioAdmin } from '../api/admin';
 import { useAdmin } from '../context/AdminContext';
 import { useAdminServicios } from '../hooks/useAdminServicios';
@@ -162,10 +163,7 @@ export default function ServiciosAdminLista({ titulo, subtitulo, tabs, vacios }:
         }
         ListEmptyComponent={
           cargando ? (
-            <View style={styles.centerBox}>
-              <ActivityIndicator size="large" color={colors.azul} />
-              <Text style={styles.centerText}>Cargando…</Text>
-            </View>
+            <Loader tipo="bloque" texto="Cargando servicios…" />
           ) : !error ? (
             <View style={styles.emptyBox}>
               <View style={styles.emptyIcon}>

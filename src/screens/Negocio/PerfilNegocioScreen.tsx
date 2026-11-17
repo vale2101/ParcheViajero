@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import Button from '../../components/Button';
+import DecoRutaCinta from '../../components/DecoRutaCinta';
+import MontanasDeco from '../../components/MontanasDeco';
 import ScreenHeader from '../../components/ScreenHeader';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import Loader from '../../components/Loader';
 import PerfilEditModal from '../../components/PerfilEditModal';
 import ServicioCard from '../../components/ServicioCard';
 import ServicioEditarModal from '../../components/ServicioEditarModal';
@@ -76,13 +79,27 @@ export default function PerfilNegocioScreen() {
       <ScreenHeader />
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <View style={styles.profileHeader}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>{user?.email.charAt(0).toUpperCase() ?? '?'}</Text>
+        <View style={styles.hero}>
+          <View style={styles.papelMancha1} pointerEvents="none" />
+          <View style={styles.papelMancha2} pointerEvents="none" />
+          <View style={styles.decoTopLeft} pointerEvents="none">
+            <DecoRutaCinta />
           </View>
-          <Text style={styles.name}>{user?.nombre}</Text>
-          <Text style={styles.email}>{user?.email}</Text>
-          {!!user?.telefono && <Text style={styles.phone}>{user.telefono}</Text>}
+          <View style={styles.decoTopRight} pointerEvents="none">
+            <MontanasDeco />
+          </View>
+          <View style={styles.profileHeader}>
+            <View style={styles.anillo}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>
+                  {(user?.nombre?.trim()?.[0] || user?.email?.[0] || '?').toUpperCase()}
+                </Text>
+              </View>
+            </View>
+            <Text style={styles.name}>{user?.nombre}</Text>
+            <Text style={styles.email}>{user?.email}</Text>
+            {!!user?.telefono && <Text style={styles.phone}>{user.telefono}</Text>}
+          </View>
         </View>
 
         {!!aviso && (
@@ -106,10 +123,7 @@ export default function PerfilNegocioScreen() {
 
         {/* Servicios del usuario (sin título) */}
         {cargando && !cargado && (
-          <View style={styles.loadingRow}>
-            <ActivityIndicator color="#0147B9" />
-            <Text style={styles.loadingText}>Cargando tus servicios…</Text>
-          </View>
+          <Loader tipo="bloque" texto="Cargando tus servicios…" />
         )}
 
         {!!error && (
@@ -149,6 +163,15 @@ export default function PerfilNegocioScreen() {
             }}
           />
         ))}
+
+        <View style={styles.pie} pointerEvents="none">
+          <Image
+            source={require('../../../assets/logo.png')}
+            style={styles.logoFondo}
+            resizeMode="contain"
+            accessibilityElementsHidden
+          />
+        </View>
       </ScrollView>
 
       <ServicioEditarModal

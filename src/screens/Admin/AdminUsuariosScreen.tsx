@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, Text, View } from 'react-native';
+import { FlatList, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '../../components/Button';
+import Loader from '../../components/Loader';
 import AdminHeader from '../../components/AdminHeader';
 import SearchBar from '../../components/SearchBar';
 import Segmented from '../../components/Segmented';
@@ -141,10 +142,7 @@ export default function AdminUsuariosScreen() {
         }
         ListEmptyComponent={
           cargando ? (
-            <View style={styles.centerBox}>
-              <ActivityIndicator size="large" color={colors.azul} />
-              <Text style={styles.centerText}>Cargando…</Text>
-            </View>
+            <Loader tipo="bloque" texto="Cargando usuarios…" />
           ) : !error ? (
             <View style={styles.emptyBox}>
               <View style={styles.emptyIcon}>

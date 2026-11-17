@@ -1,6 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ComponentType, type Ref } from 'react';
 import { StyleSheet, View } from 'react-native';
-import WebView from 'react-native-webview';
+import WebViewImpl, { type WebViewProps } from 'react-native-webview';
+
+interface WebViewHandle {
+  injectJavaScript: (script: string) => void;
+}
+
+const WebView = WebViewImpl as unknown as ComponentType<
+  WebViewProps & { ref?: Ref<WebViewHandle | null> }
+>;
 import { buildPinIcon } from '../utils/mapMarkerIcon';
 import type { LocationPickerMapProps } from './LocationPickerMap.types';
 
@@ -84,7 +92,7 @@ export default function LocationPickerMap({
   interactivo = true,
   height = 300,
 }: LocationPickerMapProps) {
-  const webviewRef = useRef<WebView>(null);
+  const webviewRef = useRef<WebViewHandle>(null);
   const vistaRef = useRef(vista);
   const marcadorRef = useRef(marcador);
   vistaRef.current = vista;

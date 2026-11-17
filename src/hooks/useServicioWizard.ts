@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { LayoutChangeEvent, ScrollView } from 'react-native';
+import type { LayoutChangeEvent, ScrollViewInstance } from 'react-native';
 import { useForm } from 'react-hook-form';
 import { getCategorias, type Categoria } from '../api/categoria';
 import { getMunicipios, type Municipio } from '../api/municipio';
-import { createServicio } from '../api/servicio';
+import { createServicio, subirImagenesServicio, type ImagenLocal } from '../api/servicio';
+import { MAX_IMAGENES, elegirImagenes } from '../utils/seleccionarImagenes';
 import { PATRON_PRECIO, PATRON_TELEFONO } from '../utils/validacionesServicio';
 import { useUbicacionServicio } from './useUbicacionServicio';
+import { logError, mensajeErrorUsuario } from '../utils/errorApp';
+import { useAlert } from '../context/AlertContext';
 
 export const TOTAL_PASOS = 5;
 export const NOMBRES_PASOS = ['Básico', 'Ubicación', 'Contacto', 'Imágenes', 'Resumen'] as const;
@@ -52,6 +55,7 @@ function camposInvalidos(v: WizardForm, gratuito: boolean): (keyof WizardForm)[]
 }
 
 export function useServicioWizard() {
+  const { errorVital } = useAlert();
   const [paso, setPaso] = useState(0);
   const [direccionAnim, setDireccionAnim] = useState<1 | -1>(1);
 
@@ -64,13 +68,17 @@ export function useServicioWizard() {
   const [municipioId, setMunicipioId] = useState<string | null>(null);
   const [gratuito, setGratuito] = useState(false);
 
+  const [imagenes, setImagenes] = useState<ImagenLocal[]>([]);
+  const [avisoImagenes, setAvisoImagenes] = useState<string | null>(null);
+  const [errorImagenes, setErrorImagenes] = useState<string | null>(null);
+
   const [errores, setErrores] = useState<ErroresWizard>({});
   const [enviando, setEnviando] = useState(false);
   const [errorEnvio, setErrorEnvio] = useState<string | null>(null);
   const [enviado, setEnviado] = useState(false);
 
   const enviandoRef = useRef(false);
-  const scrollRef = useRef<ScrollView>(null);
+  const scrollRef = useRef<ScrollViewInstance>(null);
   const anclas = useRef<Record<string, number>>({});
 
   const ubicacion = useUbicacionServicio();
@@ -90,9 +98,8 @@ export function useServicioWizard() {
       setCategorias(c.data);
       setMunicipios(m.data);
     } catch (e) {
-      setErrorCatalogos(
-        (e as Error).message || 'No se pudieron cargar las categorías y los municipios',
-      );
+      logError('No se pudieron cargar categorías y municipios', e);
+      setErrorCatalogos(mensajeErrorUsuario(e, 'No hemos podido obtener los datos'));
     } finally {
       setCargandoCatalogos(false);
     }
@@ -144,7 +151,16 @@ export function useServicioWizard() {
     [form],
   );
 
-  // La confirmación de ubicación limpia su error
+  const agregarImagenes = useCallback(async () => {
+    const { imagenes: nuevas, rechazadas } = await elegirImagenes(MAX_IMAGENES - imagenes.length);
+    setAvisoImagenes(rechazadas.length ? rechazadas.join(' ') : null);
+    if (nuevas.length > 0) setImagenes((prev) => [...prev, ...nuevas].slice(0, MAX_IMAGENES));
+  }, [imagenes.length]);
+
+  const quitarImagen = useCallback((uri: string) => {
+    setImagenes((prev) => prev.filter((i) => i.uri !== uri));
+  }, []);
+
   useEffect(() => {
     if (confirmada) setErrores((prev) => ({ ...prev, ubicacion: undefined }));
   }, [confirmada]);
@@ -157,7 +173,8 @@ export function useServicioWizard() {
       if (n === 1) {
         if (!municipioId) nuevos.municipio = 'Selecciona el municipio del servicio';
         else if (!confirmada) {
-          nuevos.ubicacion = 'Busca la dirección en el mapa y confirma la ubicación para continuar';
+          nuevos.ubicacion =
+            'Escribe la dirección y marca el punto en el mapa para continuar';
         }
       }
 
@@ -225,10 +242,10 @@ export function useServicioWizard() {
   const enviar = useCallback(async () => {
     if (enviandoRef.current) return;
     setErrorEnvio(null);
+    setErrorImagenes(null);
 
     const v = form.getValues();
 
-    // Revalidación completa antes de enviar
     const malos = camposInvalidos(v, gratuito);
     if (malos.length > 0) {
       volverAPasoConErrores(malos[0] === 'telefono' || malos[0] === 'precio' ? 2 : 0);
@@ -241,7 +258,7 @@ export function useServicioWizard() {
     setEnviando(true);
 
     try {
-      await createServicio({
+      const creado = await createServicio({
         categoria_id: categoriaId,
         municipio_id: municipioId,
         nombre: v.nombre.trim(),
@@ -253,14 +270,33 @@ export function useServicioWizard() {
         horario_atencion: v.horario_atencion.trim() || undefined,
         precio: gratuito || !v.precio ? undefined : Number(v.precio),
       });
+
       setEnviado(true);
+
+      const servicioId = creado.data?._id;
+      if (imagenes.length > 0 && servicioId) {
+        try {
+          await subirImagenesServicio(servicioId, imagenes);
+        } catch (e) {
+          setErrorImagenes(
+            `El servicio se envió, pero las fotos no se pudieron subir (${(e as Error).message}). Puedes agregarlas desde tu perfil, en «Editar».`,
+          );
+        }
+      }
     } catch (e) {
-      setErrorEnvio((e as Error).message || 'No se pudo enviar el servicio. Inténtalo de nuevo.');
+      setErrorEnvio(
+        errorVital(
+          'No se pudo enviar el servicio',
+          e,
+          'Error en la base de datos. Inténtalo más tarde.',
+          'No se pudo publicar',
+        ),
+      );
     } finally {
       enviandoRef.current = false;
       setEnviando(false);
     }
-  }, [form, gratuito, categoriaId, municipioId, confirmada, volverAPasoConErrores]);
+  }, [form, gratuito, categoriaId, municipioId, confirmada, imagenes, volverAPasoConErrores, errorVital]);
 
   return {
     paso,
@@ -289,6 +325,11 @@ export function useServicioWizard() {
     errores,
     scrollRef,
     ancla,
+    imagenes,
+    avisoImagenes,
+    errorImagenes,
+    agregarImagenes,
+    quitarImagen,
     categoriaSeleccionada: categorias.find((c) => c._id === categoriaId),
     municipioSeleccionado: municipios.find((m) => m._id === municipioId),
   };

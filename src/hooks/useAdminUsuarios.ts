@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { getUsuariosAdmin, type Orden, type TipoCuenta, type UsuarioAdmin } from '../api/admin';
+import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 
 export function useAdminUsuarios(tipo: TipoCuenta, q: string, orden: Orden) {
   const [resultado, setResultado] = useState<{ tipo: TipoCuenta; lista: UsuarioAdmin[] } | null>(null);
@@ -18,7 +19,8 @@ export function useAdminUsuarios(tipo: TipoCuenta, q: string, orden: Orden) {
       setResultado({ tipo, lista: data });
     } catch (e) {
       if (id !== peticion.current) return;
-      setError((e as Error).message || 'No se pudieron cargar los usuarios');
+      logError('No se pudieron cargar los usuarios', e);
+      setError(mensajeErrorUsuario(e, 'No hemos podido obtener los datos'));
     } finally {
       if (id === peticion.current) setCargando(false);
     }
@@ -33,5 +35,11 @@ export function useAdminUsuarios(tipo: TipoCuenta, q: string, orden: Orden) {
 
   const usuarios = resultado?.tipo === tipo ? resultado.lista : [];
 
-  return { usuarios, cargando, cargado: resultado !== null, error, recargar: cargar };
+  const quitar = useCallback((id: string) => {
+    setResultado((prev) =>
+      prev ? { ...prev, lista: prev.lista.filter((u) => u._id !== id) } : prev,
+    );
+  }, []);
+
+  return { usuarios, cargando, cargado: resultado !== null, error, recargar: cargar, quitar };
 }

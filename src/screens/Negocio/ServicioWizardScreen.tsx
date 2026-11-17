@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
-  ActivityIndicator,
   Animated,
   KeyboardAvoidingView,
   Platform,
@@ -10,9 +9,10 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Button from '../../components/Button';
+import Loader from '../../components/Loader';
 import StepBasica from '../../components/StepBasica';
 import StepContacto from '../../components/StepContacto';
 import StepImagenes from '../../components/StepImagenes';
@@ -30,17 +30,20 @@ function Contenido() {
   const anim = useRef(new Animated.Value(1)).current;
   const [confirmandoSalida, setConfirmandoSalida] = useState(false);
 
-  // Transición suave al cambiar de paso
   useEffect(() => {
     anim.setValue(0);
     Animated.timing(anim, { toValue: 1, duration: 220, useNativeDriver: true }).start();
     w.scrollRef.current?.scrollTo({ y: 0, animated: false });
   }, [w.paso, anim, w.scrollRef]);
 
-  const salir = () => router.replace('/negocio/servicios');
+  const salir = () => router.replace('/negocio/tabs/servicios');
 
   const hayDatos =
-    w.form.formState.isDirty || !!w.categoriaId || !!w.municipioId || !!w.ubicacion.texto;
+    w.form.formState.isDirty ||
+    !!w.categoriaId ||
+    !!w.municipioId ||
+    !!w.ubicacion.texto ||
+    w.imagenes.length > 0;
 
   const intentarSalir = () => {
     if (hayDatos && !w.enviado) setConfirmandoSalida(true);
@@ -91,7 +94,14 @@ function Contenido() {
           />
         );
       case 3:
-        return <StepImagenes />;
+        return (
+          <StepImagenes
+            imagenes={w.imagenes}
+            aviso={w.avisoImagenes}
+            onAgregar={w.agregarImagenes}
+            onQuitar={w.quitarImagen}
+          />
+        );
       default:
         return (
           <StepResumen
@@ -100,6 +110,7 @@ function Contenido() {
             municipio={w.municipioSeleccionado}
             gratuito={w.gratuito}
             ubicacion={w.ubicacion.confirmada}
+            imagenes={w.imagenes.length}
             onEditar={w.irAPaso}
             errorEnvio={w.errorEnvio}
           />
@@ -146,6 +157,7 @@ function Contenido() {
             Tu servicio quedó como «Pendiente de aprobación». Todavía no está publicado: aparecerá
             en el mapa cuando un administrador lo apruebe.
           </Text>
+          {!!w.errorImagenes && <Text style={styles.errorText}>{w.errorImagenes}</Text>}
           <Button text="Ver mis servicios" onPress={salir} style={{ alignSelf: 'stretch' }} />
         </View>
       ) : (
@@ -204,7 +216,7 @@ function Contenido() {
             <View
               style={{ position: 'absolute', top: insets.top + 60, alignSelf: 'center' }}
               pointerEvents="none">
-              <ActivityIndicator color="#0147B9" />
+              <Loader tipo="compacto" texto="Publicando tu servicio…" />
             </View>
           )}
         </>
@@ -214,14 +226,5 @@ function Contenido() {
 }
 
 export default function ServicioWizardScreen() {
-  const [activa, setActiva] = useState(false);
-
-  useFocusEffect(
-    useCallback(() => {
-      setActiva(true);
-      return () => setActiva(false);
-    }, []),
-  );
-
-  return activa ? <Contenido /> : null;
+  return <Contenido />;
 }

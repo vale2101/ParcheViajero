@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { getServiciosAdmin, type EstadoFiltro, type ServicioAdmin } from '../api/admin';
+import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 
 interface Opciones {
   estado: EstadoFiltro;
@@ -27,7 +28,8 @@ export function useAdminServicios({ estado, q, categoriaId, municipioId, dias }:
       setResultado({ estado, lista: data });
     } catch (e) {
       if (id !== peticion.current) return;
-      setError((e as Error).message || 'No se pudieron cargar los servicios');
+      logError('No se pudieron cargar los servicios', e);
+      setError(mensajeErrorUsuario(e, 'No hemos podido obtener los datos'));
     } finally {
       if (id === peticion.current) setCargando(false);
     }
@@ -42,5 +44,11 @@ export function useAdminServicios({ estado, q, categoriaId, municipioId, dias }:
 
   const servicios = resultado?.estado === estado ? resultado.lista : [];
 
-  return { servicios, cargando, cargado: resultado !== null, error, recargar: cargar };
+  const quitar = useCallback((id: string) => {
+    setResultado((prev) =>
+      prev ? { ...prev, lista: prev.lista.filter((s) => s._id !== id) } : prev,
+    );
+  }, []);
+
+  return { servicios, cargando, cargado: resultado !== null, error, recargar: cargar, quitar };
 }

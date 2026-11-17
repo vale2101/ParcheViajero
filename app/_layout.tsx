@@ -1,27 +1,30 @@
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { AlertProvider } from '../src/context/AlertContext';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { FavoritosProvider } from '../src/context/FavoritosContext';
 import { useAppFonts } from '../src/hooks/useAppFonts';
-import { View, ActivityIndicator } from 'react-native';
+import Loader from '../src/components/Loader';
 import "../src/global.css";
 
 export default function RootLayout() {
   const fontsReady = useAppFonts();
 
   if (!fontsReady) {
-    return null;
+    return <Loader tipo="pantalla" texto="Preparando Parche Viajero…" />;
   }
 
   return (
     <SafeAreaProvider>
       <StatusBar style="dark" />
-      <AuthProvider>
-        <FavoritosProvider>
-          <Navigator />
-        </FavoritosProvider>
-      </AuthProvider>
+      <AlertProvider>
+        <AuthProvider>
+          <FavoritosProvider>
+            <Navigator />
+          </FavoritosProvider>
+        </AuthProvider>
+      </AlertProvider>
     </SafeAreaProvider>
   );
 }
@@ -30,18 +33,7 @@ function Navigator() {
   const { user, isLoading } = useAuth();
 
   if (isLoading) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          backgroundColor: '#FFFFFF',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <ActivityIndicator size="large" color="#000000" />
-      </View>
-    );
+    return <Loader tipo="pantalla" texto="Cargando tu sesión…" />;
   }
 
   const esNegocio = user?.tipo_usuario === 'negocio';

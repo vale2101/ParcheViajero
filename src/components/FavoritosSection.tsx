@@ -7,6 +7,9 @@ import { getServicios, type Servicio } from '../api/servicio';
 import { useFavoritos } from '../context/FavoritosContext';
 import { getCategoriaVisual } from '../utils/categoriaVisual';
 import { styles } from '../styles/FavoritosSection.styles';
+import ServicioResenaModal from './ServicioResenaModal';
+import ServicioReviewModal from './ServicioReviewModal';
+import { SkeletonListItem } from './Skeleton';
 
 // Cuántos favoritos se ven antes de desplegar
 const MAX_VISIBLES = 4;
@@ -18,9 +21,13 @@ export default function FavoritosSection() {
   const [municipios, setMunicipios] = useState<Municipio[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [expandido, setExpandido] = useState(false);
+  const [cargando, setCargando] = useState(true);
+  const [seleccionado, setSeleccionado] = useState<Servicio | null>(null);
+  const [resenando, setResenando] = useState(false);
 
   useEffect(() => {
     async function cargarDatos() {
+      setCargando(true);
       try {
         const [serviciosRespuesta, categoriasRespuesta, municipiosRespuesta] =
           await Promise.all([getServicios(), getCategorias(), getMunicipios()]);
@@ -31,6 +38,8 @@ export default function FavoritosSection() {
         setError(null);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'No se pudieron cargar los favoritos');
+      } finally {
+        setCargando(false);
       }
     }
 
@@ -55,16 +64,31 @@ export default function FavoritosSection() {
   return (
     <View style={styles.container}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>Mis favoritos</Text>
-        {favoritos.length > 0 && <Text style={styles.count}>{favoritos.length} lugares</Text>}
+        <View style={styles.titleWrap}>
+          <Ionicons name="star" size={18} color="#E9B85B" />
+          <Text style={styles.sectionTitle}>Mis favoritos</Text>
+        </View>
+        {favoritos.length > 0 && (
+          <Text style={styles.count}>
+            {favoritos.length} {favoritos.length === 1 ? 'lugar' : 'lugares'}
+          </Text>
+        )}
       </View>
 
-      {error ? (
+      {cargando ? (
+        <View style={{ gap: 12 }}>
+          <SkeletonListItem />
+          <SkeletonListItem />
+        </View>
+      ) : error ? (
         <View style={styles.emptyBox}>
           <Text style={styles.placeholder}>{error}</Text>
         </View>
       ) : favoritos.length === 0 ? (
         <View style={styles.emptyBox}>
+          <View style={styles.emptyIcon}>
+            <Ionicons name="map-outline" size={26} color="#8A5A00" />
+          </View>
           <Text style={styles.placeholder}>Aún no tienes favoritos guardados</Text>
         </View>
       ) : (
@@ -74,16 +98,26 @@ export default function FavoritosSection() {
 
             return (
               <View key={fav._id} style={[styles.row, index > 0 && styles.rowBorder]}>
-                <View style={[styles.iconCircle, { backgroundColor: visual.color }]}>
-                  <Text style={styles.emoji}>{visual.emoji}</Text>
-                </View>
+                <Pressable
+                  style={styles.infoFila}
+                  onPress={() => setSeleccionado(fav)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Ver ${fav.nombre}`}>
+                  <View style={[styles.iconCircle, { backgroundColor: visual.color }]}>
+                    <Text style={styles.emoji}>{visual.emoji}</Text>
+                  </View>
 
-                <View style={styles.info}>
-                  <Text style={styles.nombre}>{fav.nombre}</Text>
-                  <Text style={styles.municipio}>{obtenerMunicipio(fav) ?? 'Municipio no disponible'}</Text>
-                </View>
+                  <View style={styles.info}>
+                    <Text style={styles.nombre}>{fav.nombre}</Text>
+                    <Text style={styles.municipio}>{obtenerMunicipio(fav) ?? 'Municipio no disponible'}</Text>
+                  </View>
+                </Pressable>
 
-                <Pressable onPress={() => toggleFavorito(fav._id)} hitSlop={8}>
+                <Pressable
+                  onPress={() => void toggleFavorito(fav._id)}
+                  hitSlop={8}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Quitar ${fav.nombre} de favoritos`}>
                   <Ionicons name="heart" size={20} color="#dc2626" />
                 </Pressable>
               </View>
@@ -104,6 +138,21 @@ export default function FavoritosSection() {
           )}
         </View>
       )}
+
+      <ServicioResenaModal
+        visible={!!seleccionado && !resenando}
+        servicio={seleccionado}
+        categorias={categorias}
+        municipios={municipios}
+        onClose={() => setSeleccionado(null)}
+        onDejarResena={() => setResenando(true)}
+      />
+      <ServicioReviewModal
+        visible={resenando}
+        servicio={seleccionado}
+        categoria={seleccionado ? obtenerCategoria(seleccionado) : undefined}
+        onClose={() => setResenando(false)}
+      />
     </View>
   );
 }

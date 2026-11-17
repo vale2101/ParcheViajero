@@ -15,8 +15,9 @@ import {
   type TipoUsuario,
   type Usuario,
 } from '../api/usuario';
-
-import { setToken } from '../api/client';
+import { getStoredToken, setOnSesionExpirada, setToken } from '../api/client';
+import { useAlert } from './AlertContext';
+import { MENSAJE_ERROR_SESION } from '../utils/errorApp';
 
 interface AuthUser extends Usuario {
   tipo_usuario: TipoUsuario;
@@ -37,30 +38,35 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
-const USUARIO_PRUEBA: AuthUser = {
-  _id: 'u-prueba',
-  tipo_usuario_id: 'registrado',
-  tipo_usuario: 'registrado',
-  nombre: 'Laura Gómez',
-  email: 'laura@correo.com',
-};
+
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { mostrarError } = useAlert();
 
   useEffect(() => {
     let active = true;
 
     async function restoreSession() {
       try {
+        const savedToken = await getStoredToken();
+
+        if (!savedToken) {
+          if (active) {
+            setUser(null);
+          }
+          return;
+        }
+
         const { data } = await getCurrentUsuario();
 
         if (active) {
           setUser(data);
         }
       } catch {
+        await setToken(null);
         if (active) {
           setUser(null);
         }
@@ -118,12 +124,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await login(email, contrasena);
   }
 
+  async function limpiarSesionLocal(): Promise<void> {
+    await setToken(null);
+    setUser(null);
+  }
+
+  useEffect(() => {
+    setOnSesionExpirada(async () => {
+      await limpiarSesionLocal();
+      mostrarError(MENSAJE_ERROR_SESION, 'Sesión expirada');
+    });
+
+    return () => setOnSesionExpirada(null);
+  }, [mostrarError]);
+
   async function logout(): Promise<void> {
     try {
       await logoutRequest();
+    } catch {
+      // Si el token ya no vale, igual se limpia en local.
     } finally {
-      await setToken(null);
-      setUser(null);
+      await limpiarSesionLocal();
     }
   }
 

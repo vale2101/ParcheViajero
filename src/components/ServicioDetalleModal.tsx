@@ -1,6 +1,7 @@
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Button from './Button';
+import CategoriaSticker from './CategoriaSticker';
 import type { Servicio } from '../api/servicio';
 import { getEstadoVisual } from '../utils/estadoServicio';
 import { styles } from '../styles/ServicioDetalleModal.styles';
@@ -54,9 +55,9 @@ export default function ServicioDetalleModal({
 
   return (
     <Modal visible={visible} animationType="fade" transparent onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose}>
-        {}
-        <Pressable style={styles.card} onPress={() => {}}>
+      <View style={styles.backdrop}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Cerrar" />
+        <View style={styles.card}>
           <View style={styles.header}>
             <Text style={styles.title}>{servicio.nombre}</Text>
             <Pressable
@@ -87,7 +88,7 @@ export default function ServicioDetalleModal({
               </View>
             )}
 
-            <Fila icono="pricetag-outline" etiqueta="Categoría" valor={categoria} />
+            <CategoriaSticker nombre={categoria} />
             <Fila icono="document-text-outline" etiqueta="Descripción" valor={servicio.descripcion} />
             <Fila icono="business-outline" etiqueta="Municipio" valor={municipio} />
             <Fila icono="location-outline" etiqueta="Dirección" valor={servicio.direccion} />
@@ -112,8 +113,8 @@ export default function ServicioDetalleModal({
           <View style={styles.footer}>
             <Button text="Cerrar" onPress={onClose} secondary />
           </View>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }

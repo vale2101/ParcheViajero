@@ -2,14 +2,26 @@ import { Image, Pressable, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { UsuarioAdmin } from '../api/admin';
 import { ETIQUETA_TIPO, formatearFecha, iniciales } from '../utils/adminFormat';
+import { colors } from '../styles/theme';
 import { styles } from '../styles/Admin.styles';
 
-export default function UsuarioCard({ usuario: u, onPress }: { usuario: UsuarioAdmin; onPress: () => void }) {
+export default function UsuarioCard({
+  usuario: u,
+  onPress,
+  onEliminar,
+  ocupado = false,
+}: {
+  usuario: UsuarioAdmin;
+  onPress: () => void;
+  onEliminar?: () => void;
+  ocupado?: boolean;
+}) {
   return (
-    <Pressable style={styles.card} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Abrir ${u.nombre}`}>
+    <View style={styles.card}>
+      <Pressable style={styles.cardMain} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Abrir ${u.nombre}`}>
       <View style={styles.userAvatar}>
         {u.foto_perfil ? (
-          <Image source={{ uri: u.foto_perfil }} style={{ width: 56, height: 56 }} />
+          <Image source={{ uri: u.foto_perfil }} style={{ width: 56, height: 56 }} resizeMode="cover" />
         ) : (
           <Text style={styles.avatarText}>{iniciales(u.nombre)}</Text>
         )}
@@ -20,24 +32,35 @@ export default function UsuarioCard({ usuario: u, onPress }: { usuario: UsuarioA
           {u.nombre}
         </Text>
         <View style={styles.lineRow}>
-          <Ionicons name="mail-outline" size={14} color="#6b6b6b" />
+          <Ionicons name="mail-outline" size={14} color={colors.textoSec} />
           <Text style={styles.lineText} numberOfLines={1}>
             {u.email}
           </Text>
         </View>
         <View style={styles.lineRow}>
-          <Ionicons name="calendar-outline" size={14} color="#6b6b6b" />
+          <Ionicons name="calendar-outline" size={14} color={colors.textoSec} />
           <Text style={styles.lineText}>Registro: {formatearFecha(u.fecha_registro)}</Text>
         </View>
-        <View style={[styles.badge, { backgroundColor: '#E8F0FD', borderColor: '#0147B9' }]}>
-          <Ionicons name={u.tipo_usuario === 'negocio' ? 'storefront-outline' : 'person-outline'} size={13} color="#0147B9" />
-          <Text style={[styles.badgeText, { color: '#0147B9' }]}>
+        <View style={[styles.badge, { backgroundColor: colors.azulSuave, borderColor: colors.azul }]}>
+          <Ionicons name={u.tipo_usuario === 'negocio' ? 'storefront-outline' : 'person-outline'} size={13} color={colors.azul} />
+          <Text style={[styles.badgeText, { color: colors.azul }]}>
             {ETIQUETA_TIPO[u.tipo_usuario]}
             {u.tipo_usuario === 'negocio' ? ` · ${u.total_servicios ?? 0} servicios` : ''}
           </Text>
         </View>
       </View>
-      <Ionicons name="chevron-forward" size={20} color="#0147B9" />
-    </Pressable>
+      <Ionicons name="chevron-forward" size={20} color={colors.azul} />
+      </Pressable>
+      {onEliminar ? (
+        <Pressable
+          style={[styles.iconDanger, ocupado && styles.btnDisabled]}
+          onPress={onEliminar}
+          disabled={ocupado}
+          accessibilityRole="button"
+          accessibilityLabel={`Eliminar a ${u.nombre}`}>
+          <Ionicons name="trash-outline" size={18} color={colors.rojo} />
+        </Pressable>
+      ) : null}
+    </View>
   );
 }

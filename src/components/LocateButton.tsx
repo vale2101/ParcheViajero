@@ -1,5 +1,6 @@
-import { ActivityIndicator, Pressable } from 'react-native';
+import { Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Loader from './Loader';
 import { styles } from '../styles/LocateButton.styles';
 
 interface Props {
@@ -11,7 +12,7 @@ export default function LocateButton({ onPress, loading }: Props) {
   return (
     <Pressable style={styles.button} onPress={onPress} disabled={loading} hitSlop={8}>
       {loading ? (
-        <ActivityIndicator color="#0147B9" size="small" />
+        <Loader tipo="boton" />
       ) : (
         <Ionicons name="locate" size={22} color="#0147B9" />
       )}

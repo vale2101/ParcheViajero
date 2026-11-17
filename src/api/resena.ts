@@ -7,6 +7,8 @@ export interface Resena {
   calificacion: number;
   comentario?: string;
   fecha?: string;
+  autor_nombre?: string;
+  usuario_nombre?: string;
 }
 
 export interface CreateResenaInput {

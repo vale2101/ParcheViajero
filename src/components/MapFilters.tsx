@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ScrollView, Text, TextInput, View } from 'react-native';
 import type { Categoria } from '../api/categoria';
 import type { Municipio } from '../api/municipio';
 import { getCategoriaVisual } from '../utils/categoriaVisual';
 import { styles } from '../styles/MapFilters.styles';
+import Chip from './Chip';
+import HojaMunicipio from './HojaMunicipio';
 
 export interface MapFiltersValue {
   categoriaId: string | null;
@@ -66,62 +68,16 @@ export default function MapFilters({ value, onChange, categorias, municipios }: 
         />
       </ScrollView>
 
-      <Modal
+      <HojaMunicipio
         visible={municipioModalVisible}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setMunicipioModalVisible(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setMunicipioModalVisible(false)}>
-          <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>Municipio</Text>
-
-            <Pressable
-              style={styles.option}
-              onPress={() => {
-                onChange({ ...value, municipioId: null });
-                setMunicipioModalVisible(false);
-              }}>
-              <Text style={[styles.optionText, !value.municipioId && styles.optionTextActive]}>
-                Todos
-              </Text>
-            </Pressable>
-
-            {municipios.map((m) => (
-              <Pressable
-                key={m._id}
-                style={styles.option}
-                onPress={() => {
-                  onChange({ ...value, municipioId: m._id });
-                  setMunicipioModalVisible(false);
-                }}>
-                <Text
-                  style={[
-                    styles.optionText,
-                    value.municipioId === m._id && styles.optionTextActive,
-                  ]}>
-                  {m.nombre}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
-        </Pressable>
-      </Modal>
+        municipios={municipios}
+        seleccionadoId={value.municipioId}
+        onCerrar={() => setMunicipioModalVisible(false)}
+        onElegir={(id) => {
+          onChange({ ...value, municipioId: id });
+          setMunicipioModalVisible(false);
+        }}
+      />
     </View>
-  );
-}
-
-function Chip({
-  label,
-  active,
-  onPress,
-}: {
-  label: string;
-  active: boolean;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable style={[styles.chip, active && styles.chipActive]} onPress={onPress}>
-      <Text style={[styles.chipText, active && styles.chipTextActive]}>{label}</Text>
-    </Pressable>
   );
 }

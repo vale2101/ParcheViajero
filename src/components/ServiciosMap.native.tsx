@@ -1,7 +1,15 @@
-import { forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
+import { forwardRef, useImperativeHandle, useMemo, useRef, type ComponentType } from 'react';
 import type { Ref } from 'react';
 import { StyleSheet, View } from 'react-native';
-import WebView from 'react-native-webview';
+import WebViewImpl, { type WebViewProps } from 'react-native-webview';
+
+interface WebViewHandle {
+  injectJavaScript: (script: string) => void;
+}
+
+const WebView = WebViewImpl as unknown as ComponentType<
+  WebViewProps & { ref?: Ref<WebViewHandle | null> }
+>;
 import type { Servicio } from '../api/servicio';
 import type { Categoria } from '../api/categoria';
 import { getCategoriaVisual, DESTACADO_VISUAL } from '../utils/categoriaVisual';
@@ -133,7 +141,7 @@ function ServiciosMap(
   }: Props,
   ref: Ref<ServiciosMapHandle>,
 ) {
-  const webviewRef = useRef<WebView>(null);
+  const webviewRef = useRef<WebViewHandle>(null);
 
   const categoriaPorId = useMemo(
     () => Object.fromEntries(categorias.map((c) => [c._id, c.nombre])),

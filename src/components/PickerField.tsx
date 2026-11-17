@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FlatList, Modal, Pressable, Text, View } from 'react-native';
+import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { styles } from '../styles/PickerField.styles';
 
 export interface PickerOption {
@@ -35,7 +35,12 @@ export default function PickerField({ label, value, options, onChange, placehold
       {!!error && <Text style={styles.errorText}>{error}</Text>}
 
       <Modal visible={open} animationType="fade" transparent onRequestClose={() => setOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
+        <View style={styles.backdrop}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setOpen(false)}
+            accessibilityLabel="Cerrar"
+          />
           <View style={styles.sheet}>
             <Text style={styles.sheetTitle}>{label}</Text>
             <FlatList
@@ -56,7 +61,7 @@ export default function PickerField({ label, value, options, onChange, placehold
               )}
             />
           </View>
-        </Pressable>
+        </View>
       </Modal>
     </View>
   );

@@ -17,7 +17,14 @@ export default function NegocioTabsLayout() {
         tabBarLabelStyle: { fontSize: 12, fontWeight: '700' },
         tabBarIcon: ({ color, size, focused }) => {
           const par = ICONOS[route.name] ?? { on: 'ellipse', off: 'ellipse-outline' };
-          return <Ionicons name={focused ? par.on : par.off} size={size + 2} color={color} />;
+          const tintColor = typeof color === 'number' ? '#123B79' : color;
+          return (
+            <Ionicons
+              name={focused ? par.on : par.off}
+              size={size + 2}
+              color={tintColor ?? '#123B79'}
+            />
+          );
         },
         tabBarStyle: {
           backgroundColor: '#FFF8E9',

@@ -45,7 +45,13 @@ export function Skeleton({ width, height, radius: r = radius.sm }: SkeletonProps
   );
 }
 
-export function SkeletonText({ width = '70%' as const, height = 14 }) {
+export function SkeletonText({
+  width = '70%',
+  height = 14,
+}: {
+  width?: SkeletonProps['width'];
+  height?: number;
+}) {
   return <Skeleton width={width} height={height} radius={6} />;
 }
 

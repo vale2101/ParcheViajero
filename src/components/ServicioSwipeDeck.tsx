@@ -28,6 +28,7 @@ interface Props {
   esFavorito: (id: string) => boolean;
   onLike: (s: Servicio) => void;
   onDescartar: (s: Servicio) => void;
+  mostrarAcciones?: boolean;
   onAbrir: (s: Servicio) => void;
   onReiniciar: () => void;
   onExplorarMapa: () => void;
@@ -40,6 +41,7 @@ export default function ServicioSwipeDeck({
   esFavorito,
   onLike,
   onDescartar,
+  mostrarAcciones = true,
   onAbrir,
   onReiniciar,
   onExplorarMapa,
@@ -173,13 +175,14 @@ export default function ServicioSwipeDeck({
         <Tarjeta servicio={tope} categoria={categoriaDe(tope)} promedio={promedioDe(tope._id)} />
       </Animated.View>
 
-      <View
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          flexDirection: 'row',
-          gap: spacing.xl,
-        }}>
+      {mostrarAcciones && (
+        <View
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            flexDirection: 'row',
+            gap: spacing.xl,
+          }}>
         <Animated.View style={{ transform: [{ scale: escalaNo }] }}>
           <Pressable
             onPress={() => volar('izq', tope)}
@@ -216,7 +219,8 @@ export default function ServicioSwipeDeck({
             />
           </Pressable>
         </Animated.View>
-      </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -253,7 +257,7 @@ function IconoAccion({
       <Animated.View style={{ opacity: opacidadReposo }}>
         <Ionicons name={name} size={26} color={color} />
       </Animated.View>
-      <Animated.View style={{ ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center', opacity: opacidad }}>
+      <Animated.View style={{ ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center', opacity: opacidad }}>
         <Ionicons name={name} size={26} color="#fff" />
       </Animated.View>
     </View>

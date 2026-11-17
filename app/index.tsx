@@ -3,17 +3,21 @@ import { useAuth } from '../src/context/AuthContext';
 
 
 export default function Index() {
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
 
-  if (!user) {
+  if (!user && !isGuest) {
     return <Redirect href="/login" />;
   }
 
-  if (user.tipo_usuario === 'admin') {
+  if (isGuest) {
+    return <Redirect href="/usuario/mapa" />;
+  }
+
+  if (user?.tipo_usuario === 'admin') {
     return <Redirect href="/admin/inicio" />;
   }
 
-  if (user.tipo_usuario === 'negocio') {
+  if (user?.tipo_usuario === 'negocio') {
     return <Redirect href="/negocio/tabs/mapa" />;
   }
 

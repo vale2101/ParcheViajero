@@ -95,7 +95,7 @@ function Opcion({
 const estilos = StyleSheet.create({
   fondo: { flex: 1, justifyContent: 'flex-end' },
   velo: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     backgroundColor: 'rgba(18, 59, 121, 0.4)',
   },
   hoja: {

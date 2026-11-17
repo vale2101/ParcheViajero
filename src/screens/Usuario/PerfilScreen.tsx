@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Image, ScrollView, Text, View } from 'react-native';
+import { Redirect } from 'expo-router';
 import AvatarEditable from '../../components/AvatarEditable';
 import DecoRutaCinta from '../../components/DecoRutaCinta';
 import FavoritosSection from '../../components/FavoritosSection';
@@ -18,16 +19,12 @@ interface Info {
 }
 
 export default function PerfilScreen() {
-  const { user, logout } = useAuth();
+  const { user, isGuest, logout } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
   const [info, setInfo] = useState<Info | null>(null);
 
   function mostrarInfo(titulo: string, texto: string) {
-    setTimeout(() => setInfo({ titulo, texto }), 300);
-  }
-
-  function handleEditar() {
-    mostrarInfo('Editar perfil', 'Esta opción estará disponible pronto.');
+    setInfo({ titulo, texto });
   }
 
   function handleAcerca() {
@@ -42,6 +39,10 @@ export default function PerfilScreen() {
       'Términos y condiciones',
       'Al usar Parche Viajero aceptas que tus reseñas sean públicas y que debes escribirlas con respeto. Esta app es un proyecto universitario.',
     );
+  }
+
+  if (isGuest) {
+    return <Redirect href="/usuario/inicio" />;
   }
 
   return (
@@ -84,7 +85,6 @@ export default function PerfilScreen() {
       <PerfilDrawer
         visible={menuVisible}
         onClose={() => setMenuVisible(false)}
-        onEditar={handleEditar}
         onAcerca={handleAcerca}
         onTerminos={handleTerminos}
         onCerrarSesion={logout}

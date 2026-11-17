@@ -42,7 +42,12 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: c.borde,
   },
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  tagsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    alignItems: 'center',
+  },
   chip: {
     borderRadius: 20,
     borderWidth: 1.5,

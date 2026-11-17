@@ -8,6 +8,9 @@ import { colors } from '../styles/theme';
 import { styles } from '../styles/ServicioCard.styles';
 import FotoPlaceholder from './FotoPlaceholder';
 import MarcoPolaroid from './MarcoPolaroid';
+// Eliminar la importación de useFavoritos ya que no se usa en esta vista (solo negocio)
+// import { useFavoritos } from '../context/FavoritosContext';
+
 
 interface Props {
   servicio: Servicio;
@@ -76,7 +79,11 @@ export default function ServicioCard({
             {servicio.nombre}
           </Text>
 
-          <CategoriaSticker nombre={categoria} />
+          <View style={styles.categoriaFila}>
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <CategoriaSticker nombre={categoria} />
+            </View>
+          </View>
 
           {!!municipio && <Fila icono="location" texto={municipio} color={colors.azul} />}
           {!!servicio.direccion && <Fila icono="home-outline" texto={servicio.direccion} />}

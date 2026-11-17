@@ -30,7 +30,7 @@ export default function RootLayout() {
 }
 
 function Navigator() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, isGuest } = useAuth();
 
   if (isLoading) {
     return <Loader tipo="pantalla" texto="Cargando tu sesión…" />;
@@ -43,24 +43,24 @@ function Navigator() {
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
 
-      <Stack.Protected guard={!!user && !esNegocio && !esAdmin}>
+      <Stack.Protected guard={(!!user || isGuest) && !esNegocio && !esAdmin}>
         <Stack.Screen name="usuario" />
       </Stack.Protected>
-      
+
       <Stack.Protected guard={!!user && esNegocio}>
         <Stack.Screen name="negocio" />
       </Stack.Protected>
-      
+
       <Stack.Protected guard={!!user && esAdmin}>
         <Stack.Screen name="admin" />
       </Stack.Protected>
 
-      <Stack.Protected guard={!user}>
+      <Stack.Protected guard={!user && !isGuest}>
         <Stack.Screen name="login" />
         <Stack.Screen name="register" />
       </Stack.Protected>
 
-      
+
     </Stack>
   );
 }

@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import AppAlert, { type TipoAlerta } from '../components/AppAlert';
-import { logError, mensajeErrorUsuario } from '../utils/errorApp';
+import { ErrorSesionExpirada, logError, mensajeErrorUsuario } from '../utils/errorApp';
 
 export interface OpcionesConfirmacion {
   titulo: string;
@@ -95,6 +95,9 @@ export function AlertProvider({ children }: { children: ReactNode }) {
 
   const errorVital = useCallback(
     (contexto: string, err: unknown, fallback: string, titulo?: string) => {
+      if (err instanceof ErrorSesionExpirada) {
+        return err.message;
+      }
       logError(contexto, err);
       const mensaje = mensajeErrorUsuario(err, fallback);
       mostrarError(mensaje, titulo);

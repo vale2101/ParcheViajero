@@ -2,6 +2,7 @@ import {
   FlatList,
   Modal,
   Pressable,
+  StyleSheet,
   Text,
   TextInput,
   View,
@@ -52,8 +53,9 @@ export default function ServicioReviewModal({ visible, servicio, categoria, onCl
 
   return (
     <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+      <View style={styles.backdrop}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessibilityLabel="Cerrar" />
+        <View style={styles.sheet}>
           <View style={styles.header}>
             <Text style={styles.title}>{servicio.nombre}</Text>
             <Pressable onPress={onClose} hitSlop={8}>
@@ -130,8 +132,8 @@ export default function ServicioReviewModal({ visible, servicio, categoria, onCl
               </View>
             }
           />
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }

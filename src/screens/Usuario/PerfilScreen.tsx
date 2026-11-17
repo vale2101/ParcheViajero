@@ -7,6 +7,7 @@ import InfoModal from '../../components/InfoModal';
 import MisResenasSection from '../../components/MisResenasSection';
 import MontanasDeco from '../../components/MontanasDeco';
 import PerfilDrawer from '../../components/PerfilDrawer';
+import EntradaPantalla from '../../components/EntradaPantalla';
 import ScreenHeader from '../../components/ScreenHeader';
 import { useAuth } from '../../context/AuthContext';
 import { styles } from '../../styles/UsuarioPerfil.styles';
@@ -45,6 +46,7 @@ export default function PerfilScreen() {
 
   return (
     <View style={styles.screen}>
+      <EntradaPantalla>
       <ScreenHeader onPressMenu={() => setMenuVisible(true)} />
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -78,6 +80,7 @@ export default function PerfilScreen() {
         </View>
       </ScrollView>
 
+      </EntradaPantalla>
       <PerfilDrawer
         visible={menuVisible}
         onClose={() => setMenuVisible(false)}

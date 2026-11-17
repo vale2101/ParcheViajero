@@ -11,7 +11,14 @@ export const MENSAJE_ERROR_ACCION =
   'No hemos podido completar la acción. Inténtalo de nuevo.';
 
 export const MENSAJE_ERROR_SESION =
-  'Tu sesión expiró. Vuelve a iniciar sesión.';
+  'Tu sesión expiró, inicia sesión nuevamente';
+
+export class ErrorSesionExpirada extends Error {
+  constructor() {
+    super(MENSAJE_ERROR_SESION);
+    this.name = 'ErrorSesionExpirada';
+  }
+}
 
 export function logError(contexto: string, err: unknown): void {
   console.error(contexto, err);

@@ -8,7 +8,7 @@
 ![LOGO](/assets/logo.png)
 
 ### Ícono de la app
-![ICON](/assets/ICON_JEEP.png)
+![ICON](/assets/icon.png)
 
 ### Paleta de colores
 ![PALETA](/assets/COLORIMETRIA.jpeg)

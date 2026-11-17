@@ -7,11 +7,14 @@ interface Props {
   onPress: () => void;
   disabled?: boolean;
   secondary?: boolean;
+  outline?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-export default function Button({ text, onPress, disabled, secondary, style }: Props) {
+export default function Button({ text, onPress, disabled, secondary, outline, style }: Props) {
   const [pressed, setPressed] = useState(false);
+  const variante = outline ? styles.outline : secondary ? styles.secondary : styles.primary;
+  const texto = outline ? styles.textOutline : secondary ? styles.textSecondary : styles.textPrimary;
 
   return (
     <Pressable
@@ -21,14 +24,12 @@ export default function Button({ text, onPress, disabled, secondary, style }: Pr
       disabled={disabled}
       style={[
         styles.base,
-        secondary ? styles.secondary : styles.primary,
+        variante,
         disabled && styles.disabled,
         pressed && !disabled && styles.pressed,
         style,
       ]}>
-      <Text style={[styles.text, secondary ? styles.textSecondary : styles.textPrimary]}>
-        {text}
-      </Text>
+      <Text style={[styles.text, texto]}>{text}</Text>
     </Pressable>
   );
 }

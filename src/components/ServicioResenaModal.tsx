@@ -1,16 +1,20 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Animated, Linking, Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Animated, FlatList, Linking, Modal, Pressable, Text, View } from 'react-native';
 import type { Categoria } from '../api/categoria';
 import type { Municipio } from '../api/municipio';
 import { getResenasByServicio, type Resena } from '../api/resena';
 import type { Servicio } from '../api/servicio';
 import { useAuth } from '../context/AuthContext';
 import { getCategoriaVisual } from '../utils/categoriaVisual';
+import { MENSAJE_ERROR_DATOS } from '../utils/errorApp';
 import { nombreAutorResena } from '../utils/resenaAutor';
 import { colors } from '../styles/theme';
 import { styles } from '../styles/ServicioResenaModal.styles';
+import Button from './Button';
+import { SkeletonListItem } from './Skeleton';
+import ReviewItem from './ReviewItem';
 import StarRating from './StarRating';
 
 interface Props {
@@ -25,14 +29,6 @@ interface Props {
 
 function pareceId(valor?: string) {
   return !!valor && /^[a-f0-9]{24}$/i.test(valor);
-}
-
-function haceCuanto(fecha?: string) {
-  if (!fecha) return '';
-  const dias = Math.floor((Date.now() - new Date(fecha).getTime()) / 86400000);
-  if (Number.isNaN(dias) || dias <= 0) return 'hoy';
-  if (dias === 1) return 'hace 1 día';
-  return `hace ${dias} días`;
 }
 
 function FilaDato({
@@ -56,19 +52,8 @@ function FilaDato({
   );
 }
 
-function TarjetaResena({ resena, autor }: { resena: Resena; autor: string }) {
-  return (
-    <View style={styles.reviewCard}>
-      <View style={styles.reviewTop}>
-        <Text style={styles.reviewAutor} numberOfLines={1}>
-          {autor}
-        </Text>
-        {!!resena.fecha && <Text style={styles.reviewFecha}>{haceCuanto(resena.fecha)}</Text>}
-      </View>
-      <StarRating value={resena.calificacion} readonly size={14} />
-      {!!resena.comentario && <Text style={styles.reviewText}>{resena.comentario}</Text>}
-    </View>
-  );
+function SeparadorResena() {
+  return <View style={styles.separador} />;
 }
 
 export default function ServicioFichaModal({
@@ -82,7 +67,9 @@ export default function ServicioFichaModal({
 }: Props) {
   const { user } = useAuth();
   const [resenas, setResenas] = useState<Resena[]>([]);
-  const [expandido, setExpandido] = useState(false);
+  const [cargando, setCargando] = useState(false);
+  const [refrescando, setRefrescando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [mostrar, setMostrar] = useState(visible);
   const opacidad = useRef(new Animated.Value(0)).current;
   const subida = useRef(new Animated.Value(40)).current;
@@ -99,7 +86,6 @@ export default function ServicioFichaModal({
         Animated.spring(subida, { toValue: 0, friction: 8, useNativeDriver: true }),
       ]).start();
     } else {
-      setExpandido(false);
       Animated.parallel([
         Animated.timing(opacidad, { toValue: 0, duration: 180, useNativeDriver: true }),
         Animated.timing(subida, { toValue: 40, duration: 180, useNativeDriver: true }),
@@ -107,19 +93,45 @@ export default function ServicioFichaModal({
     }
   }, [visible, opacidad, subida]);
 
+  const cargar = useCallback(
+    async (esRefresh = false) => {
+      if (!servicio) return;
+
+      if (resenasDemo) {
+        setResenas(resenasDemo);
+        setError(null);
+        setCargando(false);
+        setRefrescando(false);
+        return;
+      }
+
+      if (esRefresh) {
+        setRefrescando(true);
+      } else {
+        setCargando(true);
+      }
+      setError(null);
+
+      try {
+        const { data } = await getResenasByServicio(servicio._id);
+        setResenas(data);
+      } catch {
+        setError(MENSAJE_ERROR_DATOS);
+        if (!esRefresh) {
+          setResenas([]);
+        }
+      } finally {
+        setCargando(false);
+        setRefrescando(false);
+      }
+    },
+    [servicio, resenasDemo],
+  );
+
   useEffect(() => {
     if (!visible || !servicio) return;
-    setExpandido(false);
-
-    if (resenasDemo) {
-      setResenas(resenasDemo);
-      return;
-    }
-
-    getResenasByServicio(servicio._id)
-      .then(({ data }) => setResenas(data))
-      .catch(() => setResenas([]));
-  }, [visible, servicio, resenasDemo]);
+    void cargar(false);
+  }, [visible, servicio, cargar]);
 
   const categoriaNombre = useMemo(() => {
     const porId = categorias.find((c) => c._id === lugar?.categoria_id)?.nombre;
@@ -148,7 +160,6 @@ export default function ServicioFichaModal({
       ? ordenadas.reduce((suma, r) => suma + r.calificacion, 0) / ordenadas.length
       : 0;
 
-  const visibles = expandido ? ordenadas : ordenadas.slice(0, 1);
   const visual = getCategoriaVisual(categoriaNombre);
   const foto = lugar?.imagenes?.[0]?.url_imagen;
 
@@ -158,129 +169,169 @@ export default function ServicioFichaModal({
     Linking.openURL(url);
   }
 
+  const extraerClave = useCallback((item: Resena) => item._id, []);
+
+  const renderResena = useCallback(
+    ({ item }: { item: Resena }) => (
+      <ReviewItem
+        autor={nombreAutorResena(item, user)}
+        calificacion={item.calificacion}
+        fecha={item.fecha}
+        comentario={item.comentario}
+      />
+    ),
+    [user],
+  );
+
+  const cabecera = useMemo(() => {
+    if (!lugar) return null;
+    return (
+      <View style={styles.cabecera}>
+        <View style={styles.header}>
+          <Text style={styles.title}>{lugar.nombre}</Text>
+          <Pressable
+            onPress={onClose}
+            hitSlop={8}
+            style={styles.closeBtn}
+            accessibilityRole="button"
+            accessibilityLabel="Cerrar">
+            <Ionicons name="close" size={20} color={colors.textoSec} />
+          </Pressable>
+        </View>
+
+        {!!foto && (
+          <Image
+            source={{ uri: foto }}
+            style={styles.photo}
+            contentFit="cover"
+            accessibilityLabel={`Foto de ${lugar.nombre}`}
+          />
+        )}
+
+        {(categoriaNombre || municipioNombre) && (
+          <View style={styles.tagsRow}>
+            {!!categoriaNombre && (
+              <View style={[styles.chip, { backgroundColor: `${visual.color}1A`, borderColor: visual.color }]}>
+                <Text style={[styles.chipText, { color: visual.color }]}>
+                  {visual.emoji} {categoriaNombre}
+                </Text>
+              </View>
+            )}
+            {!!municipioNombre && (
+              <View style={[styles.chip, { backgroundColor: colors.doradoSuave, borderColor: colors.dorado }]}>
+                <Text style={[styles.chipText, { color: colors.doradoTexto }]}>{municipioNombre}</Text>
+              </View>
+            )}
+          </View>
+        )}
+
+        {ordenadas.length > 0 && (
+          <View style={styles.ratingRow}>
+            <StarRating value={Math.round(promedio)} readonly size={16} />
+            <Text style={styles.ratingNumero}>{promedio.toFixed(1)}</Text>
+            <Text style={styles.ratingMeta}>
+              · {ordenadas.length} {ordenadas.length === 1 ? 'reseña' : 'reseñas'}
+            </Text>
+          </View>
+        )}
+
+        {(lugar.direccion || lugar.horario_atencion || lugar.telefono) && (
+          <View style={styles.sectionCard}>
+            <FilaDato icono="location-outline" etiqueta="Dirección" valor={lugar.direccion} />
+            <FilaDato icono="time-outline" etiqueta="Horario" valor={lugar.horario_atencion} />
+            <FilaDato icono="call-outline" etiqueta="Teléfono" valor={lugar.telefono} />
+          </View>
+        )}
+
+        {!!lugar.descripcion && (
+          <View style={styles.sectionCard}>
+            <Text style={styles.sectionTitle}>Sobre este lugar</Text>
+            <Text style={styles.descripcion}>{lugar.descripcion}</Text>
+          </View>
+        )}
+
+        <View style={styles.resenasHeader}>
+          <Text style={styles.sectionTitle}>Reseñas</Text>
+        </View>
+
+        {cargando && (
+          <View style={{ gap: 12, paddingVertical: 8 }}>
+            <SkeletonListItem />
+            <SkeletonListItem />
+          </View>
+        )}
+
+        {!!error && !cargando && (
+          <View style={styles.errorBox}>
+            <Text style={styles.errorText}>{error}</Text>
+            <Button text="Volver a intentar" onPress={() => void cargar(false)} secondary />
+          </View>
+        )}
+      </View>
+    );
+  }, [
+    lugar,
+    onClose,
+    foto,
+    categoriaNombre,
+    municipioNombre,
+    visual.color,
+    visual.emoji,
+    ordenadas.length,
+    promedio,
+    cargando,
+    error,
+    cargar,
+  ]);
+
+  const vacio = useCallback(
+    () => <Text style={styles.placeholder}>Aún no hay reseñas. ¡Sé el primero en opinar!</Text>,
+    [],
+  );
+
   if (!lugar) return null;
+
+  const lista = cargando || error ? [] : ordenadas;
 
   return (
     <Modal visible={mostrar} animationType="none" transparent onRequestClose={onClose}>
       <Animated.View style={[styles.backdrop, { opacity: opacidad }]}>
         <Animated.View style={[styles.card, { transform: [{ translateY: subida }] }]}>
-              <ScrollView
-                style={styles.scroll}
-                contentContainerStyle={styles.body}
-                showsVerticalScrollIndicator={false}
-                keyboardShouldPersistTaps="handled">
-                <View style={styles.header}>
-                  <Text style={styles.title}>{lugar.nombre}</Text>
-                  <Pressable
-                    onPress={onClose}
-                    hitSlop={8}
-                    style={styles.closeBtn}
-                    accessibilityRole="button"
-                    accessibilityLabel="Cerrar">
-                    <Ionicons name="close" size={20} color={colors.textoSec} />
-                  </Pressable>
-                </View>
+          <FlatList
+            data={lista}
+            keyExtractor={extraerClave}
+            renderItem={renderResena}
+            ItemSeparatorComponent={SeparadorResena}
+            ListHeaderComponent={cabecera ?? undefined}
+            ListEmptyComponent={cargando || error ? undefined : vacio}
+            style={styles.scroll}
+            contentContainerStyle={styles.body}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            refreshing={refrescando}
+            onRefresh={() => void cargar(true)}
+          />
 
-                {!!foto && (
-                  <Image
-                    source={{ uri: foto }}
-                    style={styles.photo}
-                    contentFit="cover"
-                    accessibilityLabel={`Foto de ${lugar.nombre}`}
-                  />
-                )}
-
-                {(categoriaNombre || municipioNombre) && (
-                  <View style={styles.tagsRow}>
-                    {!!categoriaNombre && (
-                      <View style={[styles.chip, { backgroundColor: `${visual.color}1A`, borderColor: visual.color }]}>
-                        <Text style={[styles.chipText, { color: visual.color }]}>
-                          {visual.emoji} {categoriaNombre}
-                        </Text>
-                      </View>
-                    )}
-                    {!!municipioNombre && (
-                      <View style={[styles.chip, { backgroundColor: colors.doradoSuave, borderColor: colors.dorado }]}>
-                        <Text style={[styles.chipText, { color: colors.doradoTexto }]}>
-                          {municipioNombre}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                )}
-
-                {ordenadas.length > 0 && (
-                  <View style={styles.ratingRow}>
-                    <StarRating value={Math.round(promedio)} readonly size={16} />
-                    <Text style={styles.ratingNumero}>{promedio.toFixed(1)}</Text>
-                    <Text style={styles.ratingMeta}>
-                      · {ordenadas.length} {ordenadas.length === 1 ? 'reseña' : 'reseñas'}
-                    </Text>
-                  </View>
-                )}
-
-                {(lugar.direccion || lugar.horario_atencion || lugar.telefono) && (
-                  <View style={styles.sectionCard}>
-                    <FilaDato icono="location-outline" etiqueta="Dirección" valor={lugar.direccion} />
-                    <FilaDato icono="time-outline" etiqueta="Horario" valor={lugar.horario_atencion} />
-                    <FilaDato icono="call-outline" etiqueta="Teléfono" valor={lugar.telefono} />
-                  </View>
-                )}
-
-                {!!lugar.descripcion && (
-                  <View style={styles.sectionCard}>
-                    <Text style={styles.sectionTitle}>Sobre este lugar</Text>
-                    <Text style={styles.descripcion}>{lugar.descripcion}</Text>
-                  </View>
-                )}
-
-                <View style={styles.bloque}>
-                  <View style={styles.resenasHeader}>
-                    <Text style={styles.sectionTitle}>Reseñas</Text>
-                    {ordenadas.length > 1 && (
-                      <Pressable
-                        onPress={() => setExpandido((v) => !v)}
-                        hitSlop={8}
-                        style={({ pressed }) => pressed && styles.presionado}>
-                        <Text style={styles.verTodas}>{expandido ? 'Ver menos' : 'Ver todas'}</Text>
-                      </Pressable>
-                    )}
-                  </View>
-
-                  {visibles.length > 0 ? (
-                    visibles.map((r) => (
-                      <TarjetaResena
-                        key={r._id}
-                        resena={r}
-                        autor={nombreAutorResena(r, user)}
-                      />
-                    ))
-                  ) : (
-                    <Text style={styles.placeholder}>Aún no hay reseñas para este lugar</Text>
-                  )}
-                </View>
-              </ScrollView>
-
-              <View style={styles.footer}>
-                <Pressable
-                  onPress={onDejarResena}
-                  style={({ pressed }) => [
-                    styles.footerButton,
-                    styles.botonSecundario,
-                    pressed && styles.presionado,
-                  ]}>
-                  <Text style={styles.textoSecundario}>Dejar reseña</Text>
-                </Pressable>
-                <Pressable
-                  onPress={comoLlegar}
-                  style={({ pressed }) => [
-                    styles.footerButton,
-                    styles.botonPrimario,
-                    pressed && styles.presionado,
-                  ]}>
-                  <Text style={styles.textoPrimario}>Cómo llegar</Text>
-                </Pressable>
-              </View>
+          <View style={styles.footer}>
+            <Pressable
+              onPress={onDejarResena}
+              style={({ pressed }) => [
+                styles.footerButton,
+                styles.botonSecundario,
+                pressed && styles.presionado,
+              ]}>
+              <Text style={styles.textoSecundario}>Dejar reseña</Text>
+            </Pressable>
+            <Pressable
+              onPress={comoLlegar}
+              style={({ pressed }) => [
+                styles.footerButton,
+                styles.botonPrimario,
+                pressed && styles.presionado,
+              ]}>
+              <Text style={styles.textoPrimario}>Cómo llegar</Text>
+            </Pressable>
+          </View>
         </Animated.View>
       </Animated.View>
     </Modal>

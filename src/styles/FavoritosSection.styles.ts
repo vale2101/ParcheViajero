@@ -48,6 +48,12 @@ export const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 14,
   },
+  infoFila: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
   rowBorder: { borderTopWidth: 1, borderTopColor: c.borde },
   iconCircle: {
     width: 40,

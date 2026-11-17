@@ -4,9 +4,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import Button from '../../components/Button';
 import AdminHeader from '../../components/AdminHeader';
+import EntradaPantalla from '../../components/EntradaPantalla';
 import DecoRutaCinta from '../../components/DecoRutaCinta';
 import MontanasDeco from '../../components/MontanasDeco';
 import StatCard from '../../components/StatCard';
+import { SkeletonStat } from '../../components/Skeleton';
 import { useAdmin } from '../../context/AdminContext';
 import { useAuth } from '../../context/AuthContext';
 import { iniciales } from '../../utils/adminFormat';
@@ -38,7 +40,7 @@ export default function AdminInicioScreen() {
   return (
     <View style={styles.screen}>
       <AdminHeader />
-
+      <EntradaPantalla>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={cargando} onRefresh={refrescar} />}>
@@ -74,34 +76,45 @@ export default function AdminInicioScreen() {
         )}
 
         <View style={styles.statGrid}>
-          <StatCard
-            icono="time-outline"
-            color={colors.doradoTexto}
-            valor={resumen?.pendientes ?? null}
-            etiqueta="Solicitudes pendientes"
-            onPress={() => irA('/admin/solicitudes', { estado: 'pendiente' })}
-          />
-          <StatCard
-            icono="storefront-outline"
-            color={colors.azul}
-            valor={resumen?.totalServicios ?? null}
-            etiqueta="Servicios registrados"
-            onPress={() => irA('/admin/servicios', { estado: 'todos' })}
-          />
-          <StatCard
-            icono="briefcase-outline"
-            color={colors.azulOscuro}
-            valor={resumen?.negocios ?? null}
-            etiqueta="Negocios"
-            onPress={() => irA('/admin/usuarios', { tipo: 'negocio' })}
-          />
-          <StatCard
-            icono="airplane-outline"
-            color={colors.verde}
-            valor={resumen?.viajeros ?? null}
-            etiqueta="Viajeros"
-            onPress={() => irA('/admin/usuarios', { tipo: 'registrado' })}
-          />
+          {cargando && !resumen ? (
+            <>
+              <SkeletonStat />
+              <SkeletonStat />
+              <SkeletonStat />
+              <SkeletonStat />
+            </>
+          ) : (
+            <>
+              <StatCard
+                icono="time-outline"
+                color={colors.doradoTexto}
+                valor={resumen?.pendientes ?? null}
+                etiqueta="Solicitudes pendientes"
+                onPress={() => irA('/admin/solicitudes', { estado: 'pendiente' })}
+              />
+              <StatCard
+                icono="storefront-outline"
+                color={colors.azul}
+                valor={resumen?.totalServicios ?? null}
+                etiqueta="Servicios registrados"
+                onPress={() => irA('/admin/servicios', { estado: 'todos' })}
+              />
+              <StatCard
+                icono="briefcase-outline"
+                color={colors.azulOscuro}
+                valor={resumen?.negocios ?? null}
+                etiqueta="Negocios"
+                onPress={() => irA('/admin/usuarios', { tipo: 'negocio' })}
+              />
+              <StatCard
+                icono="airplane-outline"
+                color={colors.verde}
+                valor={resumen?.viajeros ?? null}
+                etiqueta="Viajeros"
+                onPress={() => irA('/admin/usuarios', { tipo: 'registrado' })}
+              />
+            </>
+          )}
         </View>
 
         <View style={styles.accesosHeader}>
@@ -129,6 +142,7 @@ export default function AdminInicioScreen() {
           );
         })}
       </ScrollView>
+      </EntradaPantalla>
     </View>
   );
 }

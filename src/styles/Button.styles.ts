@@ -1,23 +1,25 @@
 import { StyleSheet } from 'react-native';
+import { colors, radius, sombra, spacing } from './theme';
 
 export const styles = StyleSheet.create({
   base: {
     alignItems: 'center',
-    borderRadius: 16,
-    padding: 16,
+    borderRadius: radius.lg,
+    padding: spacing.lg,
   },
   primary: {
-    backgroundColor: '#0147B9',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 2,
+    backgroundColor: colors.azulOscuro,
+    ...sombra,
   },
   secondary: {
-    backgroundColor: '#FAF4E4',
+    backgroundColor: colors.superficie,
     borderWidth: 2,
-    borderColor: '#FEBA03',
+    borderColor: colors.dorado,
+  },
+  outline: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: colors.azul,
   },
   disabled: {
     opacity: 0.5,
@@ -30,9 +32,12 @@ export const styles = StyleSheet.create({
     fontWeight: '600',
   },
   textPrimary: {
-    color: '#FEBA03',
+    color: colors.dorado,
   },
   textSecondary: {
-    color: '#0147B9',
+    color: colors.azulOscuro,
+  },
+  textOutline: {
+    color: colors.azul,
   },
 });

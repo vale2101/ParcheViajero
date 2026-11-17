@@ -20,6 +20,7 @@ export const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 10,
     overflow: 'hidden',
+    zIndex: 1,
   },
   header: {
     flexDirection: 'row',

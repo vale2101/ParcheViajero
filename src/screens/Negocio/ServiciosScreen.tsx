@@ -6,7 +6,8 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import CategoriaSticker from '../../components/CategoriaSticker';
 import FotoPlaceholder from '../../components/FotoPlaceholder';
-import Loader from '../../components/Loader';
+import EmptyState from '../../components/EmptyState';
+import { SkeletonListItem } from '../../components/Skeleton';
 import MarcoPolaroid from '../../components/MarcoPolaroid';
 import ScreenHeader from '../../components/ScreenHeader';
 import ServicioDetalleModal from '../../components/ServicioDetalleModal';
@@ -128,7 +129,11 @@ export default function ServiciosScreen() {
         }
         ListEmptyComponent={
           cargando && !cargado ? (
-            <Loader tipo="bloque" texto="Cargando tus servicios…" />
+            <View style={{ gap: 12, paddingVertical: 8 }}>
+              <SkeletonListItem />
+              <SkeletonListItem />
+              <SkeletonListItem />
+            </View>
           ) : !error ? (
             <View style={styles.emptyBox}>
               <View style={styles.emptyIcon}>

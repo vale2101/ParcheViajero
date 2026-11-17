@@ -5,6 +5,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import DecoRutaCinta from '../../components/DecoRutaCinta';
 import MontanasDeco from '../../components/MontanasDeco';
+import EntradaPantalla from '../../components/EntradaPantalla';
 import ScreenHeader from '../../components/ScreenHeader';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import Loader from '../../components/Loader';
@@ -76,6 +77,7 @@ export default function PerfilNegocioScreen() {
 
   return (
     <View style={styles.screen}>
+      <EntradaPantalla>
       <ScreenHeader />
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -205,6 +207,7 @@ export default function PerfilNegocioScreen() {
         onClose={() => setEditandoPerfil(false)}
         onSaved={() => setAviso('Perfil actualizado correctamente')}
       />
+      </EntradaPantalla>
     </View>
   );
 }

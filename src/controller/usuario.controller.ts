@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { ObjectId } from "mongodb";
 import { HttpStatusCode } from "../utils/httpStatus.js";
 import {
   getUsuarios_get,
@@ -243,19 +244,36 @@ export async function deleteUsuario(req: Request, res: Response): Promise<Respon
   try {
     const { id } = req.params;
 
-    if (!id) {
-      return res.status(HttpStatusCode.BadRequest).json({ message: "El id es requerido" });
+    if (!id || !ObjectId.isValid(id)) {
+      return res.status(HttpStatusCode.BadRequest).json({ message: "Identificador de usuario inválido" });
+    }
+
+    const esAdmin = req.tipoUsuario?.toLowerCase() === "admin";
+    const esPropio = req.userId === id;
+
+    if (!esPropio && !esAdmin) {
+      return res
+        .status(HttpStatusCode.Forbidden)
+        .json({ message: "No puedes eliminar la cuenta de otro usuario" });
+    }
+
+    const usuario = await getUsuarioConTipoById_get(id);
+
+    if (!usuario) {
+      return res.status(HttpStatusCode.NotFound).json({ message: "Usuario no encontrado" });
+    }
+
+    // Un admin solo puede borrar su propia cuenta de administrador, no la de otro admin
+    if (usuario.tipo_usuario?.toLowerCase() === "admin" && !esPropio) {
+      return res
+        .status(HttpStatusCode.Forbidden)
+        .json({ message: "No puedes eliminar otra cuenta de administrador" });
     }
 
     const success = await deleteUsuario_delete(id);
 
     if (!success) {
       return res.status(HttpStatusCode.NotFound).json({ message: "Usuario no encontrado" });
-    }
-        if (req.userId !== id) {
-      return res
-        .status(HttpStatusCode.Forbidden)
-        .json({ message: "No puedes eliminar la cuenta de otro usuario" });
     }
 
     return res.status(HttpStatusCode.Ok).json({ message: "Usuario eliminado correctamente" });

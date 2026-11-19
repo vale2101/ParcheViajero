@@ -192,7 +192,11 @@ export async function deleteServicio(
       });
     }
 
-    const success = await deleteServicio_delete(id, req.userId);
+    const success = await deleteServicio_delete(
+      id,
+      req.userId,
+      req.tipoUsuario?.toLowerCase() === "admin",
+    );
 
     if (!success) {
       return res.status(HttpStatusCode.NotFound).json({
@@ -210,7 +214,7 @@ export async function deleteServicio(
       error instanceof Error ? error.message : "Error al eliminar el servicio";
 
     if (message.includes("permiso")) {
-      return res.status(HttpStatusCode.Unauthorized).json({ message });
+      return res.status(HttpStatusCode.Forbidden).json({ message });
     }
 
     return res.status(HttpStatusCode.InternalServerError).json({

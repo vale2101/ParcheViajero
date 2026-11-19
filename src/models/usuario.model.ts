@@ -1,5 +1,7 @@
 import { ObjectId, type UpdateFilter } from "mongodb";
 import { mongoConnector } from "../db/connection.js";
+import { borrarImagen } from "../utils/cloudinary.js";
+import { deleteServiciosDeUsuario_delete } from "./servicio.model.js";
 import type { IUsuario, IUsuarioConTipo, ICreateUsuarioInput} from "../interfaces/usuario.interface.js";
 
 const COLLECTION = "usuarios";
@@ -93,8 +95,33 @@ export async function updateUsuario_put(id: string, usuario: Partial<IUsuario>):
 
 
 export async function deleteUsuario_delete(id: string): Promise<boolean> {
+  if (!ObjectId.isValid(id)) {
+    throw new Error("Identificador inválido");
+  }
+
   const db = mongoConnector.getDb();
-  const response = await db.collection<IUsuario>(COLLECTION).deleteOne({ _id: new ObjectId(id) });
+  const usuarioId = new ObjectId(id);
+  const usuario = await db.collection<IUsuario>(COLLECTION).findOne({ _id: usuarioId });
+
+  if (!usuario) return false;
+
+  // Servicios del usuario, con imágenes, reseñas y favoritos de cada uno
+  await deleteServiciosDeUsuario_delete(id);
+
+  // Reseñas y favoritos que escribió como viajero
+  await db.collection("resenas").deleteMany({
+    $or: [{ usuario_id: usuarioId }, { usuario_id: id }],
+  });
+  await db.collection("favoritos").deleteMany({
+    $or: [{ usuario_id: usuarioId }, { usuario_id: id }],
+  });
+
+  const response = await db.collection<IUsuario>(COLLECTION).deleteOne({ _id: usuarioId });
+
+  if (response.deletedCount > 0 && usuario.foto_perfil_public_id) {
+    await borrarImagen(usuario.foto_perfil_public_id);
+  }
+
   return response.deletedCount > 0;
 }
 

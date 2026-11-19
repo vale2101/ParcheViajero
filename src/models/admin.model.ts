@@ -1,6 +1,9 @@
 import { ObjectId, type Document } from "mongodb";
 import { mongoConnector } from "../db/connection.js";
 import type { IRevisionServicio } from "../interfaces/revision.interface.js";
+import { deleteUsuario_delete, getUsuarioConTipoById_get } from "./usuario.model.js";
+import { deleteServiciosDeUsuario_delete } from "./servicio.model.js";
+import { borrarImagen } from "../utils/cloudinary.js";
 
 const ESTADOS = ["pendiente", "aprobado", "rechazado"];
 const LIMITE = 200;
@@ -233,4 +236,40 @@ export async function listarResenas_get(
   pipeline.push({ $sort: { fecha: dir, _id: dir } }, { $limit: LIMITE });
 
   return db.collection("resenas").aggregate(pipeline).toArray();
+}
+
+export type ResultadoBorradoUsuario = "ok" | "no-encontrado" | "propio" | "admin";
+
+// Borra la cuenta. Los servicios (imágenes, reseñas y favoritos), las reseñas del viajero
+// y la foto de perfil se eliminan en deleteUsuario_delete.
+export async function eliminarUsuarioAdmin_delete(
+  id: string,
+  solicitanteId: string,
+): Promise<ResultadoBorradoUsuario> {
+  if (id === solicitanteId) return "propio";
+
+  const usuario = await getUsuarioConTipoById_get(id);
+  if (!usuario) return "no-encontrado";
+
+  const tipo = usuario.tipo_usuario?.toLowerCase();
+  if (tipo === "admin") return "admin";
+  if (tipo !== "negocio" && tipo !== "registrado") {
+    throw new Error("Tipo de cuenta no admitido");
+  }
+
+  await deleteServiciosDeUsuario_delete(id);
+
+  const db = mongoConnector.getDb();
+  await db.collection("favoritos").deleteMany({
+    $or: [{ usuario_id: new ObjectId(id) }, { usuario_id: id }],
+  });
+
+  const eliminado = await deleteUsuario_delete(id);
+  if (!eliminado) return "no-encontrado";
+
+  if (usuario.foto_perfil_public_id) {
+    await borrarImagen(usuario.foto_perfil_public_id);
+  }
+
+  return "ok";
 }

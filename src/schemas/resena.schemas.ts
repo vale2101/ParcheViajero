@@ -6,7 +6,6 @@ const objectIdString = z
   .regex(/^[0-9a-fA-F]{24}$/, "Debe ser un ObjectId válido");
 
 export const createResenaSchema = z.object({
-  usuario_id: objectIdString,
   servicio_id: objectIdString,
 
   calificacion: z

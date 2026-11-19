@@ -8,10 +8,12 @@ import {
   listarUsuarios_get,
   getUsuarioAdmin_get,
   listarResenas_get,
+  eliminarUsuarioAdmin_delete,
 
   type Orden,
 } from "../models/admin.model.js";
 import { deleteResena_delete } from "../models/resena.model.js";
+import { deleteServicio_delete } from "../models/servicio.model.js";
 const texto = (v: unknown): string | undefined =>
   typeof v === "string" && v.trim() ? v.trim() : undefined;
 
@@ -119,6 +121,58 @@ export async function listarResenas(req: Request, res: Response): Promise<Respon
     return res.status(HttpStatusCode.Ok).json({ data });
   } catch (error) {
     return error500(res, error, "Error al obtener las reseñas");
+  }
+}
+
+export async function eliminarServicioAdmin(req: Request, res: Response): Promise<Response> {
+  try {
+    const { id } = req.params;
+    if (!id || !ObjectId.isValid(id)) {
+      return res.status(HttpStatusCode.BadRequest).json({ message: "Identificador inválido" });
+    }
+    if (!req.userId) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: "No autenticado" });
+    }
+
+    const eliminado = await deleteServicio_delete(id, req.userId, true);
+    if (!eliminado) {
+      return res.status(HttpStatusCode.NotFound).json({ message: "Servicio no encontrado" });
+    }
+
+    return res.status(HttpStatusCode.Ok).json({ message: "Servicio eliminado correctamente" });
+  } catch (error) {
+    return error500(res, error, "Error al eliminar el servicio");
+  }
+}
+
+export async function eliminarUsuarioAdmin(req: Request, res: Response): Promise<Response> {
+  try {
+    const { id } = req.params;
+    if (!id || !ObjectId.isValid(id)) {
+      return res.status(HttpStatusCode.BadRequest).json({ message: "Identificador inválido" });
+    }
+    if (!req.userId) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: "No autenticado" });
+    }
+
+    const resultado = await eliminarUsuarioAdmin_delete(id, req.userId);
+    if (resultado === "propio") {
+      return res
+        .status(HttpStatusCode.Forbidden)
+        .json({ message: "No puedes eliminar tu propia cuenta de administrador" });
+    }
+    if (resultado === "admin") {
+      return res
+        .status(HttpStatusCode.Forbidden)
+        .json({ message: "No puedes eliminar otra cuenta de administrador" });
+    }
+    if (resultado === "no-encontrado") {
+      return res.status(HttpStatusCode.NotFound).json({ message: "Usuario no encontrado" });
+    }
+
+    return res.status(HttpStatusCode.Ok).json({ message: "Usuario eliminado correctamente" });
+  } catch (error) {
+    return error500(res, error, "Error al eliminar el usuario");
   }
 }
 

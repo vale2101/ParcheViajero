@@ -410,12 +410,13 @@ export async function revisarServicio_put(
   return { resultado: "ok" };
 }
 
-// DELETE: eliminar un servicio propio
+// DELETE: eliminar un servicio propio. esAdmin omite la comprobación de dueño.
 export async function deleteServicio_delete(
   id: string,
   usuarioIdAutenticado: string,
+  esAdmin = false,
 ): Promise<boolean> {
-  if (!ObjectId.isValid(id) || !ObjectId.isValid(usuarioIdAutenticado)) {
+  if (!ObjectId.isValid(id) || (!esAdmin && !ObjectId.isValid(usuarioIdAutenticado))) {
     throw new Error("Identificador inválido");
   }
 
@@ -430,19 +431,55 @@ export async function deleteServicio_delete(
     return false;
   }
 
-  if (servicioExistente.usuario_id.toString() !== usuarioIdAutenticado) {
+  if (!esAdmin && servicioExistente.usuario_id.toString() !== usuarioIdAutenticado) {
     throw new Error("No tienes permiso para eliminar este servicio");
   }
 
-   const response = await coleccion.deleteOne({ _id: new ObjectId(id) });
+  return eliminarServicioYArchivos(servicioExistente);
+}
+
+async function eliminarServicioYArchivos(servicio: IServicio): Promise<boolean> {
+  if (!servicio._id) return false;
+
+  const db = mongoConnector.getDb();
+  const response = await db.collection<IServicio>(COLLECTION).deleteOne({ _id: servicio._id });
 
   if (response.deletedCount > 0) {
-    const publicIds = await deleteImagenesByServicio_delete(servicioExistente._id!);
-    await Promise.all(publicIds.map((p) => borrarImagen(p)));
+    const publicIds = await deleteImagenesByServicio_delete(servicio._id);
+    await Promise.all(publicIds.map((publicId) => borrarImagen(publicId)));
+    await db.collection("resenas").deleteMany({
+      $or: [{ servicio_id: servicio._id }, { servicio_id: servicio._id.toHexString() }],
+    });
+    await db.collection("favoritos").deleteMany({
+      $or: [{ servicio_id: servicio._id }, { servicio_id: servicio._id.toHexString() }],
+    });
   }
 
   return response.deletedCount > 0;
+}
 
+// DELETE de administrador: el mismo borrado del servicio, sin exigir ser el dueño.
+export async function deleteServicioAdmin_delete(id: string): Promise<boolean> {
+  return deleteServicio_delete(id, "", true);
+}
+
+// Servicios cuyo propietario es la cuenta que se elimina, con imágenes, reseñas y favoritos.
+export async function deleteServiciosDeUsuario_delete(usuarioId: string): Promise<number> {
+  if (!ObjectId.isValid(usuarioId)) {
+    throw new Error("Identificador inválido");
+  }
+
+  const servicios = await mongoConnector
+    .getDb()
+    .collection<IServicio>(COLLECTION)
+    .find({ usuario_id: new ObjectId(usuarioId) })
+    .toArray();
+
+  let eliminados = 0;
+  for (const servicio of servicios) {
+    if (await eliminarServicioYArchivos(servicio)) eliminados += 1;
+  }
+  return eliminados;
 }
 
 // GET: todos los servicios del propietario autenticado, con sus estados

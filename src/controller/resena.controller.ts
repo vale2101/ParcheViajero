@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { ObjectId } from "mongodb";
 import { HttpStatusCode } from "../utils/httpStatus.js";
 import {
   getResenas_get,
@@ -62,10 +63,14 @@ export async function getResenasByServicio(req: Request, res: Response): Promise
 // 🔹 POST create
 export async function createResena(req: Request, res: Response): Promise<Response> {
   try {
-    const { usuario_id, servicio_id, calificacion, comentario } = req.body;
+    if (!req.userId) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: "No autenticado" });
+    }
+
+    const { servicio_id, calificacion, comentario } = req.body;
 
     const success = await createResena_post({
-      usuario_id,
+      usuario_id: req.userId,
       servicio_id,
       calificacion,
       comentario,
@@ -87,8 +92,24 @@ export async function updateResena(req: Request, res: Response): Promise<Respons
   try {
     const { id } = req.params;
 
-    if (!id) {
+    if (!id || !ObjectId.isValid(id)) {
       return res.status(HttpStatusCode.BadRequest).json({ message: "Falta el parámetro id" });
+    }
+
+    if (!req.userId) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: "No autenticado" });
+    }
+
+    const resena = await getResenaById_get(id);
+
+    if (!resena) {
+      return res.status(HttpStatusCode.NotFound).json({ message: "Reseña no encontrada" });
+    }
+
+    if (resena.usuario_id.toString() !== req.userId) {
+      return res
+        .status(HttpStatusCode.Forbidden)
+        .json({ message: "No puedes modificar la reseña de otro usuario" });
     }
 
     const { calificacion, comentario } = req.body;
@@ -111,8 +132,24 @@ export async function deleteResena(req: Request, res: Response): Promise<Respons
   try {
     const { id } = req.params;
 
-    if (!id) {
+    if (!id || !ObjectId.isValid(id)) {
       return res.status(HttpStatusCode.BadRequest).json({ message: "Falta el parámetro id" });
+    }
+
+    if (!req.userId) {
+      return res.status(HttpStatusCode.Unauthorized).json({ message: "No autenticado" });
+    }
+
+    const resena = await getResenaById_get(id);
+
+    if (!resena) {
+      return res.status(HttpStatusCode.NotFound).json({ message: "Reseña no encontrada" });
+    }
+
+    if (resena.usuario_id.toString() !== req.userId) {
+      return res
+        .status(HttpStatusCode.Forbidden)
+        .json({ message: "No puedes eliminar la reseña de otro usuario" });
     }
 
     const success = await deleteResena_delete(id);

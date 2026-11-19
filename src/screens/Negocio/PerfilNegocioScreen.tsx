@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Image, Pressable, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
+import PerfilDrawer from '../../components/PerfilDrawer';
 import Button from '../../components/Button';
 import DecoRutaCinta from '../../components/DecoRutaCinta';
 import MontanasDeco from '../../components/MontanasDeco';
@@ -12,6 +13,7 @@ import Loader from '../../components/Loader';
 import PerfilEditModal from '../../components/PerfilEditModal';
 import ServicioCard from '../../components/ServicioCard';
 import ServicioEditarModal from '../../components/ServicioEditarModal';
+import InfoModal from '../../components/InfoModal';
 import { useAuth } from '../../context/AuthContext';
 import { useMisServicios } from '../../hooks/useMisServicios';
 import { deleteServicio, type Servicio } from '../../api/servicio';
@@ -21,6 +23,8 @@ import { styles } from '../../styles/PerfilNegocio.styles';
 export default function PerfilNegocioScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
+  const [menuVisible, setMenuVisible] = useState(false);
+  const [infoModal, setInfoModal] = useState<{ titulo: string; texto: string } | null>(null);
   const {
     servicios,
     categorias,
@@ -75,10 +79,32 @@ export default function PerfilNegocioScreen() {
     }
   }
 
+  // Función para el drawer
+  function handleEditar() {
+    setMenuVisible(false);
+    setTimeout(() => setAviso('Esta opción estará disponible pronto.'), 300);
+  }
+
+  function handleAcerca() {
+    setMenuVisible(false);
+    setInfoModal({
+      titulo: 'Acerca de la app',
+      texto: 'Parche Viajero te ayuda a descubrir restaurantes, hoteles y lugares turísticos de Caldas, y a conocer lo que opinan otros viajeros.',
+    });
+  }
+
+  function handleTerminos() {
+    setMenuVisible(false);
+    setInfoModal({
+      titulo: 'Términos y condiciones',
+      texto: 'Al usar Parche Viajero aceptas que tus reseñas sean públicas y que debes escribirlas con respeto. Esta app es un proyecto universitario.',
+    });
+  }
+
   return (
     <View style={styles.screen}>
       <EntradaPantalla>
-      <ScreenHeader />
+      <ScreenHeader onPressMenu={() => setMenuVisible(true)} />
 
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <View style={styles.hero}>
@@ -119,8 +145,6 @@ export default function PerfilNegocioScreen() {
             <Ionicons name="pencil" size={18} color="#FEBA03" />
             <Text style={styles.profileBtnText}>Editar perfil</Text>
           </Pressable>
-
-          <Button text="Cerrar sesión" onPress={logout} secondary style={{ flex: 1 }} />
         </View>
 
         {/* Servicios del usuario (sin título) */}
@@ -206,6 +230,22 @@ export default function PerfilNegocioScreen() {
         visible={editandoPerfil}
         onClose={() => setEditandoPerfil(false)}
         onSaved={() => setAviso('Perfil actualizado correctamente')}
+      />
+
+      <PerfilDrawer
+        visible={menuVisible}
+        onClose={() => setMenuVisible(false)}
+        onEditar={handleEditar}
+        onAcerca={handleAcerca}
+        onTerminos={handleTerminos}
+        onCerrarSesion={logout}
+      />
+
+      <InfoModal
+        visible={!!infoModal}
+        titulo={infoModal?.titulo ?? ''}
+        texto={infoModal?.texto ?? ''}
+        onClose={() => setInfoModal(null)}
       />
       </EntradaPantalla>
     </View>

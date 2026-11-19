@@ -22,9 +22,16 @@ interface Props {
   servicio: Servicio | null;
   categoria?: string | undefined;
   onClose: () => void;
+  puedeEnviar?: boolean;
 }
 
-export default function ServicioReviewModal({ visible, servicio, categoria, onClose }: Props) {
+export default function ServicioReviewModal({
+  visible,
+  servicio,
+  categoria,
+  onClose,
+  puedeEnviar = true,
+}: Props) {
   const {
     usuarioId,
     resenas,
@@ -127,7 +134,7 @@ export default function ServicioReviewModal({ visible, servicio, categoria, onCl
                       : 'Publicar reseña'
                   }
                   onPress={handleSubmit}
-                  disabled={submitting}
+                  disabled={submitting || !puedeEnviar}
                 />
               </View>
             }

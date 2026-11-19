@@ -9,7 +9,7 @@ const ANCHO_PANEL = 260;
 interface Props {
   visible: boolean;
   onClose: () => void;
-  onEditar: () => void;
+  onEditar?: () => void;
   onAcerca: () => void;
   onTerminos: () => void;
   onCerrarSesion: () => void;
@@ -56,7 +56,6 @@ export default function PerfilDrawer({
   }
 
   const opciones = [
-    { icono: 'create-outline' as const, texto: 'Editar perfil', accion: onEditar },
     { icono: 'information-circle-outline' as const, texto: 'Acerca de la app', accion: onAcerca },
     { icono: 'document-text-outline' as const, texto: 'Términos y condiciones', accion: onTerminos },
   ];

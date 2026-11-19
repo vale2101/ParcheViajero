@@ -6,9 +6,11 @@ import KeyboardAwareScreen from '../../components/KeyboardAwareScreen';
 import { useLoginForm } from '../../hooks/useLoginForm';
 import { reglaContrasenaLogin, reglaEmail } from '../../utils/validaciones';
 import { styles } from '../../styles/Login.styles';
+import { useAuth } from '../../context/AuthContext';
 
 export default function LoginScreen() {
   const { control, onSubmit, isSubmitting, errorGeneral } = useLoginForm();
+  const { continueAsGuest } = useAuth();
 
   return (
     <KeyboardAwareScreen style={styles.screen} contentContainerStyle={styles.center}>
@@ -45,6 +47,12 @@ export default function LoginScreen() {
           text={isSubmitting ? 'Entrando…' : 'Entrar'}
           onPress={onSubmit}
           disabled={isSubmitting}
+        />
+
+        <Button
+          text="Continuar como invitado"
+          onPress={continueAsGuest}
+          secondary
         />
 
         <Link href="/register" style={styles.link}>

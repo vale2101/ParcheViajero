@@ -4,10 +4,11 @@ import { colors, radius, sombra, spacing } from './theme';
 export const styles = StyleSheet.create({
   overlay: {
     position: 'absolute',
-    top: 12,
+    top: 0,
     left: 0,
     right: 0,
     gap: 10,
+    zIndex: 2,
   },
   searchBar: {
     flexDirection: 'row',

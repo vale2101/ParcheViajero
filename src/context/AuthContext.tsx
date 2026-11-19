@@ -27,6 +27,7 @@ interface AuthContextValue {
   user: AuthUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isGuest: boolean;
   login: (email: string, contrasena: string) => Promise<void>;
   register: (
     nombre: string,
@@ -37,6 +38,7 @@ interface AuthContextValue {
   ) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  continueAsGuest: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
@@ -44,6 +46,7 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isGuest, setIsGuest] = useState(false);
   const { mostrarError } = useAlert();
 
   useEffect(() => {
@@ -83,6 +86,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       active = false;
     };
   }, []);
+
+  function continueAsGuest() {
+    setIsGuest(true);
+  }
 
   async function login(
     email: string,
@@ -127,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function limpiarSesionLocal(): Promise<void> {
     await setToken(null);
     setUser(null);
+    setIsGuest(false);
   }
 
   useEffect(() => {
@@ -159,10 +167,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         isLoading,
         isAuthenticated: user !== null,
+        isGuest,
         login,
         register,
         logout,
         refreshUser,
+        continueAsGuest,
       }}
     >
       {children}

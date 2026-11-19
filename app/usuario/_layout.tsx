@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { colors } from '../../src/styles/theme';
+import { useAuth } from '../../src/context/AuthContext';
 
 const ICONOS: Record<string, { on: keyof typeof Ionicons.glyphMap; off: keyof typeof Ionicons.glyphMap }> = {
   inicio: { on: 'home', off: 'home-outline' },
@@ -9,6 +9,8 @@ const ICONOS: Record<string, { on: keyof typeof Ionicons.glyphMap; off: keyof ty
 };
 
 export default function UsuarioTabsLayout() {
+  const { isGuest } = useAuth();
+
   return (
     <Tabs
       screenOptions={({ route }) => ({
@@ -18,7 +20,14 @@ export default function UsuarioTabsLayout() {
         tabBarLabelStyle: { fontSize: 12, fontWeight: '700' },
         tabBarIcon: ({ color, size, focused }) => {
           const par = ICONOS[route.name] ?? { on: 'ellipse', off: 'ellipse-outline' };
-          return <Ionicons name={focused ? par.on : par.off} size={size + 2} color={color as string} />;
+          const tintColor = typeof color === 'number' ? '#123B79' : color;
+          return (
+            <Ionicons
+              name={focused ? par.on : par.off}
+              size={size + 2}
+              color={tintColor ?? '#123B79'}
+            />
+          );
         },
         tabBarStyle: {
           backgroundColor: '#FFF8E9',
@@ -31,7 +40,7 @@ export default function UsuarioTabsLayout() {
       })}>
       <Tabs.Screen name="inicio" options={{ title: 'Inicio' }} />
       <Tabs.Screen name="mapa" options={{ title: 'Mapa' }} />
-      <Tabs.Screen name="perfil" options={{ title: 'Perfil' }} />
+      <Tabs.Screen name="perfil" options={{ title: 'Perfil', href: isGuest ? null : undefined }} />
     </Tabs>
   );
 }

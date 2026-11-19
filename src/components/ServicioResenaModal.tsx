@@ -22,6 +22,7 @@ interface Props {
   servicio: Servicio | null;
   onClose: () => void;
   onDejarResena: () => void;
+  mostrarAccionResena?: boolean;
   categorias?: Categoria[];
   municipios?: Municipio[];
   resenasDemo?: Resena[];
@@ -56,11 +57,16 @@ function SeparadorResena() {
   return <View style={styles.separador} />;
 }
 
+function ListaResenasVacia() {
+  return <Text style={styles.placeholder}>Aún no hay reseñas. ¡Sé el primero en opinar!</Text>;
+}
+
 export default function ServicioFichaModal({
   visible,
   servicio,
   onClose,
   onDejarResena,
+  mostrarAccionResena = true,
   categorias = [],
   municipios = [],
   resenasDemo,
@@ -284,10 +290,7 @@ export default function ServicioFichaModal({
     cargar,
   ]);
 
-  const vacio = useCallback(
-    () => <Text style={styles.placeholder}>Aún no hay reseñas. ¡Sé el primero en opinar!</Text>,
-    [],
-  );
+  const vacio = !cargando && !error ? ListaResenasVacia : undefined;
 
   if (!lugar) return null;
 
@@ -303,7 +306,7 @@ export default function ServicioFichaModal({
             renderItem={renderResena}
             ItemSeparatorComponent={SeparadorResena}
             ListHeaderComponent={cabecera ?? undefined}
-            ListEmptyComponent={cargando || error ? undefined : vacio}
+            ListEmptyComponent={vacio}
             style={styles.scroll}
             contentContainerStyle={styles.body}
             showsVerticalScrollIndicator={false}
@@ -313,15 +316,17 @@ export default function ServicioFichaModal({
           />
 
           <View style={styles.footer}>
-            <Pressable
-              onPress={onDejarResena}
-              style={({ pressed }) => [
-                styles.footerButton,
-                styles.botonSecundario,
-                pressed && styles.presionado,
-              ]}>
-              <Text style={styles.textoSecundario}>Dejar reseña</Text>
-            </Pressable>
+            {mostrarAccionResena && user && (
+              <Pressable
+                onPress={onDejarResena}
+                style={({ pressed }) => [
+                  styles.footerButton,
+                  styles.botonSecundario,
+                  pressed && styles.presionado,
+                ]}>
+                <Text style={styles.textoSecundario}>Dejar reseña</Text>
+              </Pressable>
+            )}
             <Pressable
               onPress={comoLlegar}
               style={({ pressed }) => [

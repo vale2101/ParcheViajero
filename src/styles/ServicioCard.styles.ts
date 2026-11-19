@@ -15,6 +15,23 @@ export const styles = StyleSheet.create({
   polaroidWrap: { paddingTop: 6 },
   body: { flex: 1, minWidth: 0, gap: 8 },
   name: { fontSize: 17, fontWeight: '800', color: c.azulOscuro },
+  categoriaFila: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  favoritoBtn: {
+    padding: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+    backgroundColor: c.superficie,
+    borderWidth: 1,
+    borderColor: c.borde,
+    width: 36,
+    height: 36,
+  },
   badge: {
     alignSelf: 'flex-start',
     flexDirection: 'row',

@@ -28,7 +28,7 @@ import { styles } from '../../styles/UsuarioInicio.styles';
 export default function InicioScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isGuest } = useAuth();
   const { foto } = useFotoPerfil();
   const { esFavorito, toggleFavorito } = useFavoritos();
   const { servicios, categorias, municipios, resenas, cargando, error, recargar } =
@@ -84,10 +84,10 @@ export default function InicioScreen() {
 
   const like = useCallback(
     (s: Servicio) => {
-      if (!esFavorito(s._id)) void toggleFavorito(s._id);
+      if (!isGuest && !esFavorito(s._id)) void toggleFavorito(s._id);
       setDescartados((prev) => [...prev, s._id]);
     },
-    [esFavorito, toggleFavorito],
+    [esFavorito, isGuest, toggleFavorito],
   );
 
   const dislike = useCallback(
@@ -198,6 +198,7 @@ export default function InicioScreen() {
                 categoriaDe={categoriaDe}
                 promedioDe={promedioDe}
                 esFavorito={esFavorito}
+                mostrarAcciones={!isGuest}
                 onLike={like}
                 onDescartar={dislike}
                 onAbrir={setSeleccionado}
@@ -247,12 +248,16 @@ export default function InicioScreen() {
         servicio={seleccionado}
         categorias={categorias}
         municipios={municipios}
+        mostrarAccionResena={!isGuest}
         onClose={() => setSeleccionado(null)}
-        onDejarResena={() => setResenando(true)}
+        onDejarResena={() => {
+          if (user && !isGuest) setResenando(true);
+        }}
       />
       <ServicioReviewModal
         visible={resenando}
         servicio={seleccionado}
+        puedeEnviar={!isGuest}
         onClose={() => setResenando(false)}
       />
     </View>

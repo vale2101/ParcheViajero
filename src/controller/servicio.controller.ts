@@ -117,10 +117,13 @@ export async function createServicio(
     });
     
   } catch (error: unknown) {
-    console.error(error);
-
-    const message =
+    const tecnico =
       error instanceof Error ? error.message : "Error al crear el servicio";
+    console.error("Detalle al crear servicio:", error);
+
+    const message = /document failed validation/i.test(tecnico)
+      ? "No fue posible enviar el servicio. Revisa el precio y las coordenadas e inténtalo nuevamente."
+      : tecnico;
 
     return res.status(HttpStatusCode.BadRequest).json({ message });
   }

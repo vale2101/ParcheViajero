@@ -1,5 +1,5 @@
 
-import { ObjectId } from "mongodb";
+import { Double, ObjectId } from "mongodb";
 import type { Document } from "mongodb";
 import { borrarImagen } from "../utils/cloudinary.js";
 import { deleteImagenesByServicio_delete } from "./imagen.model.js";
@@ -13,6 +13,15 @@ import type { IRevisionServicio } from "../interfaces/revision.interface.js";
 
 const COLLECTION = "servicios";
 const REVISIONES = "revisiones_servicio";
+
+// El validador de MongoDB exige bsonType double. Un número entero de JavaScript
+// se guarda como int32 y el esquema lo rechaza, así que se fuerza el tipo double.
+function comoDouble(valor: number, campo: string): Double {
+  if (!Number.isFinite(valor)) {
+    throw new Error(`${campo} debe ser un número válido`);
+  }
+  return new Double(valor);
+}
 
 const LOOKUP_IMAGENES: Document = {
   $lookup: {
@@ -104,13 +113,31 @@ export async function createServicio_post(
       throw new Error("El municipio indicado no existe");
     }
 
+    if (
+      !Number.isFinite(servicio.latitud) ||
+      !Number.isFinite(servicio.longitud) ||
+      Math.abs(servicio.latitud) > 90 ||
+      Math.abs(servicio.longitud) > 180
+    ) {
+      throw new Error("Las coordenadas no son válidas");
+    }
+
+    if (
+      servicio.precio !== undefined &&
+      (typeof servicio.precio !== "number" ||
+        !Number.isFinite(servicio.precio) ||
+        servicio.precio <= 0)
+    ) {
+      throw new Error("El precio debe ser un número válido");
+    }
+
     const doc: IServicio = {
       usuario_id: new ObjectId(servicio.usuario_id),
       categoria_id: new ObjectId(servicio.categoria_id),
       municipio_id: new ObjectId(servicio.municipio_id),
       nombre: servicio.nombre,
-      latitud: servicio.latitud,
-      longitud: servicio.longitud,
+      latitud: comoDouble(servicio.latitud, "La latitud") as unknown as number,
+      longitud: comoDouble(servicio.longitud, "La longitud") as unknown as number,
 
       ubicacion: {
         type: "Point",
@@ -133,7 +160,7 @@ export async function createServicio_post(
         horario_atencion: servicio.horario_atencion,
       }),
       ...(servicio.precio !== undefined && {
-        precio: servicio.precio,
+        precio: comoDouble(servicio.precio, "El precio") as unknown as number,
       }),
     };
 
@@ -269,6 +296,14 @@ export async function updateServicio_put(
     };
   }
 
+  if (typeof datos.precio === "number") {
+    if (!Number.isFinite(datos.precio) || datos.precio <= 0) {
+      throw new Error("El precio debe ser un número válido");
+    }
+  } else if (datos.precio !== undefined) {
+    throw new Error("El precio debe ser un número válido");
+  }
+
   if (Object.keys(datos).length === 0) {
     return true;
   }
@@ -291,6 +326,16 @@ export async function updateServicio_put(
     (datos.longitud !== undefined && datos.longitud !== servicioExistente.longitud);
 
   const requiereRevision = nombreCambio || categoriaCambio || ubicacionCambio;
+
+  if (typeof datos.latitud === "number") {
+    datos.latitud = comoDouble(datos.latitud, "La latitud");
+  }
+  if (typeof datos.longitud === "number") {
+    datos.longitud = comoDouble(datos.longitud, "La longitud");
+  }
+  if (typeof datos.precio === "number") {
+    datos.precio = comoDouble(datos.precio, "El precio");
+  }
 
   const response = await coleccion.updateOne(
     { _id: new ObjectId(id) },
@@ -333,6 +378,10 @@ export async function revisarServicio_put(
   }
 
   const comentario = observacion?.trim();
+
+  if (comentario && comentario.length > 500) {
+    throw new Error("La observación supera los 500 caracteres. Reduce el texto.");
+  }
 
   if (estado === "rechazado" && !comentario) {
     throw new Error("Debes indicar el motivo del rechazo");

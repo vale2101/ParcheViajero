@@ -1,5 +1,5 @@
 import { Link } from 'expo-router';
-import { Image, Text, View } from 'react-native';
+import { Image, ImageBackground, Text, View } from 'react-native';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
 import KeyboardAwareScreen from '../../components/KeyboardAwareScreen';
@@ -13,6 +13,10 @@ export default function LoginScreen() {
   const { continueAsGuest } = useAuth();
 
   return (
+    <ImageBackground
+      source={require('../../../assets/fotofondo.png')}
+      style={styles.fondo}
+      resizeMode="cover">
     <KeyboardAwareScreen style={styles.screen} contentContainerStyle={styles.center}>
       <View style={styles.card}>
         <View style={styles.header}>
@@ -47,12 +51,14 @@ export default function LoginScreen() {
           text={isSubmitting ? 'Entrando…' : 'Entrar'}
           onPress={onSubmit}
           disabled={isSubmitting}
+          style={styles.botonEntrar}
         />
 
         <Button
           text="Continuar como invitado"
           onPress={continueAsGuest}
           secondary
+          style={styles.botonInvitado}
         />
 
         <Link href="/register" style={styles.link}>
@@ -60,5 +66,6 @@ export default function LoginScreen() {
         </Link>
       </View>
     </KeyboardAwareScreen>
+    </ImageBackground>
   );
 }

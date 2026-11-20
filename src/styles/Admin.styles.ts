@@ -37,10 +37,33 @@ export const styles = StyleSheet.create({
   deco: { position: 'absolute', right: 0, bottom: 0, width: 150, height: 100 },
 
   /* Indicadores */
-  statGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
-  statCard: { flexBasis: '45%', flexGrow: 1, flexDirection: 'row', alignItems: 'center', gap: 12, borderRadius: 18, backgroundColor: c.superficie, borderWidth: 1, borderColor: c.borde, padding: 14, ...sombra },
+  statGrid: {
+    gap: 12,
+    width: '100%',
+  },
+  statRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  statSlot: {
+    flex: 1,
+    minWidth: 0,
+  },
+  statCard: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderRadius: 18,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5,
+    borderColor: c.borde,
+    padding: 14,
+    ...sombra,
+  },
   statCardHover: { borderColor: c.dorado },
-  statCardPressed: { opacity: 0.9, transform: [{ scale: 0.985 }] },
+  statCardPressed: { opacity: 0.92 },
   statIcon: { width: 46, height: 46, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   statValue: { fontSize: 26, fontWeight: '800', color: c.azulOscuro },
   statLabel: { fontSize: 12, color: c.textoSec },

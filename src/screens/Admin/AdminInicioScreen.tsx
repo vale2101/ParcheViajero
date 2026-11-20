@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter, type Href } from 'expo-router';
@@ -26,6 +26,16 @@ export default function AdminInicioScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { resumen, cargando, error, refrescar } = useAdmin();
+  const [tirando, setTirando] = useState(false);
+
+  async function alTirar() {
+    setTirando(true);
+    try {
+      await refrescar();
+    } finally {
+      setTirando(false);
+    }
+  }
 
   function irA(ruta: '/admin/solicitudes' | '/admin/servicios' | '/admin/usuarios', params: Record<string, string>) {
     router.push({ pathname: ruta, params: { ...params, destino: String(Date.now()) } });
@@ -43,7 +53,10 @@ export default function AdminInicioScreen() {
       <EntradaPantalla>
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={cargando} onRefresh={refrescar} />}>
+        contentInsetAdjustmentBehavior="never"
+        automaticallyAdjustContentInsets={false}
+        automaticallyAdjustsScrollIndicatorInsets={false}
+        refreshControl={<RefreshControl refreshing={tirando} onRefresh={() => void alTirar()} />}>
         <View style={styles.adminBar}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>{iniciales(user?.nombre)}</Text>
@@ -78,41 +91,49 @@ export default function AdminInicioScreen() {
         <View style={styles.statGrid}>
           {cargando && !resumen ? (
             <>
-              <SkeletonStat />
-              <SkeletonStat />
-              <SkeletonStat />
-              <SkeletonStat />
+              <View style={styles.statRow}>
+                <SkeletonStat />
+                <SkeletonStat />
+              </View>
+              <View style={styles.statRow}>
+                <SkeletonStat />
+                <SkeletonStat />
+              </View>
             </>
           ) : (
             <>
-              <StatCard
-                icono="time-outline"
-                color={colors.doradoTexto}
-                valor={resumen?.pendientes ?? null}
-                etiqueta="Solicitudes pendientes"
-                onPress={() => irA('/admin/solicitudes', { estado: 'pendiente' })}
-              />
-              <StatCard
-                icono="storefront-outline"
-                color={colors.azul}
-                valor={resumen?.totalServicios ?? null}
-                etiqueta="Servicios registrados"
-                onPress={() => irA('/admin/servicios', { estado: 'todos' })}
-              />
-              <StatCard
-                icono="briefcase-outline"
-                color={colors.azulOscuro}
-                valor={resumen?.negocios ?? null}
-                etiqueta="Negocios"
-                onPress={() => irA('/admin/usuarios', { tipo: 'negocio' })}
-              />
-              <StatCard
-                icono="airplane-outline"
-                color={colors.verde}
-                valor={resumen?.viajeros ?? null}
-                etiqueta="Viajeros"
-                onPress={() => irA('/admin/usuarios', { tipo: 'registrado' })}
-              />
+              <View style={styles.statRow}>
+                <StatCard
+                  icono="time-outline"
+                  color={colors.doradoTexto}
+                  valor={resumen?.pendientes ?? null}
+                  etiqueta="Solicitudes pendientes"
+                  onPress={() => irA('/admin/solicitudes', { estado: 'pendiente' })}
+                />
+                <StatCard
+                  icono="storefront-outline"
+                  color={colors.azul}
+                  valor={resumen?.totalServicios ?? null}
+                  etiqueta="Servicios registrados"
+                  onPress={() => irA('/admin/servicios', { estado: 'todos' })}
+                />
+              </View>
+              <View style={styles.statRow}>
+                <StatCard
+                  icono="briefcase-outline"
+                  color={colors.azulOscuro}
+                  valor={resumen?.negocios ?? null}
+                  etiqueta="Negocios"
+                  onPress={() => irA('/admin/usuarios', { tipo: 'negocio' })}
+                />
+                <StatCard
+                  icono="airplane-outline"
+                  color={colors.verde}
+                  valor={resumen?.viajeros ?? null}
+                  etiqueta="Viajeros"
+                  onPress={() => irA('/admin/usuarios', { tipo: 'registrado' })}
+                />
+              </View>
             </>
           )}
         </View>

@@ -7,8 +7,7 @@ import Field from '../components/Field';
 import type { Categoria } from '../api/categoria';
 import type { WizardForm } from '../hooks/useServicioWizard';
 import { getCategoriaVisual } from '../utils/categoriaVisual';
-import { reglaNombre } from '../utils/validaciones';
-import { reglaDescripcion } from '../utils/validacionesServicio';
+import { reglaDescripcion, reglaNombreServicio } from '../utils/validacionesServicio';
 import { styles } from '../styles/ServicioWizard.styles';
 
 interface Props {
@@ -46,7 +45,7 @@ export default function StepBasica({
           label="Nombre del servicio"
           placeholder="Ej. Café La Cima"
           autoCapitalize="sentences"
-          rules={reglaNombre}
+          rules={reglaNombreServicio}
         />
       </View>
 

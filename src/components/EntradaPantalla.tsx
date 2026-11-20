@@ -12,13 +12,8 @@ export default function EntradaPantalla({ children }: { children: ReactNode }) {
     }).start();
   }, [opacidad]);
 
-  const translateY = opacidad.interpolate({
-    inputRange: [0, 1],
-    outputRange: [14, 0],
-  });
-
   return (
-    <Animated.View style={{ flex: 1, opacity: opacidad, transform: [{ translateY }] }}>
+    <Animated.View style={{ flex: 1, opacity: opacidad }}>
       {children}
     </Animated.View>
   );

@@ -85,8 +85,8 @@ export function SkeletonStat() {
   return (
     <View
       style={{
-        flexBasis: '45%',
-        flexGrow: 1,
+        flex: 1,
+        minWidth: 0,
         flexDirection: 'row',
         alignItems: 'center',
         gap: spacing.md,

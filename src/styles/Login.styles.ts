@@ -1,8 +1,11 @@
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
+  fondo: {
+    flex: 1,
+  },
   screen: {
-    backgroundColor: '#e5e5e5',
+    backgroundColor: 'transparent',
   },
   center: {
     flexGrow: 1,
@@ -15,11 +18,14 @@ export const styles = StyleSheet.create({
     maxWidth: 384,
     gap: 20,
     borderRadius: 24,
-    backgroundColor: '#FDFBF6',
+    backgroundColor: 'rgba(255, 251, 241, 0.68)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.45)',
     padding: 32,
+    overflow: 'hidden',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
+    shadowOpacity: 0.12,
     shadowRadius: 12,
     elevation: 3,
   },
@@ -36,7 +42,7 @@ export const styles = StyleSheet.create({
   },
   errorBox: {
     borderRadius: 12,
-    backgroundColor: '#FDFBF6',
+    backgroundColor: 'rgba(255, 251, 241, 0.7)',
     borderWidth: 2,
     borderColor: '#ef4444',
     padding: 12,
@@ -46,7 +52,23 @@ export const styles = StyleSheet.create({
   },
   link: {
     textAlign: 'center',
-    fontWeight: '500',
-    color: '#1E3A8A',
+    fontWeight: '700',
+    color: '#064BC2',
+    textDecorationLine: 'underline',
+    textShadowColor: 'rgba(255, 251, 241, 0.85)',
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 6,
+  },
+  botonEntrar: {
+    backgroundColor: 'rgba(12, 40, 88, 0.96)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(233, 184, 91, 0.9)',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  botonInvitado: {
+    backgroundColor: 'rgba(255, 251, 241, 0.82)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(233, 184, 91, 0.9)',
   },
 });

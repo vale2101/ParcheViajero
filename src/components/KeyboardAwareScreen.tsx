@@ -27,6 +27,7 @@ export default function KeyboardAwareScreen({
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={keyboardVerticalOffset}>
       <ScrollView
+        style={{ flex: 1, backgroundColor: 'transparent' }}
         contentContainerStyle={contentContainerStyle}
         keyboardShouldPersistTaps="handled"
         keyboardDismissMode="on-drag"

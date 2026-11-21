@@ -7,6 +7,7 @@ export const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
+    paddingTop: spacing.md,
     gap: 10,
     zIndex: 2,
   },

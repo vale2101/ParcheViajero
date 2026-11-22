@@ -1,6 +1,6 @@
 import { Link } from 'expo-router';
-import { Image, Text, View, useWindowDimensions } from 'react-native';
-import { Image as Fondo } from 'expo-image';
+import { Image, Text, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
 import KeyboardAwareScreen from '../../components/KeyboardAwareScreen';
@@ -12,20 +12,10 @@ import { useAuth } from '../../context/AuthContext';
 export default function LoginScreen() {
   const { control, onSubmit, isSubmitting, errorGeneral } = useLoginForm();
   const { continueAsGuest } = useAuth();
-  const { width, height } = useWindowDimensions();
 
   return (
-    <View style={[styles.fondo, { width, minHeight: height, backgroundColor: '#E8D4AE' }]}>
-      <Fondo
-        source={require('../../../assets/fotofondo.jpg')}
-        style={[styles.fotoFondo, { width, height }]}
-        contentFit="cover"
-        cachePolicy="memory-disk"
-        transition={120}
-        priority="high"
-      />
     <KeyboardAwareScreen style={styles.screen} contentContainerStyle={styles.center}>
-      <View style={styles.card}>
+      <Animated.View entering={FadeIn.duration(280)} style={styles.card}>
         <View style={styles.header}>
           <Image
             source={require('../../../assets/logo.png')}
@@ -68,11 +58,10 @@ export default function LoginScreen() {
           style={styles.botonInvitado}
         />
 
-        <Link href="/register" style={styles.link}>
+        <Link href="/register" replace style={styles.link}>
           ¿No tienes cuenta? Regístrate
         </Link>
-      </View>
+      </Animated.View>
     </KeyboardAwareScreen>
-    </View>
   );
 }

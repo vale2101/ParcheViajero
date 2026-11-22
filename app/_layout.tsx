@@ -56,8 +56,7 @@ function Navigator() {
       </Stack.Protected>
 
       <Stack.Protected guard={!user && !isGuest}>
-        <Stack.Screen name="login" />
-        <Stack.Screen name="register" />
+        <Stack.Screen name="(auth)" options={{ animation: 'fade', contentStyle: { backgroundColor: 'transparent' } }} />
       </Stack.Protected>
 
 

@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
 import { Image, Pressable, Text, View } from 'react-native';
+import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
 import KeyboardAwareScreen from '../../components/KeyboardAwareScreen';
@@ -19,13 +20,18 @@ export default function RegisterScreen() {
 
   return (
     <KeyboardAwareScreen style={styles.screen} contentContainerStyle={styles.center}>
-      <View style={styles.card}>
-        <Image
-          source={require('../../../assets/logo.png')}
-          style={styles.logo}
-          resizeMode="contain"
-          accessibilityLabel="Parche Viajero"
-        />
+      <Animated.View
+        entering={FadeIn.duration(280)}
+        layout={LinearTransition.duration(250)}
+        style={styles.card}>
+        <View style={styles.header}>
+          <Image
+            source={require('../../../assets/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+            accessibilityLabel="Parche Viajero"
+          />
+        </View>
         <Text style={styles.title}>
           Crear cuenta de {esNegocio ? 'negocio' : 'viajero'}
         </Text>
@@ -100,12 +106,13 @@ export default function RegisterScreen() {
           text={isSubmitting ? 'Creando…' : 'Crear cuenta'}
           onPress={onSubmit}
           disabled={isSubmitting}
+          style={styles.botonCrear}
         />
 
-        <Link href="/login" style={styles.link}>
+        <Link href="/login" replace style={styles.link}>
           ¿Ya tienes cuenta? Inicia sesión
         </Link>
-      </View>
+      </Animated.View>
     </KeyboardAwareScreen>
   );
 }

@@ -73,8 +73,13 @@ export default function AdminServicioDetalleScreen() {
   const marcador = useMemo(() => (lat !== undefined && lng !== undefined ? { lat, lng } : null), [lat, lng]);
 
   async function pedirConfirmacion(d: Decision) {
-    if (d === 'rechazado' && !observacion.trim()) {
+    const observacionLimpia = observacion.trim();
+    if (d === 'rechazado' && !observacionLimpia) {
       setErrorObs('Escribe el motivo del rechazo para poder rechazar el servicio');
+      return;
+    }
+    if (observacionLimpia.length > 500) {
+      setErrorObs('La observación supera los 500 caracteres. Reduce el texto.');
       return;
     }
     setErrorObs(null);
@@ -95,7 +100,7 @@ export default function AdminServicioDetalleScreen() {
     enviandoRef.current = true;
     setEnviando(true);
     try {
-      await revisarServicio(id, d, observacion.trim() || undefined);
+      await revisarServicio(id, d, observacionLimpia || undefined);
       setObservacion('');
       setAviso(d === 'aprobado' ? 'Servicio aprobado correctamente' : 'Servicio rechazado correctamente');
     } catch (e) {
@@ -227,15 +232,18 @@ export default function AdminServicioDetalleScreen() {
                   value={observacion}
                   onChangeText={(t) => {
                     setObservacion(t);
-                    if (errorObs) setErrorObs(null);
+                    if (t.trim().length > 500) {
+                      setErrorObs('La observación supera los 500 caracteres. Reduce el texto.');
+                    } else if (errorObs) {
+                      setErrorObs(null);
+                    }
                   }}
                   placeholder="Escribe una observación para el negocio…"
                   placeholderTextColor={colors.placeholder}
                   multiline
-                  maxLength={500}
                   editable={!enviando}
                 />
-                <Text style={styles.obsCounter}>{observacion.length}/500</Text>
+                <Text style={styles.obsCounter}>{observacion.trim().length}/500</Text>
                 {!!errorObs && <Text style={styles.fieldError}>{errorObs}</Text>}
 
                 <View style={styles.actionsRow}>

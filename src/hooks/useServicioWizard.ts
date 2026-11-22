@@ -5,7 +5,7 @@ import { getCategorias, type Categoria } from '../api/categoria';
 import { getMunicipios, type Municipio } from '../api/municipio';
 import { createServicio, subirImagenesServicio, type ImagenLocal } from '../api/servicio';
 import { MAX_IMAGENES, elegirImagenes } from '../utils/seleccionarImagenes';
-import { PATRON_PRECIO, PATRON_TELEFONO } from '../utils/validacionesServicio';
+import { interpretarPrecio } from '../utils/validacionesServicio';
 import { useUbicacionServicio } from './useUbicacionServicio';
 import { logError, mensajeErrorUsuario } from '../utils/errorApp';
 import { useAlert } from '../context/AlertContext';
@@ -43,17 +43,6 @@ const CLAVES_ERROR_PASO: Record<number, (keyof ErroresWizard)[]> = {
   1: ['municipio', 'ubicacion'],
 };
 
-function camposInvalidos(v: WizardForm, gratuito: boolean): (keyof WizardForm)[] {
-  const malos: (keyof WizardForm)[] = [];
-  if (v.nombre.trim().length < 3) malos.push('nombre');
-  if (v.descripcion.trim().length < 10) malos.push('descripcion');
-  if (v.telefono && !PATRON_TELEFONO.test(v.telefono)) malos.push('telefono');
-  if (!gratuito && v.precio && (!PATRON_PRECIO.test(v.precio) || Number(v.precio) <= 0)) {
-    malos.push('precio');
-  }
-  return malos;
-}
-
 export function useServicioWizard() {
   const { errorVital } = useAlert();
   const [paso, setPaso] = useState(0);
@@ -78,6 +67,7 @@ export function useServicioWizard() {
   const [enviado, setEnviado] = useState(false);
 
   const enviandoRef = useRef(false);
+  const avisoPaso = useRef<string | null>(null);
   const scrollRef = useRef<ScrollViewInstance>(null);
   const anclas = useRef<Record<string, number>>({});
 
@@ -192,13 +182,24 @@ export function useServicioWizard() {
       }
 
       const ok = formOk && Object.keys(nuevos).length === 0;
+      const primero = (ORDEN_ANCLAS[n] ?? []).find((nombre) => {
+        if (nombre in nuevos) return true;
+        return !!form.getFieldState(nombre as keyof WizardForm).error;
+      });
 
-      if (!ok) {
-        const primero = (ORDEN_ANCLAS[n] ?? []).find((nombre) => {
-          if (nombre in nuevos) return true;
-          return !!form.getFieldState(nombre as keyof WizardForm).error;
-        });
-        if (primero) desplazarA(primero);
+      if (!ok && primero) {
+        const delFormulario = form.getFieldState(primero as keyof WizardForm).error?.message;
+        avisoPaso.current =
+          delFormulario ??
+          (primero === 'categoria'
+            ? nuevos.categoria
+            : primero === 'municipio'
+              ? nuevos.municipio
+              : nuevos.ubicacion) ??
+          'Revisa los campos marcados antes de continuar';
+        desplazarA(primero);
+      } else {
+        avisoPaso.current = null;
       }
 
       return ok;
@@ -228,31 +229,33 @@ export function useServicioWizard() {
     [paso],
   );
 
-  const volverAPasoConErrores = useCallback(
-    (destino: number) => {
-      setDireccionAnim(-1);
-      setPaso(destino);
-      setTimeout(() => {
-        validarPaso(destino);
-      }, 200);
-    },
-    [validarPaso],
-  );
-
   const enviar = useCallback(async () => {
     if (enviandoRef.current) return;
     setErrorEnvio(null);
     setErrorImagenes(null);
 
-    const v = form.getValues();
-
-    const malos = camposInvalidos(v, gratuito);
-    if (malos.length > 0) {
-      volverAPasoConErrores(malos[0] === 'telefono' || malos[0] === 'precio' ? 2 : 0);
+    for (const n of [0, 1, 2]) {
+      if (await validarPaso(n)) continue;
+      setErrorEnvio(avisoPaso.current ?? 'Revisa los campos marcados antes de enviar');
       return;
     }
-    if (!categoriaId) return volverAPasoConErrores(0);
-    if (!municipioId || !confirmada) return volverAPasoConErrores(1);
+
+    const v = form.getValues();
+    let precio: number | undefined;
+    if (!gratuito && v.precio.trim()) {
+      const leido = interpretarPrecio(v.precio);
+      if (!leido.ok) {
+        form.setError('precio', { type: 'validate', message: leido.mensaje });
+        setErrorEnvio(leido.mensaje);
+        return;
+      }
+      if (!leido.vacio) precio = leido.valor;
+    }
+
+    if (!categoriaId || !municipioId || !confirmada) {
+      setErrorEnvio('Debes completar los campos obligatorios');
+      return;
+    }
 
     enviandoRef.current = true;
     setEnviando(true);
@@ -263,12 +266,12 @@ export function useServicioWizard() {
         municipio_id: municipioId,
         nombre: v.nombre.trim(),
         descripcion: v.descripcion.trim(),
-        direccion: confirmada.direccion,
+        direccion: confirmada.direccion.trim(),
         latitud: confirmada.latitud,
         longitud: confirmada.longitud,
         telefono: v.telefono.trim() || undefined,
         horario_atencion: v.horario_atencion.trim() || undefined,
-        precio: gratuito || !v.precio ? undefined : Number(v.precio),
+        ...(precio !== undefined ? { precio } : {}),
       });
 
       setEnviado(true);
@@ -296,7 +299,7 @@ export function useServicioWizard() {
       enviandoRef.current = false;
       setEnviando(false);
     }
-  }, [form, gratuito, categoriaId, municipioId, confirmada, imagenes, volverAPasoConErrores, errorVital]);
+  }, [form, gratuito, categoriaId, municipioId, confirmada, imagenes, validarPaso, errorVital]);
 
   return {
     paso,

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FlatList, Image, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -19,8 +19,10 @@ import { useAuth } from '../../context/AuthContext';
 import { useFavoritos } from '../../context/FavoritosContext';
 import { useFotoPerfil } from '../../hooks/useFotoPerfil';
 import { useInicioViajero } from '../../hooks/useInicioViajero';
+import { useUserLocation, type UserLocation } from '../../hooks/useUserLocation';
 import type { Servicio } from '../../api/servicio';
 import { getCategoriaVisual } from '../../utils/categoriaVisual';
+import { nombreMunicipioCercano } from '../../utils/municipioCoords';
 import { promedioPorServicio } from '../../utils/promedioResenas';
 import { colors, spacing } from '../../styles/theme';
 import { styles } from '../../styles/UsuarioInicio.styles';
@@ -31,6 +33,8 @@ export default function InicioScreen() {
   const { user, isGuest } = useAuth();
   const { foto } = useFotoPerfil();
   const { esFavorito, toggleFavorito } = useFavoritos();
+  const { obtenerUbicacion } = useUserLocation();
+  const [coords, setCoords] = useState<UserLocation | null>(null);
   const { servicios, categorias, municipios, resenas, cargando, error, recargar } =
     useInicioViajero();
 
@@ -72,6 +76,30 @@ export default function InicioScreen() {
   }, [servicios, notas, categoriaId, municipioId]);
 
   const municipioNombre = municipios.find((m) => m._id === municipioId)?.nombre;
+
+  useEffect(() => {
+    let activo = true;
+    void obtenerUbicacion().then((ubicacion) => {
+      if (activo) setCoords(ubicacion);
+    });
+    return () => {
+      activo = false;
+    };
+  }, [obtenerUbicacion]);
+
+  const lugarActual = useMemo(() => {
+    if (!coords) return null;
+    const clave = nombreMunicipioCercano(coords.lat, coords.lng);
+    if (!clave) return null;
+    const plano = (texto: string) =>
+      texto.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    const oficial = municipios.find((m) => plano(m.nombre) === plano(clave))?.nombre;
+    return oficial ?? clave.charAt(0).toUpperCase() + clave.slice(1);
+  }, [coords, municipios]);
+
+  const subtitulo = lugarActual
+    ? `Descubre un parche en ${lugarActual}`
+    : 'Descubre un parche cerca de ti';
 
   const nombreCorto = user?.nombre?.split(' ')[0] ?? 'viajero';
   const inicial = (user?.nombre?.trim()?.[0] || user?.email?.[0] || '?').toUpperCase();
@@ -138,7 +166,7 @@ export default function InicioScreen() {
             <View style={{ gap: spacing.lg }}>
               <TarjetaSaludo
                 titulo={`Hola, ${nombreCorto}`}
-                subtitulo="Descubre un parche en Caldas"
+                subtitulo={subtitulo}
                 izquierda={
                   <View style={styles.avatar}>
                     {foto ? (

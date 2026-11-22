@@ -61,10 +61,12 @@ export default function StepContacto({ control, gratuito, onGratuito, ancla }: P
               name="precio"
               label="Precio (opcional)"
               placeholder="25000"
-              keyboardType="number-pad"
+              keyboardType="decimal-pad"
               rules={reglaPrecio}
             />
-            <Text style={styles.helpText}>Precio en pesos colombianos (COP), solo números.</Text>
+            <Text style={styles.helpText}>
+              Precio en pesos colombianos. Puedes usar decimales, por ejemplo 25000 o 25000,50.
+            </Text>
           </>
         )}
       </View>

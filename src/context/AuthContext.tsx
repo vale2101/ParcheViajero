@@ -4,6 +4,7 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useRef,
   type ReactNode,
 } from 'react';
 
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isGuest, setIsGuest] = useState(false);
   const { mostrarError } = useAlert();
+  const restaurandoSesionRef = useRef(true);
 
   useEffect(() => {
     let active = true;
@@ -74,6 +76,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setUser(null);
         }
       } finally {
+        restaurandoSesionRef.current = false;
         if (active) {
           setIsLoading(false);
         }
@@ -140,6 +143,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     setOnSesionExpirada(async () => {
       await limpiarSesionLocal();
+      if (restaurandoSesionRef.current) {
+        return;
+      }
       mostrarError(MENSAJE_ERROR_SESION, 'Sesión expirada');
     });
 

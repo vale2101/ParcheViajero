@@ -29,6 +29,7 @@ export default function PerfilDrawer({
   const [mostrar, setMostrar] = useState(visible);
   const opacidad = useRef(new Animated.Value(0)).current;
   const desplazamiento = useRef(new Animated.Value(ANCHO_PANEL)).current;
+  const accionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (visible) {
@@ -49,10 +50,21 @@ export default function PerfilDrawer({
     }
   }, [visible, opacidad, desplazamiento]);
 
+  useEffect(() => {
+    return () => {
+      if (accionTimer.current) {
+        clearTimeout(accionTimer.current);
+      }
+    };
+  }, []);
+
   // Cierra el drawer y luego ejecuta la acción elegida
   function elegir(accion: () => void) {
     onClose();
-    accion();
+    if (accionTimer.current) {
+      clearTimeout(accionTimer.current);
+    }
+    accionTimer.current = setTimeout(accion, 220);
   }
 
   const opciones = [

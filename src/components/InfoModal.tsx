@@ -32,7 +32,7 @@ export default function InfoModal({ visible, titulo, texto, onClose }: Props) {
   }, [visible, opacidad, escala]);
 
   return (
-    <Modal visible={mostrar} animationType="none" transparent>
+    <Modal visible={mostrar} animationType="none" transparent onRequestClose={onClose}>
       <Pressable style={{ flex: 1 }} onPress={onClose}>
         <Animated.View style={[modalStyles.backdrop, { opacity: opacidad }]} />
       </Pressable>

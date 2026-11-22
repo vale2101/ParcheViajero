@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
-import { Image, ImageBackground, Text, View } from 'react-native';
+import { Image, Text, View, useWindowDimensions } from 'react-native';
+import { Image as Fondo } from 'expo-image';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
 import KeyboardAwareScreen from '../../components/KeyboardAwareScreen';
@@ -11,12 +12,18 @@ import { useAuth } from '../../context/AuthContext';
 export default function LoginScreen() {
   const { control, onSubmit, isSubmitting, errorGeneral } = useLoginForm();
   const { continueAsGuest } = useAuth();
+  const { width, height } = useWindowDimensions();
 
   return (
-    <ImageBackground
-      source={require('../../../assets/fotofondo.png')}
-      style={styles.fondo}
-      resizeMode="cover">
+    <View style={[styles.fondo, { width, minHeight: height, backgroundColor: '#E8D4AE' }]}>
+      <Fondo
+        source={require('../../../assets/fotofondo.jpg')}
+        style={[styles.fotoFondo, { width, height }]}
+        contentFit="cover"
+        cachePolicy="memory-disk"
+        transition={120}
+        priority="high"
+      />
     <KeyboardAwareScreen style={styles.screen} contentContainerStyle={styles.center}>
       <View style={styles.card}>
         <View style={styles.header}>
@@ -66,6 +73,6 @@ export default function LoginScreen() {
         </Link>
       </View>
     </KeyboardAwareScreen>
-    </ImageBackground>
+    </View>
   );
 }

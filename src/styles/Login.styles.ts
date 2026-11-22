@@ -3,6 +3,15 @@ import { StyleSheet } from 'react-native';
 export const styles = StyleSheet.create({
   fondo: {
     flex: 1,
+    width: '100%',
+    minHeight: '100%',
+  },
+  fotoFondo: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   screen: {
     backgroundColor: 'transparent',

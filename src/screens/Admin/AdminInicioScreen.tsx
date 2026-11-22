@@ -14,6 +14,7 @@ import { useAuth } from '../../context/AuthContext';
 import { iniciales } from '../../utils/adminFormat';
 import { colors } from '../../styles/theme';
 import { styles } from '../../styles/Admin.styles';
+import { useResponsive } from '../../hooks/useResponsive';
 
 const ACCESOS: { ruta: Href; icono: keyof typeof Ionicons.glyphMap; titulo: string; desc: string }[] = [
   { ruta: '/admin/solicitudes', icono: 'document-text-outline', titulo: 'Solicitudes de servicios', desc: 'Revisa y decide los servicios pendientes' },
@@ -26,6 +27,7 @@ export default function AdminInicioScreen() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const { resumen, cargando, error, refrescar } = useAdmin();
+  const { pad, maxContenido } = useResponsive();
   const [tirando, setTirando] = useState(false);
 
   async function alTirar() {
@@ -52,7 +54,7 @@ export default function AdminInicioScreen() {
       <AdminHeader />
       <EntradaPantalla>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingHorizontal: pad, maxWidth: maxContenido }]}
         contentInsetAdjustmentBehavior="never"
         automaticallyAdjustContentInsets={false}
         automaticallyAdjustsScrollIndicatorInsets={false}

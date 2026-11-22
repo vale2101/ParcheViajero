@@ -19,9 +19,11 @@ import { useMisServicios } from '../../hooks/useMisServicios';
 import { deleteServicio, type Servicio } from '../../api/servicio';
 import { styles as botones } from '../../styles/Button.styles';
 import { styles } from '../../styles/PerfilNegocio.styles';
+import { useResponsive } from '../../hooks/useResponsive';
 
 export default function PerfilNegocioScreen() {
   const { user, logout } = useAuth();
+  const { pad, maxContenido } = useResponsive();
   const router = useRouter();
   const [menuVisible, setMenuVisible] = useState(false);
   const [infoModal, setInfoModal] = useState<{ titulo: string; texto: string } | null>(null);
@@ -106,7 +108,12 @@ export default function PerfilNegocioScreen() {
       <EntradaPantalla>
       <ScreenHeader onPressMenu={() => setMenuVisible(true)} />
 
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <ScrollView
+        contentContainerStyle={[
+          styles.content,
+          { paddingHorizontal: pad, maxWidth: maxContenido, alignSelf: 'center', width: '100%' },
+        ]}
+        keyboardShouldPersistTaps="handled">
         <View style={styles.hero}>
           <View style={styles.papelMancha1} pointerEvents="none" />
           <View style={styles.papelMancha2} pointerEvents="none" />

@@ -26,9 +26,11 @@ import { nombreMunicipioCercano } from '../../utils/municipioCoords';
 import { promedioPorServicio } from '../../utils/promedioResenas';
 import { colors, spacing } from '../../styles/theme';
 import { styles } from '../../styles/UsuarioInicio.styles';
+import { useResponsive } from '../../hooks/useResponsive';
 
 export default function InicioScreen() {
   const insets = useSafeAreaInsets();
+  const { pad, maxContenido } = useResponsive();
   const router = useRouter();
   const { user, isGuest } = useAuth();
   const { foto } = useFotoPerfil();
@@ -128,7 +130,7 @@ export default function InicioScreen() {
 
   if (cargando) {
     return (
-      <View style={[styles.screen, { paddingTop: insets.top + spacing.md, padding: spacing.lg, gap: spacing.lg }]}>
+      <View style={[styles.screen, { paddingTop: insets.top + spacing.md, padding: pad, gap: spacing.lg, maxWidth: maxContenido, alignSelf: 'center', width: '100%' }]}>
         <View style={styles.saludoFila}>
           <SkeletonAvatar />
           <View style={{ flex: 1, gap: spacing.sm }}>
@@ -145,7 +147,7 @@ export default function InicioScreen() {
 
   if (error) {
     return (
-      <View style={[styles.screen, { paddingTop: insets.top + spacing.xl, padding: spacing.lg }]}>
+      <View style={[styles.screen, { paddingTop: insets.top + spacing.xl, padding: pad, maxWidth: maxContenido, alignSelf: 'center', width: '100%' }]}>
         <View style={styles.errorCaja}>
           <Text style={styles.errorTexto}>{error}</Text>
           <Button text="Reintentar" onPress={() => void recargar()} secondary />
@@ -161,7 +163,7 @@ export default function InicioScreen() {
           data={[]}
           renderItem={() => null}
           keyExtractor={(_, i) => String(i)}
-          contentContainerStyle={styles.lista}
+          contentContainerStyle={[styles.lista, { paddingHorizontal: pad, maxWidth: maxContenido, alignSelf: 'center', width: '100%' }]}
           ListHeaderComponent={
             <View style={{ gap: spacing.lg }}>
               <TarjetaSaludo

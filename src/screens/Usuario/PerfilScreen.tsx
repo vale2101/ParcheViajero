@@ -12,6 +12,7 @@ import EntradaPantalla from '../../components/EntradaPantalla';
 import ScreenHeader from '../../components/ScreenHeader';
 import { useAuth } from '../../context/AuthContext';
 import { styles } from '../../styles/UsuarioPerfil.styles';
+import { useResponsive } from '../../hooks/useResponsive';
 
 interface Info {
   titulo: string;
@@ -20,6 +21,7 @@ interface Info {
 
 export default function PerfilScreen() {
   const { user, isGuest, logout } = useAuth();
+  const { pad, maxContenido } = useResponsive();
   const [menuVisible, setMenuVisible] = useState(false);
   const [info, setInfo] = useState<Info | null>(null);
 
@@ -48,39 +50,39 @@ export default function PerfilScreen() {
   return (
     <View style={styles.screen}>
       <EntradaPantalla>
-      <ScreenHeader onPressMenu={() => setMenuVisible(true)} />
-
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.hero}>
-          <View style={styles.papelMancha1} pointerEvents="none" />
-          <View style={styles.papelMancha2} pointerEvents="none" />
-          <View style={styles.decoTopLeft} pointerEvents="none">
-            <DecoRutaCinta />
+        <ScreenHeader onPressMenu={() => setMenuVisible(true)} />
+        <ScrollView
+          contentContainerStyle={[
+            styles.content,
+            { paddingHorizontal: pad, maxWidth: maxContenido, alignSelf: 'center', width: '100%' },
+          ]}
+          showsVerticalScrollIndicator={false}>
+          <View style={styles.hero}>
+            <View style={styles.papelMancha1} pointerEvents="none" />
+            <View style={styles.papelMancha2} pointerEvents="none" />
+            <View style={styles.decoTopLeft} pointerEvents="none">
+              <DecoRutaCinta />
+            </View>
+            <View style={styles.decoTopRight} pointerEvents="none">
+              <MontanasDeco />
+            </View>
+            <View style={styles.profileHeader}>
+              <AvatarEditable />
+              <Text style={styles.name}>{user?.nombre}</Text>
+              <Text style={styles.email}>{user?.email}</Text>
+            </View>
           </View>
-          <View style={styles.decoTopRight} pointerEvents="none">
-            <MontanasDeco />
+          <FavoritosSection />
+          <MisResenasSection />
+          <View style={styles.pie} pointerEvents="none">
+            <Image
+              source={require('../../../assets/logo.png')}
+              style={styles.logoFondo}
+              resizeMode="contain"
+              accessibilityElementsHidden
+            />
           </View>
-
-          <View style={styles.profileHeader}>
-            <AvatarEditable />
-            <Text style={styles.name}>{user?.nombre}</Text>
-            <Text style={styles.email}>{user?.email}</Text>
-          </View>
-        </View>
-
-        <FavoritosSection />
-        <MisResenasSection />
-
-        <View style={styles.pie} pointerEvents="none">
-          <Image
-            source={require('../../../assets/logo.png')}
-            style={styles.logoFondo}
-            resizeMode="contain"
-            accessibilityElementsHidden
-          />
-        </View>
-      </ScrollView>
-
+        </ScrollView>
       </EntradaPantalla>
       <PerfilDrawer
         visible={menuVisible}
@@ -89,7 +91,6 @@ export default function PerfilScreen() {
         onTerminos={handleTerminos}
         onCerrarSesion={logout}
       />
-
       <InfoModal
         visible={!!info}
         titulo={info?.titulo ?? ''}

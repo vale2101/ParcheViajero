@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from 'react-native';
-import { Image } from 'expo-image';
+import Foto from './Foto';
 import { Ionicons } from '@expo/vector-icons';
 import type { Servicio } from '../api/servicio';
 import CategoriaSticker from './CategoriaSticker';
@@ -60,12 +60,10 @@ export default function ServicioCard({
         <View style={styles.polaroidWrap}>
           <MarcoPolaroid ancho={FOTO.ancho} alto={FOTO.alto} rotacion="-4deg">
             {foto ? (
-              <Image
-                source={{ uri: foto }}
+              <Foto
+                uri={foto}
+                recyclingKey={servicio._id}
                 style={{ width: FOTO.ancho, height: FOTO.alto }}
-                contentFit="cover"
-                cachePolicy="disk"
-                transition={200}
                 accessibilityLabel={`Foto de ${servicio.nombre}`}
               />
             ) : (

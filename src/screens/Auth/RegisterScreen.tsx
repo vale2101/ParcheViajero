@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import LogoMarca from '../../components/LogoMarca';
 import Animated, { FadeIn, LinearTransition } from 'react-native-reanimated';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
@@ -25,12 +26,7 @@ export default function RegisterScreen() {
         layout={LinearTransition.duration(250)}
         style={styles.card}>
         <View style={styles.header}>
-          <Image
-            source={require('../../../assets/logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-            accessibilityLabel="Parche Viajero"
-          />
+          <LogoMarca style={styles.logo} />
         </View>
         <Text style={styles.title}>
           Crear cuenta de {esNegocio ? 'negocio' : 'viajero'}

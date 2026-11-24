@@ -20,6 +20,7 @@ import { getEstadoVisual } from '../../utils/estadoServicio';
 import { coordenadasValidas, formatearPrecioCOP } from '../../utils/formatoServicio';
 import CategoriaSticker from '../../components/CategoriaSticker';
 import { colors } from '../../styles/theme';
+import FondoEscena from '../../components/FondoEscena';
 import { styles } from '../../styles/Admin.styles';
 
 type Decision = 'aprobado' | 'rechazado';
@@ -130,6 +131,7 @@ export default function AdminServicioDetalleScreen() {
   const stickerFlotante = !!municipio && width >= 340;
 
   return (
+    <FondoEscena>
     <View style={styles.screen}>
       <AdminSubHeader titulo="Detalle del servicio" volverA="/admin/solicitudes" />
 
@@ -346,5 +348,6 @@ export default function AdminServicioDetalleScreen() {
         }
       />
     </View>
+    </FondoEscena>
   );
 }

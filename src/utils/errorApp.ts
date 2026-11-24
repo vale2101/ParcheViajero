@@ -21,7 +21,7 @@ export class ErrorSesionExpirada extends Error {
 }
 
 export function logError(contexto: string, err: unknown): void {
-  console.error(contexto, err);
+  console.log(contexto, err);
 }
 
 export function esMensajeTecnico(texto: string): boolean {
@@ -36,6 +36,8 @@ export function esMensajeTecnico(texto: string): boolean {
     t.includes('enotfound') ||
     t.includes('network request failed') ||
     t.includes('failed to fetch') ||
+    t.includes('timed out') ||
+    t.includes('timeout') ||
     t.includes('mongodb') ||
     t.includes('mongoose') ||
     t.includes('sql') ||

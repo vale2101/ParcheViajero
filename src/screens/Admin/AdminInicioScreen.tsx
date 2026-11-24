@@ -5,6 +5,7 @@ import { useFocusEffect, useRouter, type Href } from 'expo-router';
 import Button from '../../components/Button';
 import AdminHeader from '../../components/AdminHeader';
 import EntradaPantalla from '../../components/EntradaPantalla';
+import FondoEscena from '../../components/FondoEscena';
 import DecoRutaCinta from '../../components/DecoRutaCinta';
 import MontanasDeco from '../../components/MontanasDeco';
 import StatCard from '../../components/StatCard';
@@ -50,6 +51,7 @@ export default function AdminInicioScreen() {
   );
 
   return (
+    <FondoEscena>
     <View style={styles.screen}>
       <AdminHeader />
       <EntradaPantalla>
@@ -167,5 +169,6 @@ export default function AdminInicioScreen() {
       </ScrollView>
       </EntradaPantalla>
     </View>
+    </FondoEscena>
   );
 }

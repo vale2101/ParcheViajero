@@ -1,4 +1,5 @@
-import { Image, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import Foto from './Foto';
 import { Ionicons } from '@expo/vector-icons';
 import type { UsuarioAdmin } from '../api/admin';
 import { ETIQUETA_TIPO, formatearFecha, iniciales } from '../utils/adminFormat';
@@ -21,7 +22,7 @@ export default function UsuarioCard({
       <Pressable style={styles.cardMain} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Abrir ${u.nombre}`}>
       <View style={styles.userAvatar}>
         {u.foto_perfil ? (
-          <Image source={{ uri: u.foto_perfil }} style={{ width: 56, height: 56 }} resizeMode="cover" />
+          <Foto uri={u.foto_perfil} recyclingKey={u._id} style={{ width: 56, height: 56 }} />
         ) : (
           <Text style={styles.avatarText}>{iniciales(u.nombre)}</Text>
         )}

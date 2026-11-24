@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import EntradaPantalla from '../../components/EntradaPantalla';
+import FondoEscena from '../../components/FondoEscena';
 import ScreenHeader from '../../components/ScreenHeader';
 import ServiciosMap, { type ServiciosMapHandle } from '../../components/ServiciosMap';
 import MapFilters, { type MapFiltersValue } from '../../components/MapFilters';
@@ -90,6 +91,7 @@ export default function MapaScreen() {
   }
 
   return (
+    <FondoEscena>
     <View style={styles.screen}>
       <EntradaPantalla>
       <ScreenHeader
@@ -155,5 +157,6 @@ export default function MapaScreen() {
         </>
       )}
     </View>
+    </FondoEscena>
   );
 }

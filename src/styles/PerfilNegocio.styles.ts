@@ -12,7 +12,7 @@ const SECUNDARIO = c.textoSec;
 const ROJO = c.rojo;
 
 export const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: CREMA },
+  screen: { flex: 1, backgroundColor: 'transparent' },
   content: { paddingHorizontal: 20, paddingBottom: 28, gap: 18 },
 
   hero: {

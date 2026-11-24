@@ -1,12 +1,20 @@
+import { Image } from 'expo-image';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { Platform } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AlertProvider } from '../src/context/AlertContext';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { FavoritosProvider } from '../src/context/FavoritosContext';
 import { useAppFonts } from '../src/hooks/useAppFonts';
 import Loader from '../src/components/Loader';
+import { precargarLogos } from '../src/components/LogoMarca';
 import "../src/global.css";
+
+if (Platform.OS !== 'web') {
+  Image.configureCache({ maxDiskSize: 250 * 1024 * 1024 });
+}
+precargarLogos();
 
 export default function RootLayout() {
   const fontsReady = useAppFonts();

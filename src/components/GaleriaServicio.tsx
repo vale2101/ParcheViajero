@@ -8,7 +8,8 @@ import {
   type NativeSyntheticEvent,
   Text,
 } from 'react-native';
-import { Image } from 'expo-image';
+import Foto from './Foto';
+import { prefetchFotos } from '../utils/fotos';
 import { Ionicons } from '@expo/vector-icons';
 import type { ImagenServicio } from '../api/servicio';
 import FotoPlaceholder from './FotoPlaceholder';
@@ -47,6 +48,13 @@ export default function GaleriaServicio({ imagenes, categoria, indice = 0, onInd
   }
 
   useEffect(() => {
+    prefetchFotos(
+      imagenes.slice(indiceSeguro + 1, indiceSeguro + 3).map((i) => i.url_imagen),
+      2,
+    );
+  }, [imagenes, indiceSeguro]);
+
+  useEffect(() => {
     if (!ancho || imagenes.length === 0) return;
     if (origen.current === 'scroll') {
       origen.current = 'externo';
@@ -80,12 +88,11 @@ export default function GaleriaServicio({ imagenes, categoria, indice = 0, onInd
             setTimeout(() => lista.current?.scrollToIndex({ index: info.index, animated: false }), 60);
           }}
           renderItem={({ item }) => (
-            <Image
-              source={{ uri: item.url_imagen }}
+            <Foto
+              uri={item.url_imagen}
+              recyclingKey={item._id}
               style={{ width: ancho, height: alto }}
-              contentFit="cover"
-              cachePolicy="disk"
-              transition={150}
+              priority="high"
               accessibilityLabel="Fotografía del servicio"
             />
           )}
@@ -157,11 +164,10 @@ export function TiraImagenes({
             accessibilityRole="button"
             accessibilityLabel={cubierta ? `Ver más fotografías, ${extra} adicionales` : `Ver foto ${i + 1}`}
             style={[styles.thumbPrint, activo && styles.thumbPrintActive, { width: lado, height: lado }]}>
-            <Image
-              source={{ uri: img.url_imagen }}
+            <Foto
+              uri={img.url_imagen}
+              recyclingKey={img._id}
               style={{ width: '100%', height: '100%' }}
-              contentFit="cover"
-              cachePolicy="disk"
               accessibilityLabel={`Fotografía ${i + 1} de ${imagenes.length}`}
             />
             {cubierta && (

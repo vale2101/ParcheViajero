@@ -4,7 +4,7 @@ import { colors, spacing } from './theme';
 export const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.fondo,
+    backgroundColor: 'transparent',
   },
   lista: {
     padding: spacing.lg,

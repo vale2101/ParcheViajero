@@ -1,5 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Image } from 'expo-image';
+import Foto from './Foto';
 import { Ionicons } from '@expo/vector-icons';
 import { MAX_IMAGENES } from '../utils/seleccionarImagenes';
 
@@ -24,13 +24,7 @@ export default function ImagenesPicker({ fotos, ocupado, aviso, onAgregar, onQui
       <View style={s.grid}>
         {fotos.map((f) => (
           <View key={f.key} style={s.thumbWrap}>
-            <Image
-              source={{ uri: f.uri }}
-              style={s.thumb}
-              contentFit="cover"
-              cachePolicy="disk"
-              transition={150}
-            />
+            <Foto uri={f.uri} recyclingKey={f.key} style={s.thumb} />
             <Pressable
               style={s.remove}
               onPress={() => onQuitar(f.key)}

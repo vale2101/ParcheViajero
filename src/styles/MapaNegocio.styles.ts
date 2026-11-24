@@ -4,7 +4,7 @@ import { colors as c, sombra } from './theme';
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: c.crema,
+    backgroundColor: 'transparent',
   },
 
   mapWrapper: {

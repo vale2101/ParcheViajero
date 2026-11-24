@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, Pressable, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
+import Foto from './Foto';
 import { useAuth } from '../context/AuthContext';
 import { useFotoPerfil } from '../hooks/useFotoPerfil';
 import { colors } from '../styles/theme';
@@ -16,7 +17,7 @@ export default function AvatarEditable() {
       <View style={styles.anillo}>
         <View style={styles.avatar}>
           {foto ? (
-            <Image source={{ uri: foto }} style={styles.imagen} />
+            <Foto uri={foto} style={styles.imagen} />
           ) : (
             <Text style={styles.inicial}>{inicial}</Text>
           )}

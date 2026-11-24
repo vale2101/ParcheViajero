@@ -9,6 +9,7 @@ import MisResenasSection from '../../components/MisResenasSection';
 import MontanasDeco from '../../components/MontanasDeco';
 import PerfilDrawer from '../../components/PerfilDrawer';
 import EntradaPantalla from '../../components/EntradaPantalla';
+import FondoEscena from '../../components/FondoEscena';
 import ScreenHeader from '../../components/ScreenHeader';
 import { useAuth } from '../../context/AuthContext';
 import { styles } from '../../styles/UsuarioPerfil.styles';
@@ -48,6 +49,7 @@ export default function PerfilScreen() {
   }
 
   return (
+    <FondoEscena>
     <View style={styles.screen}>
       <EntradaPantalla>
         <ScreenHeader onPressMenu={() => setMenuVisible(true)} />
@@ -98,5 +100,6 @@ export default function PerfilScreen() {
         onClose={() => setInfo(null)}
       />
     </View>
+    </FondoEscena>
   );
 }

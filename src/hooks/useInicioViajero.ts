@@ -23,7 +23,8 @@ export function useInicioViajero() {
         getMunicipios().catch(() => ({ data: [] as Municipio[] })),
         getResenas().catch(() => ({ data: [] as Resena[] })),
       ]);
-      setServicios(s.data.filter((item) => item.estado_aprobacion !== 'pendiente' && item.estado_aprobacion !== 'rechazado'));
+      const visibles = s.data.filter((item) => item.estado_aprobacion !== 'pendiente' && item.estado_aprobacion !== 'rechazado');
+      setServicios(visibles);
       setCategorias(c.data);
       setMunicipios(m.data);
       setResenas(r.data);

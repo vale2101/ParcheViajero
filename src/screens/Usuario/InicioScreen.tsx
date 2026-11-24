@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { FlatList, Image, Text, TextInput, View } from 'react-native';
+import { FlatList, Text, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,6 +7,8 @@ import Button from '../../components/Button';
 import Chip from '../../components/Chip';
 import EmptyState from '../../components/EmptyState';
 import EntradaPantalla from '../../components/EntradaPantalla';
+import FondoEscena from '../../components/FondoEscena';
+import Foto from '../../components/Foto';
 import HojaMunicipio from '../../components/HojaMunicipio';
 import SectionTitle from '../../components/SectionTitle';
 import TarjetaSaludo from '../../components/TarjetaSaludo';
@@ -130,6 +132,7 @@ export default function InicioScreen() {
 
   if (cargando) {
     return (
+      <FondoEscena>
       <View style={[styles.screen, { paddingTop: insets.top + spacing.md, padding: pad, gap: spacing.lg, maxWidth: maxContenido, alignSelf: 'center', width: '100%' }]}>
         <View style={styles.saludoFila}>
           <SkeletonAvatar />
@@ -142,21 +145,25 @@ export default function InicioScreen() {
         <SkeletonCard alto={240} />
         <SkeletonCard alto={110} />
       </View>
+      </FondoEscena>
     );
   }
 
   if (error) {
     return (
+      <FondoEscena>
       <View style={[styles.screen, { paddingTop: insets.top + spacing.xl, padding: pad, maxWidth: maxContenido, alignSelf: 'center', width: '100%' }]}>
         <View style={styles.errorCaja}>
           <Text style={styles.errorTexto}>{error}</Text>
           <Button text="Reintentar" onPress={() => void recargar()} secondary />
         </View>
       </View>
+      </FondoEscena>
     );
   }
 
   return (
+    <FondoEscena>
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <EntradaPantalla>
         <FlatList
@@ -172,7 +179,7 @@ export default function InicioScreen() {
                 izquierda={
                   <View style={styles.avatar}>
                     {foto ? (
-                      <Image source={{ uri: foto }} style={styles.avatarImg} />
+                      <Foto uri={foto} style={styles.avatarImg} />
                     ) : (
                       <Text style={styles.avatarLetra}>{inicial}</Text>
                     )}
@@ -291,5 +298,6 @@ export default function InicioScreen() {
         onClose={() => setResenando(false)}
       />
     </View>
+    </FondoEscena>
   );
 }

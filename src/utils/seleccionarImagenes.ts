@@ -23,7 +23,7 @@ export async function elegirImagenes(cupo: number): Promise<ResultadoSeleccion> 
     mediaTypes: ['images'],
     allowsMultipleSelection: true,
     selectionLimit: cupo,
-    quality: 0.8, 
+    quality: 0.55, 
   });
 
   if (r.canceled) return { imagenes: [], rechazadas: [] };

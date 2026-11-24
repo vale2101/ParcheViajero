@@ -29,7 +29,7 @@ export function useFotoPerfil() {
       mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
-      quality: 0.7,
+      quality: 0.5,
     });
 
     if (resultado.canceled) return;

@@ -1,5 +1,6 @@
 import { Link } from 'expo-router';
-import { Image, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import LogoMarca from '../../components/LogoMarca';
 import Animated, { FadeIn } from 'react-native-reanimated';
 import Button from '../../components/Button';
 import Field from '../../components/Field';
@@ -17,12 +18,7 @@ export default function LoginScreen() {
     <KeyboardAwareScreen style={styles.screen} contentContainerStyle={styles.center}>
       <Animated.View entering={FadeIn.duration(280)} style={styles.card}>
         <View style={styles.header}>
-          <Image
-            source={require('../../../assets/logo.png')}
-            style={styles.logo}
-            resizeMode="contain"
-            accessibilityLabel="Parche Viajero"
-          />
+          <LogoMarca style={styles.logo} />
         </View>
 
         <Field

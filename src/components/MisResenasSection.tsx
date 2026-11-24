@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import Foto from './Foto';
 import { useState } from 'react';
 import { FlatList, Pressable, Text, TextInput, View } from 'react-native';
 import { SkeletonListItem } from './Skeleton';
@@ -91,11 +91,10 @@ export default function MisResenasSection() {
                   <View style={styles.polaroidWrap}>
                     <MarcoPolaroid ancho={FOTO.ancho} alto={FOTO.alto} rotacion="-3deg">
                       {foto ? (
-                        <Image
-                          source={{ uri: foto }}
+                        <Foto
+                          uri={foto}
+                          recyclingKey={item.servicio_id}
                           style={{ width: FOTO.ancho, height: FOTO.alto }}
-                          contentFit="cover"
-                          cachePolicy="disk"
                           accessibilityLabel={`Foto de ${servicio?.nombre ?? 'el establecimiento'}`}
                         />
                       ) : (

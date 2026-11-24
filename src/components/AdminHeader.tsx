@@ -1,5 +1,6 @@
-import { Image, View } from 'react-native';
+import { View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LogoMarca from './LogoMarca';
 import { styles } from '../styles/Admin.styles';
 
 
@@ -8,12 +9,7 @@ export default function AdminHeader() {
 
   return (
     <View style={[styles.header, { paddingTop: insets.top + 8 }]}>
-      <Image
-        source={require('../../assets/logo.png')}
-        style={styles.headerLogo}
-        resizeMode="contain"
-        accessibilityLabel="Parche Viajero"
-      />
+      <LogoMarca style={styles.headerLogo} />
     </View>
   );
 }

@@ -20,6 +20,7 @@ import StepResumen from '../../components/StepResumen';
 import StepUbicacion from '../../components/StepUbicacion';
 import WizardProgress from '../../components/WizardProgress';
 import { TOTAL_PASOS, useServicioWizard } from '../../hooks/useServicioWizard';
+import FondoEscena from '../../components/FondoEscena';
 import { styles } from '../../styles/ServicioWizard.styles';
 
 function Contenido() {
@@ -119,6 +120,7 @@ function Contenido() {
   }
 
   return (
+    <FondoEscena>
     <View style={[styles.screen, { paddingTop: insets.top }]}>
       <View style={styles.topBar}>
         <Pressable
@@ -222,6 +224,7 @@ function Contenido() {
         </>
       )}
     </View>
+    </FondoEscena>
   );
 }
 

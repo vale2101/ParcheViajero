@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image } from 'expo-image';
+import Foto from './Foto';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Animated, FlatList, Linking, Modal, Pressable, Text, View } from 'react-native';
 import type { Categoria } from '../api/categoria';
@@ -206,10 +206,11 @@ export default function ServicioFichaModal({
         </View>
 
         {!!foto && (
-          <Image
-            source={{ uri: foto }}
+          <Foto
+            uri={foto}
+            recyclingKey={lugar._id}
             style={styles.photo}
-            contentFit="cover"
+            priority="high"
             accessibilityLabel={`Foto de ${lugar.nombre}`}
           />
         )}

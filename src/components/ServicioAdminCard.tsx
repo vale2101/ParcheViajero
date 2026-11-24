@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from 'react-native';
-import { Image } from 'expo-image';
+import Foto from './Foto';
 import { Ionicons } from '@expo/vector-icons';
 import type { ServicioAdmin } from '../api/admin';
 import { formatearFecha } from '../utils/adminFormat';
@@ -41,12 +41,10 @@ export default function ServicioAdminCard({
       <Pressable style={styles.cardMain} onPress={onPress} accessibilityRole="button" accessibilityLabel={`Abrir ${s.nombre}`}>
       <MarcoPolaroid ancho={74} alto={74} rotacion="-5deg" style={{ marginLeft: 2 }}>
         {foto ? (
-          <Image
-            source={{ uri: foto }}
+          <Foto
+            uri={foto}
+            recyclingKey={s._id}
             style={styles.polaroidFoto}
-            contentFit="cover"
-            cachePolicy="disk"
-            transition={150}
             accessibilityLabel={`Foto de ${s.nombre}`}
           />
         ) : (

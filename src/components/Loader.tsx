@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Easing, Image, Text, View } from 'react-native';
+import { Animated, Easing, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import LogoMarca from './LogoMarca';
 import { styles } from '../styles/Loader.styles';
 
 type TipoLoader = 'pantalla' | 'bloque' | 'compacto' | 'boton';
@@ -75,12 +76,7 @@ function Anillo({
             },
           ]}>
           {tipo === 'pantalla' || tipo === 'bloque' ? (
-            <Image
-              source={require('../../assets/logo.png')}
-              style={styles.logo}
-              resizeMode="contain"
-              accessibilityLabel="Parche Viajero"
-            />
+            <LogoMarca carga style={styles.logo} />
           ) : (
             <Ionicons name="compass" size={m.icono} color="#0147B9" />
           )}

@@ -9,6 +9,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import Button from '../../components/Button';
 import CategoriaSticker from '../../components/CategoriaSticker';
 import ScreenHeader from '../../components/ScreenHeader';
+import FondoEscena from '../../components/FondoEscena';
 import Loader from '../../components/Loader';
 import ServiciosMap from '../../components/ServiciosMap';
 
@@ -108,6 +109,7 @@ export default function MapaNegocioScreen() {
     serviciosVisibles.length === 0;
 
   return (
+    <FondoEscena>
     <View style={styles.screen}>
       <ScreenHeader />
 
@@ -186,5 +188,6 @@ export default function MapaNegocioScreen() {
         )}
       </View>
     </View>
+    </FondoEscena>
   );
 }

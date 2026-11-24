@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Image, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
+import Foto from './Foto';
 import StarRating from './StarRating';
 
 import { styles } from '../styles/ResenasNegocioSection.styles';
@@ -44,7 +45,7 @@ export default function ResenasNegocioSection() {
           <View key={r._id} style={styles.card}>
             <View style={styles.cardTop}>
               {r.clienteFoto ? (
-                <Image source={{ uri: r.clienteFoto }} style={styles.avatarFoto} />
+                <Foto uri={r.clienteFoto} recyclingKey={r._id} style={styles.avatarFoto} />
               ) : (
                 <View style={styles.avatar}>
                   <Text style={styles.avatarText}>{r.clienteNombre.charAt(0).toUpperCase()}</Text>

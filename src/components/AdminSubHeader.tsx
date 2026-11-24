@@ -1,4 +1,5 @@
-import { Image, Pressable, Text, View } from 'react-native';
+import { Pressable, View } from 'react-native';
+import LogoMarca from './LogoMarca';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -11,7 +12,9 @@ export default function AdminSubHeader({ titulo, volverA }: { titulo: string; vo
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={[styles.subHeader, { paddingTop: insets.top + 6 }]}>
+    <View
+      style={[styles.subHeader, { paddingTop: insets.top + 6 }]}
+      accessibilityLabel={`Parche Viajero · ${titulo}`}>
       <Pressable
         style={styles.iconBtn}
         onPress={() => (router.canGoBack() ? router.back() : router.replace(volverA as never))}
@@ -19,12 +22,7 @@ export default function AdminSubHeader({ titulo, volverA }: { titulo: string; vo
         accessibilityLabel="Volver">
         <Ionicons name="arrow-back" size={24} color={colors.azul} />
       </Pressable>
-      <Image
-        source={require('../../assets/logo.png')}
-        style={styles.subHeaderLogo}
-        resizeMode="contain"
-        accessibilityLabel={`Parche Viajero · ${titulo}`}
-      />
+      <LogoMarca style={styles.subHeaderLogo} />
       <View style={styles.subHeaderSpacer} />
     </View>
   );

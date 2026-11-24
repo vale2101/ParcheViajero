@@ -16,6 +16,7 @@ import { useAdminUsuarios } from '../../hooks/useAdminUsuarios';
 import { useEliminacionConfirmada } from '../../hooks/useEliminacionConfirmada';
 import { ETIQUETA_TIPO } from '../../utils/adminFormat';
 import { colors } from '../../styles/theme';
+import FondoEscena from '../../components/FondoEscena';
 import { styles } from '../../styles/Admin.styles';
 
 export default function AdminUsuariosScreen() {
@@ -63,6 +64,7 @@ export default function AdminUsuariosScreen() {
   );
 
   return (
+    <FondoEscena>
     <View style={styles.screen}>
       <AdminHeader />
 
@@ -191,6 +193,7 @@ export default function AdminUsuariosScreen() {
         }
       />
     </View>
+    </FondoEscena>
   );
 }
 

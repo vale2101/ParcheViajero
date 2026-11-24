@@ -5,6 +5,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import Button from './Button';
 import Loader from './Loader';
 import AdminHeader from './AdminHeader';
+import FondoEscena from './FondoEscena';
 import ConfirmDialog from './ConfirmDialog';
 import { eliminarServicioAdmin, type EstadoFiltro, type ServicioAdmin } from '../api/admin';
 import { useAdmin } from '../context/AdminContext';
@@ -73,6 +74,7 @@ export default function ServiciosAdminLista({ titulo, subtitulo, tabs, vacios }:
   }, [destino, estadoParam, estadosDisponibles]);
 
   return (
+    <FondoEscena>
     <View style={styles.screen}>
       <AdminHeader />
 
@@ -210,6 +212,7 @@ export default function ServiciosAdminLista({ titulo, subtitulo, tabs, vacios }:
         }
       />
     </View>
+    </FondoEscena>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import { FlatList, Pressable, Text, View } from 'react-native';
-import { Image } from 'expo-image';
+import Foto from '../../components/Foto';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useRouter } from 'expo-router';
 import Button from '../../components/Button';
@@ -10,6 +10,7 @@ import EmptyState from '../../components/EmptyState';
 import { SkeletonListItem } from '../../components/Skeleton';
 import MarcoPolaroid from '../../components/MarcoPolaroid';
 import ScreenHeader from '../../components/ScreenHeader';
+import FondoEscena from '../../components/FondoEscena';
 import ServicioDetalleModal from '../../components/ServicioDetalleModal';
 import { useMisServicios } from '../../hooks/useMisServicios';
 import type { Servicio } from '../../api/servicio';
@@ -49,11 +50,10 @@ export default function ServiciosScreen() {
         <View style={styles.polaroidWrap}>
           <MarcoPolaroid ancho={FOTO.ancho} alto={FOTO.alto} rotacion="-4deg">
             {foto ? (
-              <Image
-                source={{ uri: foto }}
+              <Foto
+                uri={foto}
+                recyclingKey={item._id}
                 style={{ width: FOTO.ancho, height: FOTO.alto }}
-                contentFit="cover"
-                cachePolicy="disk"
                 accessibilityLabel={`Foto de ${item.nombre}`}
               />
             ) : (
@@ -100,6 +100,7 @@ export default function ServiciosScreen() {
   }
 
   return (
+    <FondoEscena>
     <View style={styles.screen}>
       <ScreenHeader />
 
@@ -159,5 +160,6 @@ export default function ServiciosScreen() {
         onClose={() => setSeleccionado(null)}
       />
     </View>
+    </FondoEscena>
   );
 }

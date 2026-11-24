@@ -9,6 +9,7 @@ import ConfirmDialog from '../../components/ConfirmDialog';
 import { eliminarResenaAdmin, type ResenaAdmin } from '../../api/admin';
 import { useAdminResenas } from '../../hooks/useAdminResenas';
 import { colors } from '../../styles/theme';
+import FondoEscena from '../../components/FondoEscena';
 import { styles } from '../../styles/Admin.styles';
 
 const FILTROS: { valor: number | null; etiqueta: string }[] = [
@@ -58,6 +59,7 @@ export default function AdminResenasScreen() {
   const hayFiltros = !!q.trim() || calificacion !== null;
 
   return (
+    <FondoEscena>
     <View style={styles.screen}>
       <AdminSubHeader titulo="Reseñas" volverA="/admin/inicio" />
 
@@ -145,5 +147,6 @@ export default function AdminResenasScreen() {
         onConfirm={eliminar}
       />
     </View>
+    </FondoEscena>
   );
 }

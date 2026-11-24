@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Image, Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Pressable, View, type StyleProp, type ViewStyle } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LogoMarca from './LogoMarca';
 import { styles } from '../styles/ScreenHeader.styles';
 
 interface Props {
@@ -13,12 +14,7 @@ export default function ScreenHeader({ onPressMenu, style }: Props) {
 
   return (
     <View style={[styles.header, { paddingTop: insets.top + 8 }, style]}>
-      <Image
-        source={require('../../assets/logo.png')}
-        style={styles.logo}
-        resizeMode="contain"
-        accessibilityLabel="Parche Viajero"
-      />
+      <LogoMarca style={styles.logo} />
 
       {!!onPressMenu && (
         <Pressable

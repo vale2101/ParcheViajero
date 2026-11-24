@@ -7,6 +7,7 @@ import Button from '../../components/Button';
 import DecoRutaCinta from '../../components/DecoRutaCinta';
 import MontanasDeco from '../../components/MontanasDeco';
 import EntradaPantalla from '../../components/EntradaPantalla';
+import FondoEscena from '../../components/FondoEscena';
 import ScreenHeader from '../../components/ScreenHeader';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import Loader from '../../components/Loader';
@@ -104,6 +105,7 @@ export default function PerfilNegocioScreen() {
   }
 
   return (
+    <FondoEscena>
     <View style={styles.screen}>
       <EntradaPantalla>
       <ScreenHeader onPressMenu={() => setMenuVisible(true)} />
@@ -256,5 +258,6 @@ export default function PerfilNegocioScreen() {
       />
       </EntradaPantalla>
     </View>
+    </FondoEscena>
   );
 }

@@ -1,5 +1,5 @@
 import { Pressable, Text, View } from 'react-native';
-import { Image } from 'expo-image';
+import Foto from './Foto';
 import type { Servicio } from '../api/servicio';
 import { formatearPrecioCOP } from '../utils/formatoServicio';
 import { colors, radius, sombra, spacing, typography } from '../styles/theme';
@@ -31,7 +31,7 @@ export default function ServicioMiniCard({ servicio, categoria, promedio, onPres
         ...sombra,
       }}>
       {foto ? (
-        <Image source={{ uri: foto }} style={{ width: 168, height: 110 }} contentFit="cover" />
+        <Foto uri={foto} recyclingKey={servicio._id} style={{ width: 168, height: 110 }} />
       ) : (
         <FotoPlaceholder plano categoria={categoria} style={{ width: 168, height: 110 }} />
       )}

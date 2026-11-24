@@ -9,7 +9,7 @@ const TEXTO = '#171717';
 const SECUNDARIO = '#6b6b6b';
 
 export const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: CREMA },
+  screen: { flex: 1, backgroundColor: 'transparent' },
 
   topBar: {
     flexDirection: 'row',

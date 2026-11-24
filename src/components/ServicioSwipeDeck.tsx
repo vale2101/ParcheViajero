@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import {
   Animated,
   PanResponder,
@@ -8,7 +8,8 @@ import {
   View,
   useWindowDimensions,
 } from 'react-native';
-import { Image } from 'expo-image';
+import Foto from './Foto';
+import { prefetchFotos, urlsPortada } from '../utils/fotos';
 import { Ionicons } from '@expo/vector-icons';
 import type { Servicio } from '../api/servicio';
 import { formatearPrecioCOP } from '../utils/formatoServicio';
@@ -51,6 +52,10 @@ export default function ServicioSwipeDeck({
   const animando = useRef(false);
   const tope = servicios[0];
   const siguiente = servicios[1];
+
+  useEffect(() => {
+    prefetchFotos(urlsPortada(servicios.slice(1, 3)), 2);
+  }, [servicios]);
 
   const terminarVuelo = useCallback(
     (direccion: 'izq' | 'der', servicio: Servicio) => {
@@ -287,7 +292,12 @@ function Tarjeta({
         ...sombra,
       }}>
       {foto ? (
-        <Image source={{ uri: foto }} style={{ width: '100%', height: 200 }} contentFit="cover" />
+        <Foto
+          uri={foto}
+          recyclingKey={servicio._id}
+          style={{ width: '100%', height: 200 }}
+          priority="high"
+        />
       ) : (
         <FotoPlaceholder plano categoria={categoria} style={{ width: '100%', height: 200 }} />
       )}

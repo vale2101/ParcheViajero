@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { colors as c } from './theme';
 
 export const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: c.fondo },
+  screen: { flex: 1, backgroundColor: 'transparent' },
   content: { paddingHorizontal: 20, paddingBottom: 28, gap: 22 },
   hero: {
     alignItems: 'center',

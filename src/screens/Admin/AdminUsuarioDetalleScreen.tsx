@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Image, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Button from '../../components/Button';
@@ -21,6 +21,8 @@ import { useEliminacionConfirmada } from '../../hooks/useEliminacionConfirmada';
 import { ETIQUETA_TIPO, formatearFecha, iniciales } from '../../utils/adminFormat';
 import { logError, mensajeErrorUsuario } from '../../utils/errorApp';
 import { colors } from '../../styles/theme';
+import FondoEscena from '../../components/FondoEscena';
+import Foto from '../../components/Foto';
 import { styles } from '../../styles/Admin.styles';
 
 export default function AdminUsuarioDetalleScreen() {
@@ -66,6 +68,7 @@ export default function AdminUsuarioDetalleScreen() {
   }, [aviso]);
 
   return (
+    <FondoEscena>
     <View style={styles.screen}>
       <AdminSubHeader titulo="Detalle del usuario" volverA="/admin/usuarios" />
 
@@ -93,7 +96,7 @@ export default function AdminUsuarioDetalleScreen() {
             <View style={styles.profileBox}>
               <View style={[styles.avatar, { width: 72, height: 72, borderRadius: 36, overflow: 'hidden' }]}>
                 {usuario.foto_perfil ? (
-                  <Image source={{ uri: usuario.foto_perfil }} style={{ width: 72, height: 72 }} />
+                  <Foto uri={usuario.foto_perfil} recyclingKey={usuario._id} style={{ width: 72, height: 72 }} />
                 ) : (
                   <Text style={[styles.avatarText, { fontSize: 28 }]}>{iniciales(usuario.nombre)}</Text>
                 )}
@@ -195,5 +198,6 @@ export default function AdminUsuarioDetalleScreen() {
         }
       />
     </View>
+    </FondoEscena>
   );
 }

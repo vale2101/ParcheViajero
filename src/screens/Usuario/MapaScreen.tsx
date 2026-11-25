@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
+import { useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import EntradaPantalla from '../../components/EntradaPantalla';
 import FondoEscena from '../../components/FondoEscena';
@@ -32,6 +33,7 @@ export default function MapaScreen() {
   const insets = useSafeAreaInsets();
   const { user, isGuest, logout } = useAuth();
   const { servicios, categorias, municipios, resenas } = useMapaData();
+  const { categoriaId: categoriaParam } = useLocalSearchParams<{ categoriaId?: string | string[] }>();
 
   const [seleccionado, setSeleccionado] = useState<Servicio | null>(null);
   const [resenando, setResenando] = useState(false);
@@ -54,6 +56,15 @@ export default function MapaScreen() {
 
 
   const destacadoId = useMemo(() => calcularDestacadoId(resenas), [resenas]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const id = Array.isArray(categoriaParam) ? categoriaParam[0] : categoriaParam;
+      if (id) {
+        setFiltros((prev) => ({ ...prev, categoriaId: id }));
+      }
+    }, [categoriaParam]),
+  );
 
   useEffect(() => {
     if (!filtros.municipioId) return;

@@ -23,7 +23,17 @@ export function useUserLocation() {
         return null;
       }
 
-      const posicion = await Location.getCurrentPositionAsync({});
+      const reciente = await Location.getLastKnownPositionAsync();
+      if (reciente && Date.now() - reciente.timestamp < 5 * 60 * 1000) {
+        return {
+          lat: reciente.coords.latitude,
+          lng: reciente.coords.longitude,
+        };
+      }
+
+      const posicion = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
       return { lat: posicion.coords.latitude, lng: posicion.coords.longitude };
     } catch (err) {
       logError('No se pudo obtener la ubicación', err);

@@ -18,7 +18,7 @@ export function getMunicipioCoords(nombreMunicipio?: string): Coords | null {
 
 const RADIO_MUNICIPIO_KM = 35;
 
-function distanciaKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
+export function distanciaKm(aLat: number, aLng: number, bLat: number, bLng: number): number {
   const rad = (grados: number) => (grados * Math.PI) / 180;
   const dLat = rad(bLat - aLat);
   const dLng = rad(bLng - aLng);
@@ -26,6 +26,12 @@ function distanciaKm(aLat: number, aLng: number, bLat: number, bLng: number): nu
     Math.sin(dLat / 2) ** 2 +
     Math.cos(rad(aLat)) * Math.cos(rad(bLat)) * Math.sin(dLng / 2) ** 2;
   return 6371 * 2 * Math.asin(Math.sqrt(h));
+}
+
+export function formatearDistanciaKm(km: number): string {
+  if (km < 0.1) return 'Cerca';
+  if (km < 1) return `${Math.round(km * 1000)} m`;
+  return `${km.toFixed(km < 10 ? 1 : 0)} km`;
 }
 
 // Nombre en minúsculas del municipio conocido más cercano a esas coordenadas.

@@ -22,7 +22,7 @@ export default function ScreenHeader({ onPressMenu, style }: Props) {
           hitSlop={8}
           accessibilityLabel="Abrir menú"
           style={[styles.menuButton, { top: insets.top + 10 }]}>
-          <Ionicons name="power-outline" size={24} color="#1E3A8A" />
+          <Ionicons name="settings-outline" size={24} color="#1E3A8A" />
         </Pressable>
       )}
     </View>

@@ -12,7 +12,9 @@ import Foto from '../../components/Foto';
 import HojaMunicipio from '../../components/HojaMunicipio';
 import SectionTitle from '../../components/SectionTitle';
 import TarjetaSaludo from '../../components/TarjetaSaludo';
-import ServicioMiniCard from '../../components/ServicioMiniCard';
+import DestacadoCalificados from '../../components/DestacadoCalificados';
+import PostalesCategoria from '../../components/PostalesCategoria';
+import RutaCercanos from '../../components/RutaCercanos';
 import ServicioResenaModal from '../../components/ServicioResenaModal';
 import ServicioReviewModal from '../../components/ServicioReviewModal';
 import ServicioSwipeDeck from '../../components/ServicioSwipeDeck';
@@ -24,7 +26,7 @@ import { useInicioViajero } from '../../hooks/useInicioViajero';
 import { useUserLocation, type UserLocation } from '../../hooks/useUserLocation';
 import type { Servicio } from '../../api/servicio';
 import { getCategoriaVisual } from '../../utils/categoriaVisual';
-import { nombreMunicipioCercano } from '../../utils/municipioCoords';
+import { distanciaKm, nombreMunicipioCercano } from '../../utils/municipioCoords';
 import { promedioPorServicio } from '../../utils/promedioResenas';
 import { colors, spacing } from '../../styles/theme';
 import { styles } from '../../styles/UsuarioInicio.styles';
@@ -37,7 +39,7 @@ export default function InicioScreen() {
   const { user, isGuest } = useAuth();
   const { foto } = useFotoPerfil();
   const { esFavorito, toggleFavorito } = useFavoritos();
-  const { obtenerUbicacion } = useUserLocation();
+  const { obtenerUbicacion, loading: ubicando } = useUserLocation();
   const [coords, setCoords] = useState<UserLocation | null>(null);
   const { servicios, categorias, municipios, resenas, cargando, error, recargar } =
     useInicioViajero();
@@ -54,30 +56,66 @@ export default function InicioScreen() {
     () => Object.fromEntries(categorias.map((c) => [c._id, c.nombre])),
     [categorias],
   );
+  const municipiosPorId = useMemo(
+    () => Object.fromEntries(municipios.map((m) => [m._id, m.nombre])),
+    [municipios],
+  );
   const notas = useMemo(() => promedioPorServicio(resenas), [resenas]);
 
-  const filtrados = useMemo(() => {
+  const baseFiltro = useMemo(() => {
     const q = query.trim().toLowerCase();
     return servicios.filter((s) => {
-      if (descartados.includes(s._id)) return false;
       if (categoriaId && s.categoria_id !== categoriaId) return false;
       if (municipioId && s.municipio_id !== municipioId) return false;
       if (q && !s.nombre.toLowerCase().includes(q)) return false;
       return true;
     });
-  }, [servicios, descartados, categoriaId, municipioId, query]);
+  }, [servicios, categoriaId, municipioId, query]);
 
-  const populares = useMemo(() => {
-    return [...servicios]
-      .filter((s) => {
-        if (!notas[s._id]) return false;
-        if (categoriaId && s.categoria_id !== categoriaId) return false;
-        if (municipioId && s.municipio_id !== municipioId) return false;
-        return true;
+  const filtrados = useMemo(
+    () => baseFiltro.filter((s) => !descartados.includes(s._id)),
+    [baseFiltro, descartados],
+  );
+
+  const mejorCalificados = useMemo(() => {
+    return [...baseFiltro]
+      .filter((s) => (notas[s._id]?.cantidad ?? 0) > 0)
+      .sort((a, b) => {
+        const pa = notas[a._id];
+        const pb = notas[b._id];
+        const dif = (pb?.promedio ?? 0) - (pa?.promedio ?? 0);
+        if (dif !== 0) return dif;
+        return (pb?.cantidad ?? 0) - (pa?.cantidad ?? 0);
       })
-      .sort((a, b) => (notas[b._id]?.promedio ?? 0) - (notas[a._id]?.promedio ?? 0))
       .slice(0, 8);
-  }, [servicios, notas, categoriaId, municipioId]);
+  }, [baseFiltro, notas]);
+
+  const distancias = useMemo(() => {
+    if (!coords) return {} as Record<string, number>;
+    return Object.fromEntries(
+      servicios.map((s) => [s._id, distanciaKm(coords.lat, coords.lng, s.latitud, s.longitud)]),
+    );
+  }, [coords, servicios]);
+
+  const cercaDeMi = useMemo(() => {
+    if (!coords) return [];
+    return [...baseFiltro]
+      .sort((a, b) => (distancias[a._id] ?? Infinity) - (distancias[b._id] ?? Infinity))
+      .slice(0, 8);
+  }, [baseFiltro, coords, distancias]);
+
+  const bloquesCategoria = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return categorias.map((c) => ({
+      categoria: c,
+      lista: servicios.filter((s) => {
+        if (s.categoria_id !== c._id) return false;
+        if (municipioId && s.municipio_id !== municipioId) return false;
+        if (q && !s.nombre.toLowerCase().includes(q)) return false;
+        return true;
+      }),
+    }));
+  }, [categorias, servicios, municipioId, query]);
 
   const municipioNombre = municipios.find((m) => m._id === municipioId)?.nombre;
 
@@ -112,7 +150,12 @@ export default function InicioScreen() {
     (s: Servicio) => categoriasPorId[s.categoria_id],
     [categoriasPorId],
   );
+  const municipioDe = useCallback(
+    (s: Servicio) => municipiosPorId[s.municipio_id],
+    [municipiosPorId],
+  );
   const promedioDe = useCallback((id: string) => notas[id]?.promedio, [notas]);
+  const cantidadDe = useCallback((id: string) => notas[id]?.cantidad, [notas]);
 
   const like = useCallback(
     (s: Servicio) => {
@@ -172,7 +215,7 @@ export default function InicioScreen() {
           keyExtractor={(_, i) => String(i)}
           contentContainerStyle={[styles.lista, { paddingHorizontal: pad, maxWidth: maxContenido, alignSelf: 'center', width: '100%' }]}
           ListHeaderComponent={
-            <View style={{ gap: spacing.lg }}>
+            <View style={{ gap: spacing.xl }}>
               <TarjetaSaludo
                 titulo={`Hola, ${nombreCorto}`}
                 subtitulo={subtitulo}
@@ -233,6 +276,7 @@ export default function InicioScreen() {
               <ServicioSwipeDeck
                 servicios={filtrados}
                 categoriaDe={categoriaDe}
+                municipioDe={municipioDe}
                 promedioDe={promedioDe}
                 esFavorito={esFavorito}
                 mostrarAcciones={!isGuest}
@@ -243,26 +287,67 @@ export default function InicioScreen() {
                 onExplorarMapa={() => router.push('/usuario/mapa')}
               />
 
-              <SectionTitle titulo="Populares" onVerTodo={() => router.push('/usuario/mapa')} />
+              <View style={styles.seccion}>
+                <SectionTitle icono="star" titulo="Mejor calificados" />
+                {mejorCalificados.length === 0 ? (
+                  <EmptyState
+                    icono="star-outline"
+                    mensaje="Aún no hay lugares con reseñas. Sé el primero en puntuar un parche."
+                  />
+                ) : (
+                  <DestacadoCalificados
+                    servicios={mejorCalificados}
+                    categoriaDe={categoriaDe}
+                    promedioDe={promedioDe}
+                    cantidadDe={cantidadDe}
+                    onAbrir={setSeleccionado}
+                  />
+                )}
+              </View>
 
-              {populares.length === 0 ? (
-                <EmptyState mensaje="Aún no hay lugares con reseñas." />
-              ) : (
-                <FlatList
-                  horizontal
-                  data={populares}
-                  keyExtractor={(item) => item._id}
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={{ gap: spacing.md }}
-                  renderItem={({ item }) => (
-                    <ServicioMiniCard
-                      servicio={item}
-                      categoria={categoriaDe(item)}
-                      promedio={promedioDe(item._id)}
-                      onPress={() => setSeleccionado(item)}
-                    />
-                  )}
-                />
+              <View style={styles.seccion}>
+                <SectionTitle icono="navigate" titulo="Cerca de mí" />
+                {ubicando && !coords ? (
+                  <EmptyState icono="navigate-outline" mensaje="Buscando parches cerca de ti…" />
+                ) : !coords ? (
+                  <EmptyState
+                    icono="navigate-outline"
+                    mensaje="Activa la ubicación para ver los lugares más cercanos, ordenados por distancia."
+                    accion="Usar mi ubicación"
+                    onAccion={() => {
+                      void obtenerUbicacion().then((ubicacion) => {
+                        if (ubicacion) setCoords(ubicacion);
+                      });
+                    }}
+                  />
+                ) : cercaDeMi.length === 0 ? (
+                  <EmptyState
+                    icono="map-outline"
+                    mensaje="No encontramos lugares cerca con estos filtros."
+                  />
+                ) : (
+                  <RutaCercanos
+                    servicios={cercaDeMi}
+                    categoriaDe={categoriaDe}
+                    distanciaDe={(s) => distancias[s._id]}
+                    onAbrir={setSeleccionado}
+                  />
+                )}
+              </View>
+
+              {categorias.length > 0 && (
+                <View style={styles.seccion}>
+                  <SectionTitle icono="map" titulo="Explora por categoría" />
+                  <PostalesCategoria
+                    bloques={bloquesCategoria}
+                    onElegir={(id) =>
+                      router.push({
+                        pathname: '/usuario/mapa',
+                        params: { categoriaId: id },
+                      })
+                    }
+                  />
+                </View>
               )}
             </View>
           }

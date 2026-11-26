@@ -3,11 +3,19 @@
     "preview": {
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyBAWxbT_GbtszCh81caHOxuEd2EeRI9k1c",
+        "EXPO_PUBLIC_API_URL": "https://parcheviajero.onrender.com/api"
       }
     },
     "production": {
       "android": {
         "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_GOOGLE_MAPS_API_KEY": "AIzaSyBAWxbT_GbtszCh81caHOxuEd2EeRI9k1c",
+        "EXPO_PUBLIC_API_URL": "https://parcheviajero.onrender.com/api"
       }
     }
   }
